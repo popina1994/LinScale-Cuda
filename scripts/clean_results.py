@@ -21,7 +21,9 @@ if __name__ == "__main__":
         # print(text)
         time_matches = re.findall(r"\*\*\*(.*?)\*\*\*", text, re.DOTALL)
         for time_match in time_matches:
+            print("HERE", time_match)
             table_dim_matches = re.findall(r"(\d+)\s*x\s*(\d+)", time_match)
+
             m1, n1 = table_dim_matches[0]
             m2, n2 = table_dim_matches[1]
             one_time_match = re.findall(r"took ([\d]+\.[\d]+) ms", time_match)

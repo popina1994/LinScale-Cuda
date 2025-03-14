@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 #include <cublas_v2.h>
@@ -40,30 +41,35 @@ enum class MajorOrder
 #define IDX_C(rowIdx, colIdx, numRows, numCols) ((rowIdx)  + (colIdx) * (numRows))
 
 template <typename T, MajorOrder order>
-void printMatrix(T* pArr, int numRows, int numCols, int numRowsCut, bool upperTriangular = false)
+void printMatrix(T* pArr, int numRows, int numCols, int numRowsCut, const std::string& fileName, bool upperTriangular = false)
 {
+    std::ofstream outFile(fileName);
+    if (!outFile.is_open())
+    {
+        std::cerr << "WTF?" << fileName << std::endl;
+    }
     for (int rowIdx = 0; rowIdx < min(numRows, numRowsCut); rowIdx++)
     {
         for (int colIdx = 0; colIdx < numCols; colIdx++)
         {
             if (upperTriangular and (rowIdx > colIdx))
             {
-                std::cout << "0";
+                outFile << "0";
             }
             else
             {
                 if constexpr (order == MajorOrder::ROW_MAJOR)
                 {
-                    std::cout << pArr[IDX_R(rowIdx, colIdx, numRows, numCols)];
+                    outFile << pArr[IDX_R(rowIdx, colIdx, numRows, numCols)];
                 }
                 else
                 {
-                    std::cout << pArr[IDX_C(rowIdx, colIdx, numRows, numCols)];
+                    outFile << pArr[IDX_C(rowIdx, colIdx, numRows, numCols)];
                 }
             }
-            std::cout << " ";
+            outFile << " ";
         }
-        std::cout << std::endl;
+        outFile << std::endl;
     }
 }
 
@@ -167,45 +173,40 @@ __global__ void concatenateHeadsAndTails(T* d_mat, T* d_mat2Mod, T* dOutMat, int
 
     for (int rowIdx = 0; rowIdx < numRows1; rowIdx++)
     {
-        if (colIdx < max(numCols1, numCols2))
+        if (colIdx < numCols1)
         {
-            if (colIdx < numCols1)
-            {
-                int posIdx = IDX_R(rowIdx, colIdx, numRowsOut, numColsOut);
-                dOutMat[posIdx] = d_mat[IDX_R(rowIdx, colIdx, numRows1, numCols1)] * sqrtf(numRows2);
-                // printf("HERE 1 %d %d %.3f %d\n", rowIdx, colIdx, dOutMat[posIdx], posIdx);
-            }
-            if (colIdx < numCols2)
-            {
-                int posIdx2 = IDX_R(rowIdx, colIdx + numCols1, numRowsOut, numColsOut);
-                dOutMat[posIdx2] = d_mat2Mod[IDX_R(headRowIdx, colIdx, numRows2, numCols2)];
-                // printf("HERE 1 %d %d %.3f %d\n", rowIdx, colIdx + numCols, dOutMat[posIdx2], posIdx2);
-            }
+            int posIdx = IDX_R(rowIdx, colIdx, numRowsOut, numColsOut);
+            dOutMat[posIdx] = d_mat[IDX_R(rowIdx, colIdx, numRows1, numCols1)] * sqrtf(numRows2);
+            // printf("HERE 1 %d %d %.3f %d\n", rowIdx, colIdx, dOutMat[posIdx], posIdx);
+        }
+        if (colIdx < numCols2)
+        {
+            int posIdx2 = IDX_R(rowIdx, colIdx + numCols1, numRowsOut, numColsOut);
+            dOutMat[posIdx2] = d_mat2Mod[IDX_R(headRowIdx, colIdx, numRows2, numCols2)];
+            // printf("HERE 1 %d %d %.3f %d\n", rowIdx, colIdx + numCols1, dOutMat[posIdx2], posIdx2);
         }
     }
     for (int rowIdx = numRows1; rowIdx < numRowsOut; rowIdx++)
     {
-        if (colIdx < max(numCols1, numCols2))
+        if (colIdx < numCols1)
         {
-            if (colIdx < numCols1)
-            {
-                int posIdx = IDX_R(rowIdx, colIdx, numRowsOut, numColsOut);
-                dOutMat[posIdx] = 0;
-                // printf("HERE 2 %d %d %.3f %d \n", rowIdx, colIdx, dOutMat[posIdx], posIdx);
-            }
-            if (colIdx < numCols2)
-            {
-                int posIdx2 = IDX_R(rowIdx, colIdx + numCols1, numRowsOut, numColsOut);
-                dOutMat[posIdx2] = d_mat2Mod[IDX_R(rowIdx - numRows1 + 1, colIdx, numRows2, numCols2)] * sqrtf(numRows1);
-                // printf("HERE 2 %d %d %.3f %d\n", rowIdx, colIdx + numCols, dOutMat[posIdx2], posIdx2);
-            }
+            int posIdx = IDX_R(rowIdx, colIdx, numRowsOut, numColsOut);
+            dOutMat[posIdx] = 0;
+            // printf("HERE 2 %d %d %.3f %d \n", rowIdx, colIdx, dOutMat[posIdx], posIdx);
+        }
+        if (colIdx < numCols2)
+        {
+            int posIdx2 = IDX_R(rowIdx, colIdx + numCols1, numRowsOut, numColsOut);
+            dOutMat[posIdx2] = d_mat2Mod[IDX_R(rowIdx - numRows1 + 1, colIdx, numRows2, numCols2)] * sqrtf(numRows1);
+            // printf("HERE 2 %d %d %.3f %d\n", rowIdx, colIdx + numCols1, dOutMat[posIdx2], posIdx2);
         }
     }
 }
 
 
 template <typename T>
-int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2, int numCols2)
+int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2, int numCols2,
+    std::string& fileName)
 {
     int numRowsOut = numRows1 + numRows2 - 1;
     int numColsOut = numCols1 + numCols2;
@@ -307,6 +308,8 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
     T *h_matOut = new T[numRowsOut * numColsOut];
     CUDA_CALL(cudaMemcpy(h_matOut, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
 
+    //printMatrix<T, MajorOrder::COL_MAJOR>(h_matOut, numRowsOut, numColsOut, numColsOut, fileName + "LinScale", true);
+
     CUDA_CALL(cudaFree(d_tau));
     CUDA_CALL(cudaFree(d_work));
     CUDA_CALL(cudaFree(devInfo));
@@ -316,6 +319,7 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
 
     delete [] h_mat1;
     delete [] h_mat2;
+    delete [] h_matOut;
 
     std::cout << "\nQR decomposition Linscale took " << milliseconds << " ms.\n";
 
@@ -323,7 +327,7 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(T* h_A, int numRows, int numCols)
+int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName)
 {
     // Allocate device memory
     T *d_A, *d_tau, *d_matOutTran;
@@ -332,7 +336,7 @@ int computeGeneral(T* h_A, int numRows, int numCols)
     thrust::device_vector<T> d_matADV(numRows * numCols);
 
     d_A = thrust::raw_pointer_cast(d_matA.data());
-    d_matOutTran = thrust::raw_pointer_cast(d_matA.data());
+    d_matOutTran = thrust::raw_pointer_cast(d_matADV.data());
 
     CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(numRows, numCols) * sizeof(T)));
 
@@ -413,7 +417,6 @@ int computeGeneral(T* h_A, int numRows, int numCols)
         CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, d_matOutTran, numRows, d_tau, d_work, workspace_size, devInfo));
     }
 
-
     // Stop measuring time
     CUDA_CALL(cudaEventRecord(stop));
     CUDA_CALL(cudaEventSynchronize(stop));
@@ -425,7 +428,7 @@ int computeGeneral(T* h_A, int numRows, int numCols)
     // Copy results back to host
     CUDA_CALL(cudaMemcpy(h_A, d_matOutTran, numRows * numCols * sizeof(T), cudaMemcpyDeviceToHost));
 
-    // printMatrix<T, MajorOrder::COL_MAJOR>(h_A, numRows, numCols, numCols, true);
+    //printMatrix<T, MajorOrder::COL_MAJOR>(h_A, numRows, numCols, numCols, fileName + "CUDA", true);
 
     // Print execution time
     std::cout << "\nQR decomposition CUSolver took " << milliseconds << " ms.\n";
@@ -441,7 +444,7 @@ int computeGeneral(T* h_A, int numRows, int numCols)
     return 0;
 }
 
-void evaluate(int numRows1, int numCols1, int numRows2, int numCols2)
+void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::string& fileName)
 {
     double *h_mat1, *h_mat2, *pArr;
     generateRandom(h_mat1, numRows1, numCols1, 0);
@@ -450,10 +453,10 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2)
     // printMatrix<double, MajorOrder::ROW_MAJOR>(h_mat2, numRows, numCols, numRows, false);
 
     generateCartesianProduct<double, MajorOrder::ROW_MAJOR>(h_mat1, h_mat2, numRows1, numCols1, numRows2, numCols2, pArr);
-    // printMatrix<double, MajorOrder::ROW_MAJOR>(pArr, numRows * numRows, numCols * 2, numRows * numRows, false);
+    // printMatrix<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, numRows1 * numRows2, "mat.csv", false);
 
-    computeGeneral<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2);
-    computeFigaro<double>(h_mat1, h_mat2, numRows1, numCols1, numRows2, numCols2);
+    computeGeneral<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, fileName);
+    computeFigaro<double>(h_mat1, h_mat2, numRows1, numCols1, numRows2, numCols2, fileName);
 }
 
 int main(int argc, char* argv[])
@@ -498,8 +501,8 @@ int main(int argc, char* argv[])
         {
             numCols2 = vm["n2"].as<int>();
         }
-
-        evaluate(numRows1, numCols1, numRows2, numCols2);
+        std::string fileName = "results/" + std::to_string(numRows1) + "x" + std::to_string(numCols1) + "," + std::to_string(numRows2) + "x" + std::to_string(numCols2);
+        evaluate(numRows1, numCols1, numRows2, numCols2, fileName);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }

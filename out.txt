@@ -2,2687 +2,2687 @@
 First table: 100 x 2 Second table: 100 x 2
 Run 1
 
-QR decomposition CUSolver took 6.80819 ms.
+QR decomposition CUSolver took 2.4576 ms.
 
-QR decomposition Linscale took 3.10682 ms.
+QR decomposition Linscale took 0.473952 ms.
 Run 2
 
-QR decomposition CUSolver took 4.20426 ms.
+QR decomposition CUSolver took 2.42906 ms.
 
-QR decomposition Linscale took 0.66528 ms.
+QR decomposition Linscale took 0.535776 ms.
 Run 3
 
-QR decomposition CUSolver took 2.84877 ms.
+QR decomposition CUSolver took 2.55181 ms.
 
-QR decomposition Linscale took 0.552128 ms.
+QR decomposition Linscale took 0.254336 ms.
 Run 4
 
-QR decomposition CUSolver took 2.75866 ms.
+QR decomposition CUSolver took 2.51149 ms.
 
-QR decomposition Linscale took 0.555008 ms.
+QR decomposition Linscale took 0.657184 ms.
 Run 5
 
-QR decomposition CUSolver took 2.156 ms.
+QR decomposition CUSolver took 2.55386 ms.
 
-QR decomposition Linscale took 0.568896 ms.
+QR decomposition Linscale took 0.556896 ms.
 ***
 ***
 First table: 100 x 4 Second table: 100 x 4
 Run 1
 
-QR decomposition CUSolver took 4.48666 ms.
+QR decomposition CUSolver took 2.61325 ms.
 
-QR decomposition Linscale took 0.672896 ms.
+QR decomposition Linscale took 0.229376 ms.
 Run 2
 
-QR decomposition CUSolver took 2.90438 ms.
+QR decomposition CUSolver took 2.70957 ms.
 
-QR decomposition Linscale took 1.16218 ms.
+QR decomposition Linscale took 0.228064 ms.
 Run 3
 
-QR decomposition CUSolver took 2.3593 ms.
+QR decomposition CUSolver took 2.74422 ms.
 
-QR decomposition Linscale took 1.52166 ms.
+QR decomposition Linscale took 0.518208 ms.
 Run 4
 
-QR decomposition CUSolver took 4.53802 ms.
+QR decomposition CUSolver took 2.6071 ms.
 
-QR decomposition Linscale took 0.80496 ms.
+QR decomposition Linscale took 0.539616 ms.
 Run 5
 
-QR decomposition CUSolver took 2.63158 ms.
+QR decomposition CUSolver took 2.63965 ms.
 
-QR decomposition Linscale took 1.13469 ms.
+QR decomposition Linscale took 0.22704 ms.
 ***
 ***
 First table: 100 x 8 Second table: 100 x 8
 Run 1
 
-QR decomposition CUSolver took 2.71798 ms.
+QR decomposition CUSolver took 2.71491 ms.
 
-QR decomposition Linscale took 1.19008 ms.
+QR decomposition Linscale took 0.324512 ms.
 Run 2
 
-QR decomposition CUSolver took 2.79405 ms.
+QR decomposition CUSolver took 2.70326 ms.
 
-QR decomposition Linscale took 0.681184 ms.
+QR decomposition Linscale took 0.573408 ms.
 Run 3
 
-QR decomposition CUSolver took 4.93504 ms.
+QR decomposition CUSolver took 2.99418 ms.
 
-QR decomposition Linscale took 0.747584 ms.
+QR decomposition Linscale took 0.32368 ms.
 Run 4
 
-QR decomposition CUSolver took 3.02237 ms.
+QR decomposition CUSolver took 2.67805 ms.
 
-QR decomposition Linscale took 0.782336 ms.
+QR decomposition Linscale took 0.32464 ms.
 Run 5
 
-QR decomposition CUSolver took 2.67059 ms.
+QR decomposition CUSolver took 5.16915 ms.
 
-QR decomposition Linscale took 0.724224 ms.
+QR decomposition Linscale took 0.322144 ms.
 ***
 ***
 First table: 100 x 16 Second table: 100 x 16
 Run 1
 
-QR decomposition CUSolver took 3.50003 ms.
+QR decomposition CUSolver took 3.57693 ms.
 
-QR decomposition Linscale took 0.85024 ms.
+QR decomposition Linscale took 0.487424 ms.
 Run 2
 
-QR decomposition CUSolver took 5.8712 ms.
+QR decomposition CUSolver took 3.56128 ms.
 
-QR decomposition Linscale took 0.858176 ms.
+QR decomposition Linscale took 0.487648 ms.
 Run 3
 
-QR decomposition CUSolver took 5.1671 ms.
+QR decomposition CUSolver took 3.91725 ms.
 
-QR decomposition Linscale took 0.88064 ms.
+QR decomposition Linscale took 0.489504 ms.
 Run 4
 
-QR decomposition CUSolver took 3.61677 ms.
+QR decomposition CUSolver took 4.7695 ms.
 
-QR decomposition Linscale took 0.84672 ms.
+QR decomposition Linscale took 0.488992 ms.
 Run 5
 
-QR decomposition CUSolver took 5.74726 ms.
+QR decomposition CUSolver took 3.89357 ms.
 
-QR decomposition Linscale took 0.870272 ms.
+QR decomposition Linscale took 0.73744 ms.
 ***
 ***
 First table: 100 x 32 Second table: 100 x 32
 Run 1
 
-QR decomposition CUSolver took 5.69184 ms.
+QR decomposition CUSolver took 5.484 ms.
 
-QR decomposition Linscale took 1.22675 ms.
+QR decomposition Linscale took 0.834144 ms.
 Run 2
 
-QR decomposition CUSolver took 5.90006 ms.
+QR decomposition CUSolver took 5.43539 ms.
 
-QR decomposition Linscale took 1.1935 ms.
+QR decomposition Linscale took 1.13821 ms.
 Run 3
 
-QR decomposition CUSolver took 5.52698 ms.
+QR decomposition CUSolver took 6.77117 ms.
 
-QR decomposition Linscale took 1.18493 ms.
+QR decomposition Linscale took 0.835584 ms.
 Run 4
 
-QR decomposition CUSolver took 7.53453 ms.
+QR decomposition CUSolver took 5.86944 ms.
 
-QR decomposition Linscale took 1.21936 ms.
+QR decomposition Linscale took 0.907296 ms.
 Run 5
 
-QR decomposition CUSolver took 5.4081 ms.
+QR decomposition CUSolver took 5.55987 ms.
 
-QR decomposition Linscale took 1.21878 ms.
+QR decomposition Linscale took 0.833888 ms.
 ***
 ***
 First table: 100 x 64 Second table: 100 x 64
 Run 1
 
-QR decomposition CUSolver took 40.8147 ms.
+QR decomposition CUSolver took 23.0649 ms.
 
-QR decomposition Linscale took 1.92659 ms.
+QR decomposition Linscale took 1.59072 ms.
 Run 2
 
-QR decomposition CUSolver took 22.434 ms.
+QR decomposition CUSolver took 18.5795 ms.
 
-QR decomposition Linscale took 2.01178 ms.
+QR decomposition Linscale took 1.58771 ms.
 Run 3
 
-QR decomposition CUSolver took 27.5851 ms.
+QR decomposition CUSolver took 20.7012 ms.
 
-QR decomposition Linscale took 1.99123 ms.
+QR decomposition Linscale took 1.5936 ms.
 Run 4
 
-QR decomposition CUSolver took 17.4653 ms.
+QR decomposition CUSolver took 18.2254 ms.
 
-QR decomposition Linscale took 1.95405 ms.
+QR decomposition Linscale took 1.60768 ms.
 Run 5
 
-QR decomposition CUSolver took 18.4799 ms.
+QR decomposition CUSolver took 18.3743 ms.
 
-QR decomposition Linscale took 1.93645 ms.
+QR decomposition Linscale took 1.58912 ms.
 ***
 ***
 First table: 100 x 2 Second table: 200 x 2
 Run 1
 
-QR decomposition CUSolver took 4.23062 ms.
+QR decomposition CUSolver took 2.85728 ms.
 
-QR decomposition Linscale took 0.659456 ms.
+QR decomposition Linscale took 0.240224 ms.
 Run 2
 
-QR decomposition CUSolver took 2.84416 ms.
+QR decomposition CUSolver took 2.30605 ms.
 
-QR decomposition Linscale took 0.638976 ms.
+QR decomposition Linscale took 0.240832 ms.
 Run 3
 
-QR decomposition CUSolver took 2.49446 ms.
+QR decomposition CUSolver took 2.5839 ms.
 
-QR decomposition Linscale took 1.36544 ms.
+QR decomposition Linscale took 0.2416 ms.
 Run 4
 
-QR decomposition CUSolver took 2.16877 ms.
+QR decomposition CUSolver took 2.66445 ms.
 
-QR decomposition Linscale took 0.609856 ms.
+QR decomposition Linscale took 0.240896 ms.
 Run 5
 
-QR decomposition CUSolver took 4.74522 ms.
+QR decomposition CUSolver took 2.38989 ms.
 
-QR decomposition Linscale took 0.661792 ms.
+QR decomposition Linscale took 0.240608 ms.
 ***
 ***
 First table: 100 x 4 Second table: 200 x 4
 Run 1
 
-QR decomposition CUSolver took 2.65574 ms.
+QR decomposition CUSolver took 3.0848 ms.
 
-QR decomposition Linscale took 0.716768 ms.
+QR decomposition Linscale took 0.315072 ms.
 Run 2
 
-QR decomposition CUSolver took 2.92122 ms.
+QR decomposition CUSolver took 2.84061 ms.
 
-QR decomposition Linscale took 0.723104 ms.
+QR decomposition Linscale took 0.315392 ms.
 Run 3
 
-QR decomposition CUSolver took 3.07008 ms.
+QR decomposition CUSolver took 3.30122 ms.
 
-QR decomposition Linscale took 1.16717 ms.
+QR decomposition Linscale took 0.315392 ms.
 Run 4
 
-QR decomposition CUSolver took 2.88154 ms.
+QR decomposition CUSolver took 2.67469 ms.
 
-QR decomposition Linscale took 0.688256 ms.
+QR decomposition Linscale took 0.627072 ms.
 Run 5
 
-QR decomposition CUSolver took 2.86496 ms.
+QR decomposition CUSolver took 2.68486 ms.
 
-QR decomposition Linscale took 0.7272 ms.
+QR decomposition Linscale took 0.315392 ms.
 ***
 ***
 First table: 100 x 8 Second table: 200 x 8
 Run 1
 
-QR decomposition CUSolver took 3.15533 ms.
+QR decomposition CUSolver took 3.61114 ms.
 
-QR decomposition Linscale took 0.78768 ms.
+QR decomposition Linscale took 0.505472 ms.
 Run 2
 
-QR decomposition CUSolver took 5.86547 ms.
+QR decomposition CUSolver took 3.9225 ms.
 
-QR decomposition Linscale took 0.812928 ms.
+QR decomposition Linscale took 0.423936 ms.
 Run 3
 
-QR decomposition CUSolver took 3.13114 ms.
+QR decomposition CUSolver took 3.40413 ms.
 
-QR decomposition Linscale took 1.1393 ms.
+QR decomposition Linscale took 0.65776 ms.
 Run 4
 
-QR decomposition CUSolver took 3.15056 ms.
+QR decomposition CUSolver took 3.67222 ms.
 
-QR decomposition Linscale took 1.12499 ms.
+QR decomposition Linscale took 0.422048 ms.
 Run 5
 
-QR decomposition CUSolver took 3.23555 ms.
+QR decomposition CUSolver took 3.40064 ms.
 
-QR decomposition Linscale took 0.776192 ms.
+QR decomposition Linscale took 0.421984 ms.
 ***
 ***
 First table: 100 x 16 Second table: 200 x 16
 Run 1
 
-QR decomposition CUSolver took 6.71184 ms.
+QR decomposition CUSolver took 4.67699 ms.
 
-QR decomposition Linscale took 1.00605 ms.
+QR decomposition Linscale took 0.602112 ms.
 Run 2
 
-QR decomposition CUSolver took 5.59808 ms.
+QR decomposition CUSolver took 5.40269 ms.
 
-QR decomposition Linscale took 0.990176 ms.
+QR decomposition Linscale took 0.600992 ms.
 Run 3
 
-QR decomposition CUSolver took 4.96893 ms.
+QR decomposition CUSolver took 4.73594 ms.
 
-QR decomposition Linscale took 0.9608 ms.
+QR decomposition Linscale took 0.601056 ms.
 Run 4
 
-QR decomposition CUSolver took 5.18899 ms.
+QR decomposition CUSolver took 4.99494 ms.
 
-QR decomposition Linscale took 1.31603 ms.
+QR decomposition Linscale took 0.602176 ms.
 Run 5
 
-QR decomposition CUSolver took 6.85142 ms.
+QR decomposition CUSolver took 5.00416 ms.
 
-QR decomposition Linscale took 1.47046 ms.
+QR decomposition Linscale took 0.601984 ms.
 ***
 ***
 First table: 100 x 32 Second table: 200 x 32
 Run 1
 
-QR decomposition CUSolver took 9.02909 ms.
+QR decomposition CUSolver took 8.99162 ms.
 
-QR decomposition Linscale took 1.37018 ms.
+QR decomposition Linscale took 0.954208 ms.
 Run 2
 
-QR decomposition CUSolver took 9.04432 ms.
+QR decomposition CUSolver took 8.98867 ms.
 
-QR decomposition Linscale took 1.32387 ms.
+QR decomposition Linscale took 1.14483 ms.
 Run 3
 
-QR decomposition CUSolver took 10.5139 ms.
+QR decomposition CUSolver took 8.67936 ms.
 
-QR decomposition Linscale took 1.31072 ms.
+QR decomposition Linscale took 0.955136 ms.
 Run 4
 
-QR decomposition CUSolver took 8.48896 ms.
+QR decomposition CUSolver took 8.83878 ms.
 
-QR decomposition Linscale took 1.65917 ms.
+QR decomposition Linscale took 0.95744 ms.
 Run 5
 
-QR decomposition CUSolver took 8.63642 ms.
+QR decomposition CUSolver took 12.3441 ms.
 
-QR decomposition Linscale took 1.38774 ms.
+QR decomposition Linscale took 0.956576 ms.
 ***
 ***
 First table: 100 x 64 Second table: 200 x 64
 Run 1
 
-QR decomposition CUSolver took 31.7649 ms.
+QR decomposition CUSolver took 26.5862 ms.
 
-QR decomposition Linscale took 2.05318 ms.
+QR decomposition Linscale took 1.73875 ms.
 Run 2
 
-QR decomposition CUSolver took 34.943 ms.
+QR decomposition CUSolver took 23.8326 ms.
 
-QR decomposition Linscale took 2.05178 ms.
+QR decomposition Linscale took 1.7632 ms.
 Run 3
 
-QR decomposition CUSolver took 24.5371 ms.
+QR decomposition CUSolver took 24.2347 ms.
 
-QR decomposition Linscale took 2.14854 ms.
+QR decomposition Linscale took 1.72442 ms.
 Run 4
 
-QR decomposition CUSolver took 24.1138 ms.
+QR decomposition CUSolver took 30.0796 ms.
 
-QR decomposition Linscale took 2.19142 ms.
+QR decomposition Linscale took 1.72458 ms.
 Run 5
 
-QR decomposition CUSolver took 23.5049 ms.
+QR decomposition CUSolver took 27.4668 ms.
 
-QR decomposition Linscale took 2.12582 ms.
+QR decomposition Linscale took 1.72906 ms.
 ***
 ***
 First table: 100 x 2 Second table: 400 x 2
 Run 1
 
-QR decomposition CUSolver took 4.836 ms.
+QR decomposition CUSolver took 2.77094 ms.
 
-QR decomposition Linscale took 0.766464 ms.
+QR decomposition Linscale took 0.381248 ms.
 Run 2
 
-QR decomposition CUSolver took 4.14995 ms.
+QR decomposition CUSolver took 2.68298 ms.
 
-QR decomposition Linscale took 1.14688 ms.
+QR decomposition Linscale took 0.380928 ms.
 Run 3
 
-QR decomposition CUSolver took 2.95712 ms.
+QR decomposition CUSolver took 2.53978 ms.
 
-QR decomposition Linscale took 0.786336 ms.
+QR decomposition Linscale took 0.403744 ms.
 Run 4
 
-QR decomposition CUSolver took 2.96758 ms.
+QR decomposition CUSolver took 2.72762 ms.
 
-QR decomposition Linscale took 0.780736 ms.
+QR decomposition Linscale took 0.38096 ms.
 Run 5
 
-QR decomposition CUSolver took 4.69578 ms.
+QR decomposition CUSolver took 2.90173 ms.
 
-QR decomposition Linscale took 0.793152 ms.
+QR decomposition Linscale took 0.380928 ms.
 ***
 ***
 First table: 100 x 4 Second table: 400 x 4
 Run 1
 
-QR decomposition CUSolver took 3.01069 ms.
+QR decomposition CUSolver took 3.35859 ms.
 
-QR decomposition Linscale took 0.850368 ms.
+QR decomposition Linscale took 0.477504 ms.
 Run 2
 
-QR decomposition CUSolver took 3.09616 ms.
+QR decomposition CUSolver took 3.36486 ms.
 
-QR decomposition Linscale took 0.887968 ms.
+QR decomposition Linscale took 0.524672 ms.
 Run 3
 
-QR decomposition CUSolver took 3.63578 ms.
+QR decomposition CUSolver took 3.36662 ms.
 
-QR decomposition Linscale took 0.856096 ms.
+QR decomposition Linscale took 0.477472 ms.
 Run 4
 
-QR decomposition CUSolver took 5.0239 ms.
+QR decomposition CUSolver took 3.19866 ms.
 
-QR decomposition Linscale took 0.89168 ms.
+QR decomposition Linscale took 0.479424 ms.
 Run 5
 
-QR decomposition CUSolver took 3.18016 ms.
+QR decomposition CUSolver took 3.4607 ms.
 
-QR decomposition Linscale took 0.916512 ms.
+QR decomposition Linscale took 0.479104 ms.
 ***
 ***
 First table: 100 x 8 Second table: 400 x 8
 Run 1
 
-QR decomposition CUSolver took 4.20557 ms.
+QR decomposition CUSolver took 4.62109 ms.
 
-QR decomposition Linscale took 1.36067 ms.
+QR decomposition Linscale took 0.60864 ms.
 Run 2
 
-QR decomposition CUSolver took 4.81405 ms.
+QR decomposition CUSolver took 4.30899 ms.
 
-QR decomposition Linscale took 0.976896 ms.
+QR decomposition Linscale took 0.606208 ms.
 Run 3
 
-QR decomposition CUSolver took 6.34931 ms.
+QR decomposition CUSolver took 4.26918 ms.
 
-QR decomposition Linscale took 1.01974 ms.
+QR decomposition Linscale took 0.606624 ms.
 Run 4
 
-QR decomposition CUSolver took 4.60608 ms.
+QR decomposition CUSolver took 4.32003 ms.
 
-QR decomposition Linscale took 0.974112 ms.
+QR decomposition Linscale took 0.606592 ms.
 Run 5
 
-QR decomposition CUSolver took 4.7104 ms.
+QR decomposition CUSolver took 4.48506 ms.
 
-QR decomposition Linscale took 1.01994 ms.
+QR decomposition Linscale took 0.608256 ms.
 ***
 ***
 First table: 100 x 16 Second table: 400 x 16
 Run 1
 
-QR decomposition CUSolver took 7.85408 ms.
+QR decomposition CUSolver took 7.16739 ms.
 
-QR decomposition Linscale took 1.20832 ms.
+QR decomposition Linscale took 0.78848 ms.
 Run 2
 
-QR decomposition CUSolver took 9.16963 ms.
+QR decomposition CUSolver took 7.22086 ms.
 
-QR decomposition Linscale took 1.18915 ms.
+QR decomposition Linscale took 0.790528 ms.
 Run 3
 
-QR decomposition CUSolver took 7.0719 ms.
+QR decomposition CUSolver took 7.21162 ms.
 
-QR decomposition Linscale took 1.16099 ms.
+QR decomposition Linscale took 0.790336 ms.
 Run 4
 
-QR decomposition CUSolver took 7.55078 ms.
+QR decomposition CUSolver took 7.19453 ms.
 
-QR decomposition Linscale took 1.43005 ms.
+QR decomposition Linscale took 0.790528 ms.
 Run 5
 
-QR decomposition CUSolver took 8.61718 ms.
+QR decomposition CUSolver took 7.22694 ms.
 
-QR decomposition Linscale took 1.20173 ms.
+QR decomposition Linscale took 0.790016 ms.
 ***
 ***
 First table: 100 x 32 Second table: 400 x 32
 Run 1
 
-QR decomposition CUSolver took 16.1629 ms.
+QR decomposition CUSolver took 14.2406 ms.
 
-QR decomposition Linscale took 2.04675 ms.
+QR decomposition Linscale took 1.16742 ms.
 Run 2
 
-QR decomposition CUSolver took 14.8627 ms.
+QR decomposition CUSolver took 14.4907 ms.
 
-QR decomposition Linscale took 1.94371 ms.
+QR decomposition Linscale took 1.16995 ms.
 Run 3
 
-QR decomposition CUSolver took 14.2866 ms.
+QR decomposition CUSolver took 14.6817 ms.
 
-QR decomposition Linscale took 1.54589 ms.
+QR decomposition Linscale took 1.16998 ms.
 Run 4
 
-QR decomposition CUSolver took 14.2868 ms.
+QR decomposition CUSolver took 14.5282 ms.
 
-QR decomposition Linscale took 1.52362 ms.
+QR decomposition Linscale took 1.17098 ms.
 Run 5
 
-QR decomposition CUSolver took 16.7993 ms.
+QR decomposition CUSolver took 14.53 ms.
 
-QR decomposition Linscale took 1.54218 ms.
+QR decomposition Linscale took 1.16838 ms.
 ***
 ***
 First table: 100 x 64 Second table: 400 x 64
 Run 1
 
-QR decomposition CUSolver took 44.0523 ms.
+QR decomposition CUSolver took 39.6063 ms.
 
-QR decomposition Linscale took 2.38368 ms.
+QR decomposition Linscale took 2.01206 ms.
 Run 2
 
-QR decomposition CUSolver took 37.8713 ms.
+QR decomposition CUSolver took 36.7351 ms.
 
-QR decomposition Linscale took 2.38163 ms.
+QR decomposition Linscale took 2.01469 ms.
 Run 3
 
-QR decomposition CUSolver took 36.635 ms.
+QR decomposition CUSolver took 37.1124 ms.
 
-QR decomposition Linscale took 2.37117 ms.
+QR decomposition Linscale took 2.01136 ms.
 Run 4
 
-QR decomposition CUSolver took 47.1917 ms.
+QR decomposition CUSolver took 38.7913 ms.
 
-QR decomposition Linscale took 2.61734 ms.
+QR decomposition Linscale took 2.00909 ms.
 Run 5
 
-QR decomposition CUSolver took 37.1668 ms.
+QR decomposition CUSolver took 44.2735 ms.
 
-QR decomposition Linscale took 2.39571 ms.
+QR decomposition Linscale took 2.01114 ms.
 ***
 ***
 First table: 100 x 2 Second table: 800 x 2
 Run 1
 
-QR decomposition CUSolver took 2.87136 ms.
+QR decomposition CUSolver took 3.2457 ms.
 
-QR decomposition Linscale took 1.07728 ms.
+QR decomposition Linscale took 0.667008 ms.
 Run 2
 
-QR decomposition CUSolver took 2.97146 ms.
+QR decomposition CUSolver took 3.03539 ms.
 
-QR decomposition Linscale took 1.05648 ms.
+QR decomposition Linscale took 0.667264 ms.
 Run 3
 
-QR decomposition CUSolver took 5.06867 ms.
+QR decomposition CUSolver took 2.96563 ms.
 
-QR decomposition Linscale took 1.18608 ms.
+QR decomposition Linscale took 0.6656 ms.
 Run 4
 
-QR decomposition CUSolver took 3.10666 ms.
+QR decomposition CUSolver took 3.22563 ms.
 
-QR decomposition Linscale took 1.0729 ms.
+QR decomposition Linscale took 0.6656 ms.
 Run 5
 
-QR decomposition CUSolver took 3.42323 ms.
+QR decomposition CUSolver took 3.45082 ms.
 
-QR decomposition Linscale took 1.09546 ms.
+QR decomposition Linscale took 0.746464 ms.
 ***
 ***
 First table: 100 x 4 Second table: 800 x 4
 Run 1
 
-QR decomposition CUSolver took 4.40221 ms.
+QR decomposition CUSolver took 4.40115 ms.
 
-QR decomposition Linscale took 1.25421 ms.
+QR decomposition Linscale took 0.831968 ms.
 Run 2
 
-QR decomposition CUSolver took 6.25459 ms.
+QR decomposition CUSolver took 4.23504 ms.
 
-QR decomposition Linscale took 1.2264 ms.
+QR decomposition Linscale took 0.81424 ms.
 Run 3
 
-QR decomposition CUSolver took 4.44042 ms.
+QR decomposition CUSolver took 4.33584 ms.
 
-QR decomposition Linscale took 1.26589 ms.
+QR decomposition Linscale took 0.813664 ms.
 Run 4
 
-QR decomposition CUSolver took 4.3295 ms.
+QR decomposition CUSolver took 4.34381 ms.
 
-QR decomposition Linscale took 1.3271 ms.
+QR decomposition Linscale took 0.815072 ms.
 Run 5
 
-QR decomposition CUSolver took 4.16714 ms.
+QR decomposition CUSolver took 4.36374 ms.
 
-QR decomposition Linscale took 1.20627 ms.
+QR decomposition Linscale took 0.815104 ms.
 ***
 ***
 First table: 100 x 8 Second table: 800 x 8
 Run 1
 
-QR decomposition CUSolver took 9.62368 ms.
+QR decomposition CUSolver took 6.6153 ms.
 
-QR decomposition Linscale took 1.51347 ms.
+QR decomposition Linscale took 0.978528 ms.
 Run 2
 
-QR decomposition CUSolver took 7.74144 ms.
+QR decomposition CUSolver took 6.49011 ms.
 
-QR decomposition Linscale took 1.81226 ms.
+QR decomposition Linscale took 0.978944 ms.
 Run 3
 
-QR decomposition CUSolver took 7.03491 ms.
+QR decomposition CUSolver took 6.9079 ms.
 
-QR decomposition Linscale took 1.41437 ms.
+QR decomposition Linscale took 0.976864 ms.
 Run 4
 
-QR decomposition CUSolver took 6.91648 ms.
+QR decomposition CUSolver took 7.10256 ms.
 
-QR decomposition Linscale took 1.48682 ms.
+QR decomposition Linscale took 0.9768 ms.
 Run 5
 
-QR decomposition CUSolver took 9.27229 ms.
+QR decomposition CUSolver took 6.49597 ms.
 
-QR decomposition Linscale took 1.53514 ms.
+QR decomposition Linscale took 0.978528 ms.
 ***
 ***
 First table: 100 x 16 Second table: 800 x 16
 Run 1
 
-QR decomposition CUSolver took 13.1526 ms.
+QR decomposition CUSolver took 12.0254 ms.
 
-QR decomposition Linscale took 1.68723 ms.
+QR decomposition Linscale took 1.18778 ms.
 Run 2
 
-QR decomposition CUSolver took 13.4147 ms.
+QR decomposition CUSolver took 11.9931 ms.
 
-QR decomposition Linscale took 2.02957 ms.
+QR decomposition Linscale took 1.18989 ms.
 Run 3
 
-QR decomposition CUSolver took 15.503 ms.
+QR decomposition CUSolver took 12.4805 ms.
 
-QR decomposition Linscale took 1.66912 ms.
+QR decomposition Linscale took 1.188 ms.
 Run 4
 
-QR decomposition CUSolver took 13.9796 ms.
+QR decomposition CUSolver took 12.3807 ms.
 
-QR decomposition Linscale took 1.68755 ms.
+QR decomposition Linscale took 1.26035 ms.
 Run 5
 
-QR decomposition CUSolver took 12.4391 ms.
+QR decomposition CUSolver took 11.9899 ms.
 
-QR decomposition Linscale took 1.60762 ms.
+QR decomposition Linscale took 1.18877 ms.
 ***
 ***
 First table: 100 x 32 Second table: 800 x 32
 Run 1
 
-QR decomposition CUSolver took 29.0547 ms.
+QR decomposition CUSolver took 25.6721 ms.
 
-QR decomposition Linscale took 2.07235 ms.
+QR decomposition Linscale took 1.63018 ms.
 Run 2
 
-QR decomposition CUSolver took 30.9002 ms.
+QR decomposition CUSolver took 25.6149 ms.
 
-QR decomposition Linscale took 2.79059 ms.
+QR decomposition Linscale took 1.63021 ms.
 Run 3
 
-QR decomposition CUSolver took 27.3265 ms.
+QR decomposition CUSolver took 25.6333 ms.
 
-QR decomposition Linscale took 2.14835 ms.
+QR decomposition Linscale took 1.6343 ms.
 Run 4
 
-QR decomposition CUSolver took 26.7508 ms.
+QR decomposition CUSolver took 25.7804 ms.
 
-QR decomposition Linscale took 2.16634 ms.
+QR decomposition Linscale took 1.71616 ms.
 Run 5
 
-QR decomposition CUSolver took 28.1395 ms.
+QR decomposition CUSolver took 25.8225 ms.
 
-QR decomposition Linscale took 2.02259 ms.
+QR decomposition Linscale took 1.63344 ms.
 ***
 ***
 First table: 100 x 64 Second table: 800 x 64
 Run 1
 
-QR decomposition CUSolver took 78.2246 ms.
+QR decomposition CUSolver took 62.7527 ms.
 
-QR decomposition Linscale took 3.13549 ms.
+QR decomposition Linscale took 2.63098 ms.
 Run 2
 
-QR decomposition CUSolver took 70.231 ms.
+QR decomposition CUSolver took 62.4334 ms.
 
-QR decomposition Linscale took 4.54861 ms.
+QR decomposition Linscale took 2.63123 ms.
 Run 3
 
-QR decomposition CUSolver took 67.5287 ms.
+QR decomposition CUSolver took 64.5381 ms.
 
-QR decomposition Linscale took 2.73702 ms.
+QR decomposition Linscale took 2.63808 ms.
 Run 4
 
-QR decomposition CUSolver took 61.1615 ms.
+QR decomposition CUSolver took 60.7712 ms.
 
-QR decomposition Linscale took 2.6711 ms.
+QR decomposition Linscale took 2.54157 ms.
 Run 5
 
-QR decomposition CUSolver took 60.0412 ms.
+QR decomposition CUSolver took 60.8991 ms.
 
-QR decomposition Linscale took 2.65824 ms.
+QR decomposition Linscale took 2.53827 ms.
 ***
 ***
 First table: 200 x 2 Second table: 100 x 2
 Run 1
 
-QR decomposition CUSolver took 5.36342 ms.
+QR decomposition CUSolver took 2.2487 ms.
 
-QR decomposition Linscale took 0.70656 ms.
+QR decomposition Linscale took 0.188896 ms.
 Run 2
 
-QR decomposition CUSolver took 2.79962 ms.
+QR decomposition CUSolver took 2.4249 ms.
 
-QR decomposition Linscale took 0.616448 ms.
+QR decomposition Linscale took 0.189888 ms.
 Run 3
 
-QR decomposition CUSolver took 2.33677 ms.
+QR decomposition CUSolver took 2.32435 ms.
 
-QR decomposition Linscale took 1.22778 ms.
+QR decomposition Linscale took 0.352192 ms.
 Run 4
 
-QR decomposition CUSolver took 2.2872 ms.
+QR decomposition CUSolver took 2.6583 ms.
 
-QR decomposition Linscale took 0.6656 ms.
+QR decomposition Linscale took 0.188224 ms.
 Run 5
 
-QR decomposition CUSolver took 4.532 ms.
+QR decomposition CUSolver took 2.24458 ms.
 
-QR decomposition Linscale took 1.38026 ms.
+QR decomposition Linscale took 0.19008 ms.
 ***
 ***
 First table: 200 x 4 Second table: 100 x 4
 Run 1
 
-QR decomposition CUSolver took 3.13344 ms.
+QR decomposition CUSolver took 2.79219 ms.
 
-QR decomposition Linscale took 0.723232 ms.
+QR decomposition Linscale took 0.262144 ms.
 Run 2
 
-QR decomposition CUSolver took 2.59997 ms.
+QR decomposition CUSolver took 2.47398 ms.
 
-QR decomposition Linscale took 0.749568 ms.
+QR decomposition Linscale took 0.262144 ms.
 Run 3
 
-QR decomposition CUSolver took 3.64032 ms.
+QR decomposition CUSolver took 2.77395 ms.
 
-QR decomposition Linscale took 0.698496 ms.
+QR decomposition Linscale took 0.2632 ms.
 Run 4
 
-QR decomposition CUSolver took 4.92829 ms.
+QR decomposition CUSolver took 2.57629 ms.
 
-QR decomposition Linscale took 0.749632 ms.
+QR decomposition Linscale took 0.262688 ms.
 Run 5
 
-QR decomposition CUSolver took 2.92707 ms.
+QR decomposition CUSolver took 2.56614 ms.
 
-QR decomposition Linscale took 0.719744 ms.
+QR decomposition Linscale took 0.262272 ms.
 ***
 ***
 First table: 200 x 8 Second table: 100 x 8
 Run 1
 
-QR decomposition CUSolver took 3.29728 ms.
+QR decomposition CUSolver took 3.30134 ms.
 
-QR decomposition Linscale took 1.32595 ms.
+QR decomposition Linscale took 0.369984 ms.
 Run 2
 
-QR decomposition CUSolver took 3.22902 ms.
+QR decomposition CUSolver took 3.23984 ms.
 
-QR decomposition Linscale took 0.778176 ms.
+QR decomposition Linscale took 0.369024 ms.
 Run 3
 
-QR decomposition CUSolver took 6.16448 ms.
+QR decomposition CUSolver took 3.21178 ms.
 
-QR decomposition Linscale took 1.12435 ms.
+QR decomposition Linscale took 0.507616 ms.
 Run 4
 
-QR decomposition CUSolver took 5.12966 ms.
+QR decomposition CUSolver took 3.51686 ms.
 
-QR decomposition Linscale took 0.74672 ms.
+QR decomposition Linscale took 0.370112 ms.
 Run 5
 
-QR decomposition CUSolver took 3.22874 ms.
+QR decomposition CUSolver took 3.31238 ms.
 
-QR decomposition Linscale took 0.823744 ms.
+QR decomposition Linscale took 0.37056 ms.
 ***
 ***
 First table: 200 x 16 Second table: 100 x 16
 Run 1
 
-QR decomposition CUSolver took 7.98506 ms.
+QR decomposition CUSolver took 4.70883 ms.
 
-QR decomposition Linscale took 1.00179 ms.
+QR decomposition Linscale took 0.545632 ms.
 Run 2
 
-QR decomposition CUSolver took 4.8424 ms.
+QR decomposition CUSolver took 4.69942 ms.
 
-QR decomposition Linscale took 0.962368 ms.
+QR decomposition Linscale took 0.548832 ms.
 Run 3
 
-QR decomposition CUSolver took 4.82304 ms.
+QR decomposition CUSolver took 4.62099 ms.
 
-QR decomposition Linscale took 1.28765 ms.
+QR decomposition Linscale took 0.550016 ms.
 Run 4
 
-QR decomposition CUSolver took 4.87443 ms.
+QR decomposition CUSolver took 4.95616 ms.
 
-QR decomposition Linscale took 1.12582 ms.
+QR decomposition Linscale took 0.548768 ms.
 Run 5
 
-QR decomposition CUSolver took 7.84045 ms.
+QR decomposition CUSolver took 4.64774 ms.
 
-QR decomposition Linscale took 0.98304 ms.
+QR decomposition Linscale took 0.54912 ms.
 ***
 ***
 First table: 200 x 32 Second table: 100 x 32
 Run 1
 
-QR decomposition CUSolver took 8.68701 ms.
+QR decomposition CUSolver took 10.458 ms.
 
-QR decomposition Linscale took 1.26966 ms.
+QR decomposition Linscale took 1.34282 ms.
 Run 2
 
-QR decomposition CUSolver took 9.45766 ms.
+QR decomposition CUSolver took 9.51427 ms.
 
-QR decomposition Linscale took 1.88669 ms.
+QR decomposition Linscale took 0.900928 ms.
 Run 3
 
-QR decomposition CUSolver took 11.6062 ms.
+QR decomposition CUSolver took 9.76269 ms.
 
-QR decomposition Linscale took 1.3263 ms.
+QR decomposition Linscale took 0.954368 ms.
 Run 4
 
-QR decomposition CUSolver took 9.6711 ms.
+QR decomposition CUSolver took 11.266 ms.
 
-QR decomposition Linscale took 1.40902 ms.
+QR decomposition Linscale took 0.905056 ms.
 Run 5
 
-QR decomposition CUSolver took 8.94976 ms.
+QR decomposition CUSolver took 9.45962 ms.
 
-QR decomposition Linscale took 1.24902 ms.
+QR decomposition Linscale took 0.90464 ms.
 ***
 ***
 First table: 200 x 64 Second table: 100 x 64
 Run 1
 
-QR decomposition CUSolver took 33.6529 ms.
+QR decomposition CUSolver took 32.6175 ms.
 
-QR decomposition Linscale took 2.04006 ms.
+QR decomposition Linscale took 1.6649 ms.
 Run 2
 
-QR decomposition CUSolver took 25.9383 ms.
+QR decomposition CUSolver took 27.514 ms.
 
-QR decomposition Linscale took 2.1231 ms.
+QR decomposition Linscale took 1.81027 ms.
 Run 3
 
-QR decomposition CUSolver took 25.4786 ms.
+QR decomposition CUSolver took 38.0889 ms.
 
-QR decomposition Linscale took 2.04685 ms.
+QR decomposition Linscale took 1.6647 ms.
 Run 4
 
-QR decomposition CUSolver took 24.5397 ms.
+QR decomposition CUSolver took 25.8456 ms.
 
-QR decomposition Linscale took 2.0377 ms.
+QR decomposition Linscale took 1.73578 ms.
 Run 5
 
-QR decomposition CUSolver took 36.9813 ms.
+QR decomposition CUSolver took 24.5063 ms.
 
-QR decomposition Linscale took 2.06886 ms.
+QR decomposition Linscale took 1.66886 ms.
 ***
 ***
 First table: 200 x 2 Second table: 200 x 2
 Run 1
 
-QR decomposition CUSolver took 3.30982 ms.
+QR decomposition CUSolver took 4.24141 ms.
 
-QR decomposition Linscale took 0.643296 ms.
+QR decomposition Linscale took 0.258528 ms.
 Run 2
 
-QR decomposition CUSolver took 2.58464 ms.
+QR decomposition CUSolver took 2.50118 ms.
 
-QR decomposition Linscale took 0.64816 ms.
+QR decomposition Linscale took 0.259232 ms.
 Run 3
 
-QR decomposition CUSolver took 2.53507 ms.
+QR decomposition CUSolver took 2.42422 ms.
 
-QR decomposition Linscale took 0.702464 ms.
+QR decomposition Linscale took 0.259264 ms.
 Run 4
 
-QR decomposition CUSolver took 3.25363 ms.
+QR decomposition CUSolver took 2.9695 ms.
 
-QR decomposition Linscale took 0.608256 ms.
+QR decomposition Linscale took 0.258048 ms.
 Run 5
 
-QR decomposition CUSolver took 2.66845 ms.
+QR decomposition CUSolver took 3.15187 ms.
 
-QR decomposition Linscale took 0.637056 ms.
+QR decomposition Linscale took 0.465216 ms.
 ***
 ***
 First table: 200 x 4 Second table: 200 x 4
 Run 1
 
-QR decomposition CUSolver took 3.18237 ms.
+QR decomposition CUSolver took 3.13533 ms.
 
-QR decomposition Linscale took 0.735232 ms.
+QR decomposition Linscale took 0.342784 ms.
 Run 2
 
-QR decomposition CUSolver took 5.0552 ms.
+QR decomposition CUSolver took 3.35798 ms.
 
-QR decomposition Linscale took 0.88592 ms.
+QR decomposition Linscale took 0.342432 ms.
 Run 3
 
-QR decomposition CUSolver took 3.13571 ms.
+QR decomposition CUSolver took 3.35283 ms.
 
-QR decomposition Linscale took 1.0983 ms.
+QR decomposition Linscale took 0.497664 ms.
 Run 4
 
-QR decomposition CUSolver took 3.3583 ms.
+QR decomposition CUSolver took 3.38739 ms.
 
-QR decomposition Linscale took 1.19776 ms.
+QR decomposition Linscale took 0.54896 ms.
 Run 5
 
-QR decomposition CUSolver took 3.67402 ms.
+QR decomposition CUSolver took 3.05094 ms.
 
-QR decomposition Linscale took 1.18986 ms.
+QR decomposition Linscale took 0.343968 ms.
 ***
 ***
 First table: 200 x 8 Second table: 200 x 8
 Run 1
 
-QR decomposition CUSolver took 6.49421 ms.
+QR decomposition CUSolver took 4.21722 ms.
 
-QR decomposition Linscale took 0.944704 ms.
+QR decomposition Linscale took 0.45712 ms.
 Run 2
 
-QR decomposition CUSolver took 5.8345 ms.
+QR decomposition CUSolver took 4.47821 ms.
 
-QR decomposition Linscale took 0.872448 ms.
+QR decomposition Linscale took 0.456864 ms.
 Run 3
 
-QR decomposition CUSolver took 4.8952 ms.
+QR decomposition CUSolver took 4.31718 ms.
 
-QR decomposition Linscale took 0.890848 ms.
+QR decomposition Linscale took 0.45744 ms.
 Run 4
 
-QR decomposition CUSolver took 6.82586 ms.
+QR decomposition CUSolver took 5.54522 ms.
 
-QR decomposition Linscale took 0.885984 ms.
+QR decomposition Linscale took 0.544768 ms.
 Run 5
 
-QR decomposition CUSolver took 4.4241 ms.
+QR decomposition CUSolver took 4.75222 ms.
 
-QR decomposition Linscale took 0.854976 ms.
+QR decomposition Linscale took 0.559072 ms.
 ***
 ***
 First table: 200 x 16 Second table: 200 x 16
 Run 1
 
-QR decomposition CUSolver took 7.48954 ms.
+QR decomposition CUSolver took 7.43606 ms.
 
-QR decomposition Linscale took 1.20192 ms.
+QR decomposition Linscale took 0.70768 ms.
 Run 2
 
-QR decomposition CUSolver took 8.33469 ms.
+QR decomposition CUSolver took 7.92157 ms.
 
-QR decomposition Linscale took 1.04483 ms.
+QR decomposition Linscale took 0.638688 ms.
 Run 3
 
-QR decomposition CUSolver took 11.3903 ms.
+QR decomposition CUSolver took 8.68774 ms.
 
-QR decomposition Linscale took 1.75933 ms.
+QR decomposition Linscale took 0.638816 ms.
 Run 4
 
-QR decomposition CUSolver took 8.76774 ms.
+QR decomposition CUSolver took 7.43219 ms.
 
-QR decomposition Linscale took 1.0776 ms.
+QR decomposition Linscale took 0.637728 ms.
 Run 5
 
-QR decomposition CUSolver took 7.39558 ms.
+QR decomposition CUSolver took 7.04682 ms.
 
-QR decomposition Linscale took 1.06778 ms.
+QR decomposition Linscale took 0.636736 ms.
 ***
 ***
 First table: 200 x 32 Second table: 200 x 32
 Run 1
 
-QR decomposition CUSolver took 17.4184 ms.
+QR decomposition CUSolver took 16.1439 ms.
 
-QR decomposition Linscale took 1.7537 ms.
+QR decomposition Linscale took 1.00762 ms.
 Run 2
 
-QR decomposition CUSolver took 16.0031 ms.
+QR decomposition CUSolver took 14.9647 ms.
 
-QR decomposition Linscale took 1.6503 ms.
+QR decomposition Linscale took 1.00768 ms.
 Run 3
 
-QR decomposition CUSolver took 17.1415 ms.
+QR decomposition CUSolver took 14.2964 ms.
 
-QR decomposition Linscale took 2.5856 ms.
+QR decomposition Linscale took 1.00557 ms.
 Run 4
 
-QR decomposition CUSolver took 16.4618 ms.
+QR decomposition CUSolver took 14.6495 ms.
 
-QR decomposition Linscale took 1.71194 ms.
+QR decomposition Linscale took 1.0064 ms.
 Run 5
 
-QR decomposition CUSolver took 17.5523 ms.
+QR decomposition CUSolver took 17.5352 ms.
 
-QR decomposition Linscale took 1.38461 ms.
+QR decomposition Linscale took 1.02371 ms.
 ***
 ***
 First table: 200 x 64 Second table: 200 x 64
 Run 1
 
-QR decomposition CUSolver took 48.8124 ms.
+QR decomposition CUSolver took 45.951 ms.
 
-QR decomposition Linscale took 2.45302 ms.
+QR decomposition Linscale took 1.91274 ms.
 Run 2
 
-QR decomposition CUSolver took 49.0762 ms.
+QR decomposition CUSolver took 38.9345 ms.
 
-QR decomposition Linscale took 2.69517 ms.
+QR decomposition Linscale took 1.83827 ms.
 Run 3
 
-QR decomposition CUSolver took 50.6495 ms.
+QR decomposition CUSolver took 47.614 ms.
 
-QR decomposition Linscale took 2.92438 ms.
+QR decomposition Linscale took 1.83248 ms.
 Run 4
 
-QR decomposition CUSolver took 44.1486 ms.
+QR decomposition CUSolver took 38.5294 ms.
 
-QR decomposition Linscale took 2.84397 ms.
+QR decomposition Linscale took 1.83491 ms.
 Run 5
 
-QR decomposition CUSolver took 39.8041 ms.
+QR decomposition CUSolver took 37.1999 ms.
 
-QR decomposition Linscale took 2.21427 ms.
+QR decomposition Linscale took 1.83091 ms.
 ***
 ***
 First table: 200 x 2 Second table: 400 x 2
 Run 1
 
-QR decomposition CUSolver took 5.39005 ms.
+QR decomposition CUSolver took 3.08806 ms.
 
-QR decomposition Linscale took 0.775008 ms.
+QR decomposition Linscale took 0.401408 ms.
 Run 2
 
-QR decomposition CUSolver took 4.10541 ms.
+QR decomposition CUSolver took 4.02198 ms.
 
-QR decomposition Linscale took 0.858176 ms.
+QR decomposition Linscale took 0.400672 ms.
 Run 3
 
-QR decomposition CUSolver took 4.06496 ms.
+QR decomposition CUSolver took 3.584 ms.
 
-QR decomposition Linscale took 0.900512 ms.
+QR decomposition Linscale took 0.399776 ms.
 Run 4
 
-QR decomposition CUSolver took 3.80147 ms.
+QR decomposition CUSolver took 3.2297 ms.
 
-QR decomposition Linscale took 0.837728 ms.
+QR decomposition Linscale took 0.49552 ms.
 Run 5
 
-QR decomposition CUSolver took 5.28115 ms.
+QR decomposition CUSolver took 3.00634 ms.
 
-QR decomposition Linscale took 0.840832 ms.
+QR decomposition Linscale took 0.40064 ms.
 ***
 ***
 First table: 200 x 4 Second table: 400 x 4
 Run 1
 
-QR decomposition CUSolver took 4.5409 ms.
+QR decomposition CUSolver took 6.34538 ms.
 
-QR decomposition Linscale took 0.948224 ms.
+QR decomposition Linscale took 0.516096 ms.
 Run 2
 
-QR decomposition CUSolver took 5.1881 ms.
+QR decomposition CUSolver took 4.28474 ms.
 
-QR decomposition Linscale took 1.16941 ms.
+QR decomposition Linscale took 0.528256 ms.
 Run 3
 
-QR decomposition CUSolver took 8.02826 ms.
+QR decomposition CUSolver took 4.3391 ms.
 
-QR decomposition Linscale took 0.888832 ms.
+QR decomposition Linscale took 0.515968 ms.
 Run 4
 
-QR decomposition CUSolver took 5.19024 ms.
+QR decomposition CUSolver took 4.32525 ms.
 
-QR decomposition Linscale took 1.23261 ms.
+QR decomposition Linscale took 0.516128 ms.
 Run 5
 
-QR decomposition CUSolver took 5.28467 ms.
+QR decomposition CUSolver took 4.34134 ms.
 
-QR decomposition Linscale took 1.2616 ms.
+QR decomposition Linscale took 0.568672 ms.
 ***
 ***
 First table: 200 x 8 Second table: 400 x 8
 Run 1
 
-QR decomposition CUSolver took 7.51338 ms.
+QR decomposition CUSolver took 6.83264 ms.
 
-QR decomposition Linscale took 2.50675 ms.
+QR decomposition Linscale took 0.692224 ms.
 Run 2
 
-QR decomposition CUSolver took 9.71325 ms.
+QR decomposition CUSolver took 8.33488 ms.
 
-QR decomposition Linscale took 1.08749 ms.
+QR decomposition Linscale took 0.6832 ms.
 Run 3
 
-QR decomposition CUSolver took 7.99757 ms.
+QR decomposition CUSolver took 8.39885 ms.
 
-QR decomposition Linscale took 1.37712 ms.
+QR decomposition Linscale took 0.644064 ms.
 Run 4
 
-QR decomposition CUSolver took 7.06982 ms.
+QR decomposition CUSolver took 9.92237 ms.
 
-QR decomposition Linscale took 1.03424 ms.
+QR decomposition Linscale took 0.729792 ms.
 Run 5
 
-QR decomposition CUSolver took 8.27549 ms.
+QR decomposition CUSolver took 7.33661 ms.
 
-QR decomposition Linscale took 1.09709 ms.
+QR decomposition Linscale took 1.14016 ms.
 ***
 ***
 First table: 200 x 16 Second table: 400 x 16
 Run 1
 
-QR decomposition CUSolver took 15.2834 ms.
+QR decomposition CUSolver took 13.1378 ms.
 
-QR decomposition Linscale took 1.40525 ms.
+QR decomposition Linscale took 2.12378 ms.
 Run 2
 
-QR decomposition CUSolver took 13.2584 ms.
+QR decomposition CUSolver took 14.8219 ms.
 
-QR decomposition Linscale took 1.23552 ms.
+QR decomposition Linscale took 0.837632 ms.
 Run 3
 
-QR decomposition CUSolver took 12.8736 ms.
+QR decomposition CUSolver took 12.7074 ms.
 
-QR decomposition Linscale took 1.21165 ms.
+QR decomposition Linscale took 0.837504 ms.
 Run 4
 
-QR decomposition CUSolver took 15.5116 ms.
+QR decomposition CUSolver took 11.9683 ms.
 
-QR decomposition Linscale took 1.23942 ms.
+QR decomposition Linscale took 0.838784 ms.
 Run 5
 
-QR decomposition CUSolver took 13.8322 ms.
+QR decomposition CUSolver took 13.0299 ms.
 
-QR decomposition Linscale took 1.20486 ms.
+QR decomposition Linscale took 0.837504 ms.
 ***
 ***
 First table: 200 x 32 Second table: 400 x 32
 Run 1
 
-QR decomposition CUSolver took 28.7685 ms.
+QR decomposition CUSolver took 27.6389 ms.
 
-QR decomposition Linscale took 3.08838 ms.
+QR decomposition Linscale took 2.06026 ms.
 Run 2
 
-QR decomposition CUSolver took 30.5457 ms.
+QR decomposition CUSolver took 29.4911 ms.
 
-QR decomposition Linscale took 1.70211 ms.
+QR decomposition Linscale took 1.28592 ms.
 Run 3
 
-QR decomposition CUSolver took 29.685 ms.
+QR decomposition CUSolver took 28.8933 ms.
 
-QR decomposition Linscale took 2.54157 ms.
+QR decomposition Linscale took 1.24515 ms.
 Run 4
 
-QR decomposition CUSolver took 30.0749 ms.
+QR decomposition CUSolver took 26.665 ms.
 
-QR decomposition Linscale took 2.01318 ms.
+QR decomposition Linscale took 1.2447 ms.
 Run 5
 
-QR decomposition CUSolver took 31.9099 ms.
+QR decomposition CUSolver took 28.7695 ms.
 
-QR decomposition Linscale took 1.63734 ms.
+QR decomposition Linscale took 1.24518 ms.
 ***
 ***
 First table: 200 x 64 Second table: 400 x 64
 Run 1
 
-QR decomposition CUSolver took 76.9595 ms.
+QR decomposition CUSolver took 82.0897 ms.
 
-QR decomposition Linscale took 2.26304 ms.
+QR decomposition Linscale took 2.0951 ms.
 Run 2
 
-QR decomposition CUSolver took 60.4627 ms.
+QR decomposition CUSolver took 59.7484 ms.
 
-QR decomposition Linscale took 2.17206 ms.
+QR decomposition Linscale took 1.81043 ms.
 Run 3
 
-QR decomposition CUSolver took 72.9221 ms.
+QR decomposition CUSolver took 56.7832 ms.
 
-QR decomposition Linscale took 3.71072 ms.
+QR decomposition Linscale took 1.77616 ms.
 Run 4
 
-QR decomposition CUSolver took 62.2008 ms.
+QR decomposition CUSolver took 74.8478 ms.
 
-QR decomposition Linscale took 2.14426 ms.
+QR decomposition Linscale took 2.11802 ms.
 Run 5
 
-QR decomposition CUSolver took 59.1565 ms.
+QR decomposition CUSolver took 63.2559 ms.
 
-QR decomposition Linscale took 2.57002 ms.
+QR decomposition Linscale took 2.08093 ms.
 ***
 ***
 First table: 200 x 2 Second table: 800 x 2
 Run 1
 
-QR decomposition CUSolver took 5.92656 ms.
+QR decomposition CUSolver took 3.95565 ms.
 
-QR decomposition Linscale took 1.04202 ms.
+QR decomposition Linscale took 0.640544 ms.
 Run 2
 
-QR decomposition CUSolver took 4.83882 ms.
+QR decomposition CUSolver took 3.88451 ms.
 
-QR decomposition Linscale took 1.27616 ms.
+QR decomposition Linscale took 0.639744 ms.
 Run 3
 
-QR decomposition CUSolver took 3.964 ms.
+QR decomposition CUSolver took 4.38333 ms.
 
-QR decomposition Linscale took 1.10054 ms.
+QR decomposition Linscale took 0.68576 ms.
 Run 4
 
-QR decomposition CUSolver took 6.75907 ms.
+QR decomposition CUSolver took 4.41754 ms.
 
-QR decomposition Linscale took 1.60781 ms.
+QR decomposition Linscale took 0.75952 ms.
 Run 5
 
-QR decomposition CUSolver took 4.36166 ms.
+QR decomposition CUSolver took 4.22669 ms.
 
-QR decomposition Linscale took 1.09978 ms.
+QR decomposition Linscale took 0.753824 ms.
 ***
 ***
 First table: 200 x 4 Second table: 800 x 4
 Run 1
 
-QR decomposition CUSolver took 7.1048 ms.
+QR decomposition CUSolver took 8.36794 ms.
 
-QR decomposition Linscale took 1.34234 ms.
+QR decomposition Linscale took 0.839904 ms.
 Run 2
 
-QR decomposition CUSolver took 6.33258 ms.
+QR decomposition CUSolver took 7.1855 ms.
 
-QR decomposition Linscale took 1.56877 ms.
+QR decomposition Linscale took 0.840192 ms.
 Run 3
 
-QR decomposition CUSolver took 8.47258 ms.
+QR decomposition CUSolver took 6.34419 ms.
 
-QR decomposition Linscale took 1.40282 ms.
+QR decomposition Linscale took 0.874528 ms.
 Run 4
 
-QR decomposition CUSolver took 7.9584 ms.
+QR decomposition CUSolver took 6.83178 ms.
 
-QR decomposition Linscale took 1.38493 ms.
+QR decomposition Linscale took 0.840288 ms.
 Run 5
 
-QR decomposition CUSolver took 6.52851 ms.
+QR decomposition CUSolver took 8.48077 ms.
 
-QR decomposition Linscale took 1.60086 ms.
+QR decomposition Linscale took 0.839872 ms.
 ***
 ***
 First table: 200 x 8 Second table: 800 x 8
 Run 1
 
-QR decomposition CUSolver took 13.3677 ms.
+QR decomposition CUSolver took 11.6838 ms.
 
-QR decomposition Linscale took 1.79242 ms.
+QR decomposition Linscale took 1.01258 ms.
 Run 2
 
-QR decomposition CUSolver took 13.6602 ms.
+QR decomposition CUSolver took 11.4166 ms.
 
-QR decomposition Linscale took 1.47136 ms.
+QR decomposition Linscale took 1.12019 ms.
 Run 3
 
-QR decomposition CUSolver took 11.4437 ms.
+QR decomposition CUSolver took 13.1931 ms.
 
-QR decomposition Linscale took 1.67558 ms.
+QR decomposition Linscale took 1.01376 ms.
 Run 4
 
-QR decomposition CUSolver took 14.779 ms.
+QR decomposition CUSolver took 12.4828 ms.
 
-QR decomposition Linscale took 1.44666 ms.
+QR decomposition Linscale took 1.00998 ms.
 Run 5
 
-QR decomposition CUSolver took 13.0779 ms.
+QR decomposition CUSolver took 13.779 ms.
 
-QR decomposition Linscale took 3.49904 ms.
+QR decomposition Linscale took 1.51117 ms.
 ***
 ***
 First table: 200 x 16 Second table: 800 x 16
 Run 1
 
-QR decomposition CUSolver took 23.4637 ms.
+QR decomposition CUSolver took 21.7605 ms.
 
-QR decomposition Linscale took 1.61786 ms.
+QR decomposition Linscale took 1.27005 ms.
 Run 2
 
-QR decomposition CUSolver took 23.454 ms.
+QR decomposition CUSolver took 23.8319 ms.
 
-QR decomposition Linscale took 1.64269 ms.
+QR decomposition Linscale took 1.22781 ms.
 Run 3
 
-QR decomposition CUSolver took 28.0125 ms.
+QR decomposition CUSolver took 23.1868 ms.
 
-QR decomposition Linscale took 1.8489 ms.
+QR decomposition Linscale took 1.37011 ms.
 Run 4
 
-QR decomposition CUSolver took 24.3221 ms.
+QR decomposition CUSolver took 21.17 ms.
 
-QR decomposition Linscale took 1.65882 ms.
+QR decomposition Linscale took 1.2273 ms.
 Run 5
 
-QR decomposition CUSolver took 22.612 ms.
+QR decomposition CUSolver took 21.5342 ms.
 
-QR decomposition Linscale took 1.64605 ms.
+QR decomposition Linscale took 1.24314 ms.
 ***
 ***
 First table: 200 x 32 Second table: 800 x 32
 Run 1
 
-QR decomposition CUSolver took 51.1852 ms.
+QR decomposition CUSolver took 50.0941 ms.
 
-QR decomposition Linscale took 2.71318 ms.
+QR decomposition Linscale took 1.67843 ms.
 Run 2
 
-QR decomposition CUSolver took 53.5185 ms.
+QR decomposition CUSolver took 50.4516 ms.
 
-QR decomposition Linscale took 2.07773 ms.
+QR decomposition Linscale took 1.68118 ms.
 Run 3
 
-QR decomposition CUSolver took 47.2908 ms.
+QR decomposition CUSolver took 48.6364 ms.
 
-QR decomposition Linscale took 1.96774 ms.
+QR decomposition Linscale took 1.67616 ms.
 Run 4
 
-QR decomposition CUSolver took 51.2068 ms.
+QR decomposition CUSolver took 50.7576 ms.
 
-QR decomposition Linscale took 3.09808 ms.
+QR decomposition Linscale took 1.67936 ms.
 Run 5
 
-QR decomposition CUSolver took 52.167 ms.
+QR decomposition CUSolver took 48.1445 ms.
 
-QR decomposition Linscale took 2.0904 ms.
+QR decomposition Linscale took 1.6767 ms.
 ***
 ***
 First table: 200 x 64 Second table: 800 x 64
 Run 1
 
-QR decomposition CUSolver took 129.049 ms.
+QR decomposition CUSolver took 115.98 ms.
 
-QR decomposition Linscale took 2.73587 ms.
+QR decomposition Linscale took 2.26774 ms.
 Run 2
 
-QR decomposition CUSolver took 114.015 ms.
+QR decomposition CUSolver took 109.091 ms.
 
-QR decomposition Linscale took 2.73306 ms.
+QR decomposition Linscale took 2.48218 ms.
 Run 3
 
-QR decomposition CUSolver took 104.444 ms.
+QR decomposition CUSolver took 105.681 ms.
 
-QR decomposition Linscale took 2.93059 ms.
+QR decomposition Linscale took 2.33642 ms.
 Run 4
 
-QR decomposition CUSolver took 108.298 ms.
+QR decomposition CUSolver took 105.549 ms.
 
-QR decomposition Linscale took 2.67798 ms.
+QR decomposition Linscale took 2.2487 ms.
 Run 5
 
-QR decomposition CUSolver took 116.048 ms.
+QR decomposition CUSolver took 113.816 ms.
 
-QR decomposition Linscale took 2.65859 ms.
+QR decomposition Linscale took 2.25088 ms.
 ***
 ***
 First table: 400 x 2 Second table: 100 x 2
 Run 1
 
-QR decomposition CUSolver took 2.39382 ms.
+QR decomposition CUSolver took 2.5847 ms.
 
-QR decomposition Linscale took 0.563552 ms.
+QR decomposition Linscale took 0.192288 ms.
 Run 2
 
-QR decomposition CUSolver took 2.52816 ms.
+QR decomposition CUSolver took 2.5129 ms.
 
-QR decomposition Linscale took 0.608256 ms.
+QR decomposition Linscale took 0.386464 ms.
 Run 3
 
-QR decomposition CUSolver took 5.44739 ms.
+QR decomposition CUSolver took 2.5399 ms.
 
-QR decomposition Linscale took 0.710656 ms.
+QR decomposition Linscale took 0.191904 ms.
 Run 4
 
-QR decomposition CUSolver took 4.00678 ms.
+QR decomposition CUSolver took 4.90093 ms.
 
-QR decomposition Linscale took 0.735072 ms.
+QR decomposition Linscale took 0.2256 ms.
 Run 5
 
-QR decomposition CUSolver took 2.92499 ms.
+QR decomposition CUSolver took 3.16317 ms.
 
-QR decomposition Linscale took 2.67405 ms.
+QR decomposition Linscale took 0.226304 ms.
 ***
 ***
 First table: 400 x 4 Second table: 100 x 4
 Run 1
 
-QR decomposition CUSolver took 3.10096 ms.
+QR decomposition CUSolver took 3.41606 ms.
 
-QR decomposition Linscale took 0.753088 ms.
+QR decomposition Linscale took 0.319488 ms.
 Run 2
 
-QR decomposition CUSolver took 4.95616 ms.
+QR decomposition CUSolver took 2.93958 ms.
 
-QR decomposition Linscale took 1.34886 ms.
+QR decomposition Linscale took 0.319104 ms.
 Run 3
 
-QR decomposition CUSolver took 3.88096 ms.
+QR decomposition CUSolver took 5.60675 ms.
 
-QR decomposition Linscale took 1.09456 ms.
+QR decomposition Linscale took 0.466784 ms.
 Run 4
 
-QR decomposition CUSolver took 3.93053 ms.
+QR decomposition CUSolver took 3.4192 ms.
 
-QR decomposition Linscale took 0.753728 ms.
+QR decomposition Linscale took 0.372864 ms.
 Run 5
 
-QR decomposition CUSolver took 5.5929 ms.
+QR decomposition CUSolver took 2.95174 ms.
 
-QR decomposition Linscale took 0.737184 ms.
+QR decomposition Linscale took 0.3184 ms.
 ***
 ***
 First table: 400 x 8 Second table: 100 x 8
 Run 1
 
-QR decomposition CUSolver took 5.33219 ms.
+QR decomposition CUSolver took 7.39322 ms.
 
-QR decomposition Linscale took 0.821248 ms.
+QR decomposition Linscale took 0.442368 ms.
 Run 2
 
-QR decomposition CUSolver took 4.31962 ms.
+QR decomposition CUSolver took 6.27302 ms.
 
-QR decomposition Linscale took 0.838336 ms.
+QR decomposition Linscale took 0.440672 ms.
 Run 3
 
-QR decomposition CUSolver took 4.68461 ms.
+QR decomposition CUSolver took 5.51066 ms.
 
-QR decomposition Linscale took 1.25907 ms.
+QR decomposition Linscale took 0.441248 ms.
 Run 4
 
-QR decomposition CUSolver took 7.09885 ms.
+QR decomposition CUSolver took 5.7815 ms.
 
-QR decomposition Linscale took 0.881312 ms.
+QR decomposition Linscale took 0.6496 ms.
 Run 5
 
-QR decomposition CUSolver took 5.84701 ms.
+QR decomposition CUSolver took 6.88589 ms.
 
-QR decomposition Linscale took 0.892768 ms.
+QR decomposition Linscale took 0.871488 ms.
 ***
 ***
 First table: 400 x 16 Second table: 100 x 16
 Run 1
 
-QR decomposition CUSolver took 8.3903 ms.
+QR decomposition CUSolver took 9.23069 ms.
 
-QR decomposition Linscale took 1.01728 ms.
+QR decomposition Linscale took 0.72704 ms.
 Run 2
 
-QR decomposition CUSolver took 9.70547 ms.
+QR decomposition CUSolver took 8.81459 ms.
 
-QR decomposition Linscale took 0.987488 ms.
+QR decomposition Linscale took 0.886784 ms.
 Run 3
 
-QR decomposition CUSolver took 7.36698 ms.
+QR decomposition CUSolver took 8.03888 ms.
 
-QR decomposition Linscale took 1.07024 ms.
+QR decomposition Linscale took 0.6232 ms.
 Run 4
 
-QR decomposition CUSolver took 7.46906 ms.
+QR decomposition CUSolver took 9.98605 ms.
 
-QR decomposition Linscale took 0.999584 ms.
+QR decomposition Linscale took 0.692576 ms.
 Run 5
 
-QR decomposition CUSolver took 7.24582 ms.
+QR decomposition CUSolver took 8.77792 ms.
 
-QR decomposition Linscale took 1.04237 ms.
+QR decomposition Linscale took 0.92384 ms.
 ***
 ***
 First table: 400 x 32 Second table: 100 x 32
 Run 1
 
-QR decomposition CUSolver took 17.0924 ms.
+QR decomposition CUSolver took 14.4712 ms.
 
-QR decomposition Linscale took 1.41418 ms.
+QR decomposition Linscale took 1.34643 ms.
 Run 2
 
-QR decomposition CUSolver took 15.9955 ms.
+QR decomposition CUSolver took 18.0943 ms.
 
-QR decomposition Linscale took 1.42854 ms.
+QR decomposition Linscale took 1.00013 ms.
 Run 3
 
-QR decomposition CUSolver took 14.8644 ms.
+QR decomposition CUSolver took 16.386 ms.
 
-QR decomposition Linscale took 1.82272 ms.
+QR decomposition Linscale took 1.00147 ms.
 Run 4
 
-QR decomposition CUSolver took 14.5635 ms.
+QR decomposition CUSolver took 14.6419 ms.
 
-QR decomposition Linscale took 1.92102 ms.
+QR decomposition Linscale took 1.00544 ms.
 Run 5
 
-QR decomposition CUSolver took 15.0637 ms.
+QR decomposition CUSolver took 14.9694 ms.
 
-QR decomposition Linscale took 1.40666 ms.
+QR decomposition Linscale took 1.34704 ms.
 ***
 ***
 First table: 400 x 64 Second table: 100 x 64
 Run 1
 
-QR decomposition CUSolver took 44.1459 ms.
+QR decomposition CUSolver took 46.4197 ms.
 
-QR decomposition Linscale took 2.45146 ms.
+QR decomposition Linscale took 1.84304 ms.
 Run 2
 
-QR decomposition CUSolver took 42.1805 ms.
+QR decomposition CUSolver took 38.15 ms.
 
-QR decomposition Linscale took 2.25306 ms.
+QR decomposition Linscale took 1.83917 ms.
 Run 3
 
-QR decomposition CUSolver took 41.1203 ms.
+QR decomposition CUSolver took 36.9596 ms.
 
-QR decomposition Linscale took 2.22624 ms.
+QR decomposition Linscale took 1.8391 ms.
 Run 4
 
-QR decomposition CUSolver took 40.2806 ms.
+QR decomposition CUSolver took 50.3128 ms.
 
-QR decomposition Linscale took 2.47082 ms.
+QR decomposition Linscale took 1.84115 ms.
 Run 5
 
-QR decomposition CUSolver took 41.8711 ms.
+QR decomposition CUSolver took 36.4339 ms.
 
-QR decomposition Linscale took 2.22893 ms.
+QR decomposition Linscale took 1.8391 ms.
 ***
 ***
 First table: 400 x 2 Second table: 200 x 2
 Run 1
 
-QR decomposition CUSolver took 3.10886 ms.
+QR decomposition CUSolver took 2.88221 ms.
 
-QR decomposition Linscale took 0.778432 ms.
+QR decomposition Linscale took 0.296576 ms.
 Run 2
 
-QR decomposition CUSolver took 2.90662 ms.
+QR decomposition CUSolver took 5.54394 ms.
 
-QR decomposition Linscale took 0.719456 ms.
+QR decomposition Linscale took 0.295616 ms.
 Run 3
 
-QR decomposition CUSolver took 3.01814 ms.
+QR decomposition CUSolver took 4.67373 ms.
 
-QR decomposition Linscale took 1.17565 ms.
+QR decomposition Linscale took 0.29696 ms.
 Run 4
 
-QR decomposition CUSolver took 3.11088 ms.
+QR decomposition CUSolver took 3.10307 ms.
 
-QR decomposition Linscale took 0.819808 ms.
+QR decomposition Linscale took 0.310272 ms.
 Run 5
 
-QR decomposition CUSolver took 3.03648 ms.
+QR decomposition CUSolver took 2.93114 ms.
 
-QR decomposition Linscale took 0.743008 ms.
+QR decomposition Linscale took 0.297408 ms.
 ***
 ***
 First table: 400 x 4 Second table: 200 x 4
 Run 1
 
-QR decomposition CUSolver took 4.49136 ms.
+QR decomposition CUSolver took 6.30502 ms.
 
-QR decomposition Linscale took 1.29542 ms.
+QR decomposition Linscale took 0.405504 ms.
 Run 2
 
-QR decomposition CUSolver took 4.24493 ms.
+QR decomposition CUSolver took 5.93482 ms.
 
-QR decomposition Linscale took 0.902976 ms.
+QR decomposition Linscale took 0.464544 ms.
 Run 3
 
-QR decomposition CUSolver took 4.44794 ms.
+QR decomposition CUSolver took 4.66922 ms.
 
-QR decomposition Linscale took 1.1289 ms.
+QR decomposition Linscale took 0.403456 ms.
 Run 4
 
-QR decomposition CUSolver took 4.47386 ms.
+QR decomposition CUSolver took 4.30086 ms.
 
-QR decomposition Linscale took 0.829824 ms.
+QR decomposition Linscale took 0.405504 ms.
 Run 5
 
-QR decomposition CUSolver took 4.07306 ms.
+QR decomposition CUSolver took 6.32573 ms.
 
-QR decomposition Linscale took 0.82208 ms.
+QR decomposition Linscale took 0.40512 ms.
 ***
 ***
 First table: 400 x 8 Second table: 200 x 8
 Run 1
 
-QR decomposition CUSolver took 6.48192 ms.
+QR decomposition CUSolver took 8.97232 ms.
 
-QR decomposition Linscale took 0.922464 ms.
+QR decomposition Linscale took 0.610304 ms.
 Run 2
 
-QR decomposition CUSolver took 6.56678 ms.
+QR decomposition CUSolver took 6.67715 ms.
 
-QR decomposition Linscale took 0.921952 ms.
+QR decomposition Linscale took 0.538784 ms.
 Run 3
 
-QR decomposition CUSolver took 8.0343 ms.
+QR decomposition CUSolver took 6.83085 ms.
 
-QR decomposition Linscale took 1.0017 ms.
+QR decomposition Linscale took 0.537856 ms.
 Run 4
 
-QR decomposition CUSolver took 6.48512 ms.
+QR decomposition CUSolver took 12.2137 ms.
 
-QR decomposition Linscale took 0.927744 ms.
+QR decomposition Linscale took 1.92717 ms.
 Run 5
 
-QR decomposition CUSolver took 6.52944 ms.
+QR decomposition CUSolver took 6.64486 ms.
 
-QR decomposition Linscale took 0.97168 ms.
+QR decomposition Linscale took 0.538592 ms.
 ***
 ***
 First table: 400 x 16 Second table: 200 x 16
 Run 1
 
-QR decomposition CUSolver took 12.002 ms.
+QR decomposition CUSolver took 12.3309 ms.
 
-QR decomposition Linscale took 1.11821 ms.
+QR decomposition Linscale took 0.727904 ms.
 Run 2
 
-QR decomposition CUSolver took 12.1118 ms.
+QR decomposition CUSolver took 14.6055 ms.
 
-QR decomposition Linscale took 1.09187 ms.
+QR decomposition Linscale took 0.72832 ms.
 Run 3
 
-QR decomposition CUSolver took 11.9235 ms.
+QR decomposition CUSolver took 13.5852 ms.
 
-QR decomposition Linscale took 1.09139 ms.
+QR decomposition Linscale took 0.728768 ms.
 Run 4
 
-QR decomposition CUSolver took 13.3052 ms.
+QR decomposition CUSolver took 13.321 ms.
 
-QR decomposition Linscale took 1.28368 ms.
+QR decomposition Linscale took 0.731136 ms.
 Run 5
 
-QR decomposition CUSolver took 12.5316 ms.
+QR decomposition CUSolver took 12.5671 ms.
 
-QR decomposition Linscale took 1.10998 ms.
+QR decomposition Linscale took 0.734048 ms.
 ***
 ***
 First table: 400 x 32 Second table: 200 x 32
 Run 1
 
-QR decomposition CUSolver took 27.1852 ms.
+QR decomposition CUSolver took 30.5276 ms.
 
-QR decomposition Linscale took 1.51091 ms.
+QR decomposition Linscale took 1.13174 ms.
 Run 2
 
-QR decomposition CUSolver took 27.1708 ms.
+QR decomposition CUSolver took 27.3535 ms.
 
-QR decomposition Linscale took 1.50579 ms.
+QR decomposition Linscale took 1.13459 ms.
 Run 3
 
-QR decomposition CUSolver took 27.9593 ms.
+QR decomposition CUSolver took 28.4081 ms.
 
-QR decomposition Linscale took 1.55018 ms.
+QR decomposition Linscale took 1.13254 ms.
 Run 4
 
-QR decomposition CUSolver took 27.9488 ms.
+QR decomposition CUSolver took 27.6372 ms.
 
-QR decomposition Linscale took 1.50157 ms.
+QR decomposition Linscale took 1.13357 ms.
 Run 5
 
-QR decomposition CUSolver took 33.3763 ms.
+QR decomposition CUSolver took 29.694 ms.
 
-QR decomposition Linscale took 1.53584 ms.
+QR decomposition Linscale took 1.13664 ms.
 ***
 ***
 First table: 400 x 64 Second table: 200 x 64
 Run 1
 
-QR decomposition CUSolver took 74.9247 ms.
+QR decomposition CUSolver took 71.2663 ms.
 
-QR decomposition Linscale took 3.15322 ms.
+QR decomposition Linscale took 1.98589 ms.
 Run 2
 
-QR decomposition CUSolver took 57.5959 ms.
+QR decomposition CUSolver took 75.4708 ms.
 
-QR decomposition Linscale took 2.07469 ms.
+QR decomposition Linscale took 1.79814 ms.
 Run 3
 
-QR decomposition CUSolver took 58.3064 ms.
+QR decomposition CUSolver took 59.7875 ms.
 
-QR decomposition Linscale took 2.08474 ms.
+QR decomposition Linscale took 1.79789 ms.
 Run 4
 
-QR decomposition CUSolver took 64.9646 ms.
+QR decomposition CUSolver took 58.4915 ms.
 
-QR decomposition Linscale took 2.24349 ms.
+QR decomposition Linscale took 1.77664 ms.
 Run 5
 
-QR decomposition CUSolver took 68.4954 ms.
+QR decomposition CUSolver took 59.3777 ms.
 
-QR decomposition Linscale took 2.32038 ms.
+QR decomposition Linscale took 1.77238 ms.
 ***
 ***
 First table: 400 x 2 Second table: 400 x 2
 Run 1
 
-QR decomposition CUSolver took 3.60243 ms.
+QR decomposition CUSolver took 4.12323 ms.
 
-QR decomposition Linscale took 0.827424 ms.
+QR decomposition Linscale took 0.44352 ms.
 Run 2
 
-QR decomposition CUSolver took 3.70102 ms.
+QR decomposition CUSolver took 4.03818 ms.
 
-QR decomposition Linscale took 0.806624 ms.
+QR decomposition Linscale took 0.442592 ms.
 Run 3
 
-QR decomposition CUSolver took 3.60394 ms.
+QR decomposition CUSolver took 4.08685 ms.
 
-QR decomposition Linscale took 0.776768 ms.
+QR decomposition Linscale took 0.441312 ms.
 Run 4
 
-QR decomposition CUSolver took 3.82966 ms.
+QR decomposition CUSolver took 6.50854 ms.
 
-QR decomposition Linscale took 0.825344 ms.
+QR decomposition Linscale took 0.442368 ms.
 Run 5
 
-QR decomposition CUSolver took 4.04483 ms.
+QR decomposition CUSolver took 4.13286 ms.
 
-QR decomposition Linscale took 0.852416 ms.
+QR decomposition Linscale took 0.441984 ms.
 ***
 ***
 First table: 400 x 4 Second table: 400 x 4
 Run 1
 
-QR decomposition CUSolver took 6.49466 ms.
+QR decomposition CUSolver took 6.25706 ms.
 
-QR decomposition Linscale took 1.01939 ms.
+QR decomposition Linscale took 0.571808 ms.
 Run 2
 
-QR decomposition CUSolver took 8.0345 ms.
+QR decomposition CUSolver took 9.20557 ms.
 
-QR decomposition Linscale took 1.09773 ms.
+QR decomposition Linscale took 0.572096 ms.
 Run 3
 
-QR decomposition CUSolver took 7.40259 ms.
+QR decomposition CUSolver took 7.0697 ms.
 
-QR decomposition Linscale took 0.982528 ms.
+QR decomposition Linscale took 0.575232 ms.
 Run 4
 
-QR decomposition CUSolver took 6.16205 ms.
+QR decomposition CUSolver took 6.30304 ms.
 
-QR decomposition Linscale took 0.979232 ms.
+QR decomposition Linscale took 0.67584 ms.
 Run 5
 
-QR decomposition CUSolver took 6.09427 ms.
+QR decomposition CUSolver took 6.10966 ms.
 
-QR decomposition Linscale took 0.96256 ms.
+QR decomposition Linscale took 0.57344 ms.
 ***
 ***
 First table: 400 x 8 Second table: 400 x 8
 Run 1
 
-QR decomposition CUSolver took 11.5934 ms.
+QR decomposition CUSolver took 12.958 ms.
 
-QR decomposition Linscale took 1.14893 ms.
+QR decomposition Linscale took 0.729696 ms.
 Run 2
 
-QR decomposition CUSolver took 12.3153 ms.
+QR decomposition CUSolver took 11.6281 ms.
 
-QR decomposition Linscale took 1.14781 ms.
+QR decomposition Linscale took 0.724992 ms.
 Run 3
 
-QR decomposition CUSolver took 11.0522 ms.
+QR decomposition CUSolver took 12.1007 ms.
 
-QR decomposition Linscale took 1.24173 ms.
+QR decomposition Linscale took 0.729088 ms.
 Run 4
 
-QR decomposition CUSolver took 11.0756 ms.
+QR decomposition CUSolver took 13.6372 ms.
 
-QR decomposition Linscale took 1.2841 ms.
+QR decomposition Linscale took 0.729088 ms.
 Run 5
 
-QR decomposition CUSolver took 11.7492 ms.
+QR decomposition CUSolver took 11.8129 ms.
 
-QR decomposition Linscale took 1.21366 ms.
+QR decomposition Linscale took 0.729088 ms.
 ***
 ***
 First table: 400 x 16 Second table: 400 x 16
 Run 1
 
-QR decomposition CUSolver took 22.0789 ms.
+QR decomposition CUSolver took 22.9288 ms.
 
-QR decomposition Linscale took 1.30995 ms.
+QR decomposition Linscale took 0.93616 ms.
 Run 2
 
-QR decomposition CUSolver took 24.4876 ms.
+QR decomposition CUSolver took 24.105 ms.
 
-QR decomposition Linscale took 1.34205 ms.
+QR decomposition Linscale took 0.937728 ms.
 Run 3
 
-QR decomposition CUSolver took 27.9834 ms.
+QR decomposition CUSolver took 22.9074 ms.
 
-QR decomposition Linscale took 2.04378 ms.
+QR decomposition Linscale took 0.937728 ms.
 Run 4
 
-QR decomposition CUSolver took 26.1733 ms.
+QR decomposition CUSolver took 23.6296 ms.
 
-QR decomposition Linscale took 1.32915 ms.
+QR decomposition Linscale took 0.937376 ms.
 Run 5
 
-QR decomposition CUSolver took 23.7122 ms.
+QR decomposition CUSolver took 21.1279 ms.
 
-QR decomposition Linscale took 1.34144 ms.
+QR decomposition Linscale took 0.937696 ms.
 ***
 ***
 First table: 400 x 32 Second table: 400 x 32
 Run 1
 
-QR decomposition CUSolver took 51.0347 ms.
+QR decomposition CUSolver took 49.7779 ms.
 
-QR decomposition Linscale took 3.5321 ms.
+QR decomposition Linscale took 1.4007 ms.
 Run 2
 
-QR decomposition CUSolver took 51.9185 ms.
+QR decomposition CUSolver took 48.5908 ms.
 
-QR decomposition Linscale took 1.8168 ms.
+QR decomposition Linscale took 1.35782 ms.
 Run 3
 
-QR decomposition CUSolver took 51.7436 ms.
+QR decomposition CUSolver took 49.8749 ms.
 
-QR decomposition Linscale took 2.76426 ms.
+QR decomposition Linscale took 1.35578 ms.
 Run 4
 
-QR decomposition CUSolver took 56.3319 ms.
+QR decomposition CUSolver took 52.0071 ms.
 
-QR decomposition Linscale took 1.94547 ms.
+QR decomposition Linscale took 1.45293 ms.
 Run 5
 
-QR decomposition CUSolver took 52.6758 ms.
+QR decomposition CUSolver took 50.4191 ms.
 
-QR decomposition Linscale took 1.75482 ms.
+QR decomposition Linscale took 1.22038 ms.
 ***
 ***
 First table: 400 x 64 Second table: 400 x 64
 Run 1
 
-QR decomposition CUSolver took 119.627 ms.
+QR decomposition CUSolver took 123.617 ms.
 
-QR decomposition Linscale took 3.44352 ms.
+QR decomposition Linscale took 1.91898 ms.
 Run 2
 
-QR decomposition CUSolver took 105.105 ms.
+QR decomposition CUSolver took 119.27 ms.
 
-QR decomposition Linscale took 2.90566 ms.
+QR decomposition Linscale took 3.04992 ms.
 Run 3
 
-QR decomposition CUSolver took 110.67 ms.
+QR decomposition CUSolver took 106.639 ms.
 
-QR decomposition Linscale took 2.45792 ms.
+QR decomposition Linscale took 1.92096 ms.
 Run 4
 
-QR decomposition CUSolver took 108.619 ms.
+QR decomposition CUSolver took 103.623 ms.
 
-QR decomposition Linscale took 2.41254 ms.
+QR decomposition Linscale took 1.91283 ms.
 Run 5
 
-QR decomposition CUSolver took 106.961 ms.
+QR decomposition CUSolver took 115.601 ms.
 
-QR decomposition Linscale took 2.36573 ms.
+QR decomposition Linscale took 1.912 ms.
 ***
 ***
 First table: 400 x 2 Second table: 800 x 2
 Run 1
 
-QR decomposition CUSolver took 5.28438 ms.
+QR decomposition CUSolver took 5.53984 ms.
 
-QR decomposition Linscale took 1.1735 ms.
+QR decomposition Linscale took 0.611776 ms.
 Run 2
 
-QR decomposition CUSolver took 5.71194 ms.
+QR decomposition CUSolver took 5.24694 ms.
 
-QR decomposition Linscale took 1.12125 ms.
+QR decomposition Linscale took 0.692224 ms.
 Run 3
 
-QR decomposition CUSolver took 6.21158 ms.
+QR decomposition CUSolver took 8.11898 ms.
 
-QR decomposition Linscale took 1.61843 ms.
+QR decomposition Linscale took 0.612128 ms.
 Run 4
 
-QR decomposition CUSolver took 7.83539 ms.
+QR decomposition CUSolver took 6.7153 ms.
 
-QR decomposition Linscale took 1.52166 ms.
+QR decomposition Linscale took 0.72528 ms.
 Run 5
 
-QR decomposition CUSolver took 6.10304 ms.
+QR decomposition CUSolver took 6.77725 ms.
 
-QR decomposition Linscale took 1.1967 ms.
+QR decomposition Linscale took 0.726944 ms.
 ***
 ***
 First table: 400 x 4 Second table: 800 x 4
 Run 1
 
-QR decomposition CUSolver took 11.5409 ms.
+QR decomposition CUSolver took 13.3092 ms.
 
-QR decomposition Linscale took 1.33734 ms.
+QR decomposition Linscale took 0.905728 ms.
 Run 2
 
-QR decomposition CUSolver took 11.1346 ms.
+QR decomposition CUSolver took 10.3212 ms.
 
-QR decomposition Linscale took 1.46829 ms.
+QR decomposition Linscale took 0.906688 ms.
 Run 3
 
-QR decomposition CUSolver took 10.7763 ms.
+QR decomposition CUSolver took 10.6327 ms.
 
-QR decomposition Linscale took 1.62294 ms.
+QR decomposition Linscale took 0.903584 ms.
 Run 4
 
-QR decomposition CUSolver took 13.3243 ms.
+QR decomposition CUSolver took 13.2664 ms.
 
-QR decomposition Linscale took 1.38854 ms.
+QR decomposition Linscale took 0.906656 ms.
 Run 5
 
-QR decomposition CUSolver took 12.2367 ms.
+QR decomposition CUSolver took 14.1108 ms.
 
-QR decomposition Linscale took 2.16534 ms.
+QR decomposition Linscale took 0.905888 ms.
 ***
 ***
 First table: 400 x 8 Second table: 800 x 8
 Run 1
 
-QR decomposition CUSolver took 21.3812 ms.
+QR decomposition CUSolver took 19.9107 ms.
 
-QR decomposition Linscale took 1.63427 ms.
+QR decomposition Linscale took 1.10282 ms.
 Run 2
 
-QR decomposition CUSolver took 21.6597 ms.
+QR decomposition CUSolver took 20.1142 ms.
 
-QR decomposition Linscale took 1.82038 ms.
+QR decomposition Linscale took 1.10387 ms.
 Run 3
 
-QR decomposition CUSolver took 22.2153 ms.
+QR decomposition CUSolver took 21.7827 ms.
 
-QR decomposition Linscale took 1.50118 ms.
+QR decomposition Linscale took 1.10573 ms.
 Run 4
 
-QR decomposition CUSolver took 21.2541 ms.
+QR decomposition CUSolver took 19.956 ms.
 
-QR decomposition Linscale took 1.52448 ms.
+QR decomposition Linscale took 1.10349 ms.
 Run 5
 
-QR decomposition CUSolver took 21.498 ms.
+QR decomposition CUSolver took 21.2111 ms.
 
-QR decomposition Linscale took 1.55238 ms.
+QR decomposition Linscale took 1.4159 ms.
 ***
 ***
 First table: 400 x 16 Second table: 800 x 16
 Run 1
 
-QR decomposition CUSolver took 43.1596 ms.
+QR decomposition CUSolver took 43.4997 ms.
 
-QR decomposition Linscale took 2.11149 ms.
+QR decomposition Linscale took 1.34621 ms.
 Run 2
 
-QR decomposition CUSolver took 42.7049 ms.
+QR decomposition CUSolver took 41.745 ms.
 
-QR decomposition Linscale took 2.29168 ms.
+QR decomposition Linscale took 1.63238 ms.
 Run 3
 
-QR decomposition CUSolver took 41.4578 ms.
+QR decomposition CUSolver took 41.2837 ms.
 
-QR decomposition Linscale took 1.83334 ms.
+QR decomposition Linscale took 1.34714 ms.
 Run 4
 
-QR decomposition CUSolver took 42.4264 ms.
+QR decomposition CUSolver took 41.3017 ms.
 
-QR decomposition Linscale took 1.84752 ms.
+QR decomposition Linscale took 1.34861 ms.
 Run 5
 
-QR decomposition CUSolver took 41.9039 ms.
+QR decomposition CUSolver took 43.6828 ms.
 
-QR decomposition Linscale took 3.4935 ms.
+QR decomposition Linscale took 1.40902 ms.
 ***
 ***
 First table: 400 x 32 Second table: 800 x 32
 Run 1
 
-QR decomposition CUSolver took 98.5744 ms.
+QR decomposition CUSolver took 97.8333 ms.
 
-QR decomposition Linscale took 2.59466 ms.
+QR decomposition Linscale took 1.8545 ms.
 Run 2
 
-QR decomposition CUSolver took 89.6886 ms.
+QR decomposition CUSolver took 88.2497 ms.
 
-QR decomposition Linscale took 3.2777 ms.
+QR decomposition Linscale took 1.54976 ms.
 Run 3
 
-QR decomposition CUSolver took 100.058 ms.
+QR decomposition CUSolver took 90.0302 ms.
 
-QR decomposition Linscale took 2.17264 ms.
+QR decomposition Linscale took 1.55139 ms.
 Run 4
 
-QR decomposition CUSolver took 94.5453 ms.
+QR decomposition CUSolver took 87.6405 ms.
 
-QR decomposition Linscale took 1.99808 ms.
+QR decomposition Linscale took 1.56589 ms.
 Run 5
 
-QR decomposition CUSolver took 90.2431 ms.
+QR decomposition CUSolver took 89.5388 ms.
 
-QR decomposition Linscale took 2.15386 ms.
+QR decomposition Linscale took 1.56288 ms.
 ***
 ***
 First table: 400 x 64 Second table: 800 x 64
 Run 1
 
-QR decomposition CUSolver took 218.039 ms.
+QR decomposition CUSolver took 203.739 ms.
 
-QR decomposition Linscale took 3.26022 ms.
+QR decomposition Linscale took 2.48832 ms.
 Run 2
 
-QR decomposition CUSolver took 216.308 ms.
+QR decomposition CUSolver took 202.398 ms.
 
-QR decomposition Linscale took 2.94138 ms.
+QR decomposition Linscale took 2.48832 ms.
 Run 3
 
-QR decomposition CUSolver took 229.396 ms.
+QR decomposition CUSolver took 207.615 ms.
 
-QR decomposition Linscale took 4.05046 ms.
+QR decomposition Linscale took 2.49446 ms.
 Run 4
 
-QR decomposition CUSolver took 221.703 ms.
+QR decomposition CUSolver took 208.547 ms.
 
-QR decomposition Linscale took 4.08566 ms.
+QR decomposition Linscale took 2.79914 ms.
 Run 5
 
-QR decomposition CUSolver took 219.242 ms.
+QR decomposition CUSolver took 208.663 ms.
 
-QR decomposition Linscale took 2.93146 ms.
+QR decomposition Linscale took 2.8264 ms.
 ***
 ***
 First table: 800 x 2 Second table: 100 x 2
 Run 1
 
-QR decomposition CUSolver took 2.98032 ms.
+QR decomposition CUSolver took 3.70461 ms.
 
-QR decomposition Linscale took 0.772032 ms.
+QR decomposition Linscale took 0.264192 ms.
 Run 2
 
-QR decomposition CUSolver took 2.91069 ms.
+QR decomposition CUSolver took 3.18758 ms.
 
-QR decomposition Linscale took 0.773504 ms.
+QR decomposition Linscale took 0.444672 ms.
 Run 3
 
-QR decomposition CUSolver took 3.24784 ms.
+QR decomposition CUSolver took 5.40672 ms.
 
-QR decomposition Linscale took 0.93184 ms.
+QR decomposition Linscale took 0.30384 ms.
 Run 4
 
-QR decomposition CUSolver took 3.42118 ms.
+QR decomposition CUSolver took 3.85434 ms.
 
-QR decomposition Linscale took 0.995264 ms.
+QR decomposition Linscale took 0.303104 ms.
 Run 5
 
-QR decomposition CUSolver took 3.54918 ms.
+QR decomposition CUSolver took 3.38822 ms.
 
-QR decomposition Linscale took 1.20192 ms.
+QR decomposition Linscale took 0.305152 ms.
 ***
 ***
 First table: 800 x 4 Second table: 100 x 4
 Run 1
 
-QR decomposition CUSolver took 6.40534 ms.
+QR decomposition CUSolver took 7.08883 ms.
 
-QR decomposition Linscale took 0.922976 ms.
+QR decomposition Linscale took 0.442112 ms.
 Run 2
 
-QR decomposition CUSolver took 5.50333 ms.
+QR decomposition CUSolver took 4.26806 ms.
 
-QR decomposition Linscale took 1.33398 ms.
+QR decomposition Linscale took 0.442368 ms.
 Run 3
 
-QR decomposition CUSolver took 5.53738 ms.
+QR decomposition CUSolver took 4.97664 ms.
 
-QR decomposition Linscale took 1.08365 ms.
+QR decomposition Linscale took 0.442016 ms.
 Run 4
 
-QR decomposition CUSolver took 4.59981 ms.
+QR decomposition CUSolver took 4.14602 ms.
 
-QR decomposition Linscale took 1.06291 ms.
+QR decomposition Linscale took 0.442336 ms.
 Run 5
 
-QR decomposition CUSolver took 4.07552 ms.
+QR decomposition CUSolver took 6.45472 ms.
 
-QR decomposition Linscale took 0.890528 ms.
+QR decomposition Linscale took 0.44128 ms.
 ***
 ***
 First table: 800 x 8 Second table: 100 x 8
 Run 1
 
-QR decomposition CUSolver took 8.23533 ms.
+QR decomposition CUSolver took 6.75226 ms.
 
-QR decomposition Linscale took 1.20246 ms.
+QR decomposition Linscale took 0.607328 ms.
 Run 2
 
-QR decomposition CUSolver took 6.98339 ms.
+QR decomposition CUSolver took 6.51014 ms.
 
-QR decomposition Linscale took 1.14083 ms.
+QR decomposition Linscale took 0.607872 ms.
 Run 3
 
-QR decomposition CUSolver took 8.36637 ms.
+QR decomposition CUSolver took 6.55712 ms.
 
-QR decomposition Linscale took 1.73795 ms.
+QR decomposition Linscale took 0.607808 ms.
 Run 4
 
-QR decomposition CUSolver took 6.94886 ms.
+QR decomposition CUSolver took 8.5384 ms.
 
-QR decomposition Linscale took 1.05677 ms.
+QR decomposition Linscale took 0.60496 ms.
 Run 5
 
-QR decomposition CUSolver took 7.80691 ms.
+QR decomposition CUSolver took 6.75142 ms.
 
-QR decomposition Linscale took 1.02643 ms.
+QR decomposition Linscale took 0.69632 ms.
 ***
 ***
 First table: 800 x 16 Second table: 100 x 16
 Run 1
 
-QR decomposition CUSolver took 14.6437 ms.
+QR decomposition CUSolver took 13.8459 ms.
 
-QR decomposition Linscale took 1.56208 ms.
+QR decomposition Linscale took 0.817152 ms.
 Run 2
 
-QR decomposition CUSolver took 14.3478 ms.
+QR decomposition CUSolver took 16.9103 ms.
 
-QR decomposition Linscale took 1.34586 ms.
+QR decomposition Linscale took 0.816768 ms.
 Run 3
 
-QR decomposition CUSolver took 14.4937 ms.
+QR decomposition CUSolver took 12.7734 ms.
 
-QR decomposition Linscale took 2.02957 ms.
+QR decomposition Linscale took 0.817152 ms.
 Run 4
 
-QR decomposition CUSolver took 14.5082 ms.
+QR decomposition CUSolver took 12.5396 ms.
 
-QR decomposition Linscale took 2.88762 ms.
+QR decomposition Linscale took 0.818016 ms.
 Run 5
 
-QR decomposition CUSolver took 13.9411 ms.
+QR decomposition CUSolver took 15.5034 ms.
 
-QR decomposition Linscale took 1.2249 ms.
+QR decomposition Linscale took 0.816928 ms.
 ***
 ***
 First table: 800 x 32 Second table: 100 x 32
 Run 1
 
-QR decomposition CUSolver took 28.262 ms.
+QR decomposition CUSolver took 28.3605 ms.
 
-QR decomposition Linscale took 1.69123 ms.
+QR decomposition Linscale took 1.25962 ms.
 Run 2
 
-QR decomposition CUSolver took 33.9046 ms.
+QR decomposition CUSolver took 27.4698 ms.
 
-QR decomposition Linscale took 1.89504 ms.
+QR decomposition Linscale took 1.98925 ms.
 Run 3
 
-QR decomposition CUSolver took 30.0714 ms.
+QR decomposition CUSolver took 30.1745 ms.
 
-QR decomposition Linscale took 2.16918 ms.
+QR decomposition Linscale took 1.26157 ms.
 Run 4
 
-QR decomposition CUSolver took 29.0082 ms.
+QR decomposition CUSolver took 27.2877 ms.
 
-QR decomposition Linscale took 2.61325 ms.
+QR decomposition Linscale took 1.57917 ms.
 Run 5
 
-QR decomposition CUSolver took 27.6806 ms.
+QR decomposition CUSolver took 26.5585 ms.
 
-QR decomposition Linscale took 1.9321 ms.
+QR decomposition Linscale took 1.25763 ms.
 ***
 ***
 First table: 800 x 64 Second table: 100 x 64
 Run 1
 
-QR decomposition CUSolver took 73.0475 ms.
+QR decomposition CUSolver took 72.0241 ms.
 
-QR decomposition Linscale took 2.68493 ms.
+QR decomposition Linscale took 2.24474 ms.
 Run 2
 
-QR decomposition CUSolver took 83.5707 ms.
+QR decomposition CUSolver took 78.7836 ms.
 
-QR decomposition Linscale took 2.55888 ms.
+QR decomposition Linscale took 2.21766 ms.
 Run 3
 
-QR decomposition CUSolver took 68.1274 ms.
+QR decomposition CUSolver took 62.2801 ms.
 
-QR decomposition Linscale took 2.91411 ms.
+QR decomposition Linscale took 2.21594 ms.
 Run 4
 
-QR decomposition CUSolver took 58.3028 ms.
+QR decomposition CUSolver took 57.3992 ms.
 
-QR decomposition Linscale took 2.56963 ms.
+QR decomposition Linscale took 1.97213 ms.
 Run 5
 
-QR decomposition CUSolver took 69.6527 ms.
+QR decomposition CUSolver took 67.4857 ms.
 
-QR decomposition Linscale took 3.35712 ms.
+QR decomposition Linscale took 1.89875 ms.
 ***
 ***
 First table: 800 x 2 Second table: 200 x 2
 Run 1
 
-QR decomposition CUSolver took 4.15741 ms.
+QR decomposition CUSolver took 3.96493 ms.
 
-QR decomposition Linscale took 1.06086 ms.
+QR decomposition Linscale took 0.37552 ms.
 Run 2
 
-QR decomposition CUSolver took 4.49072 ms.
+QR decomposition CUSolver took 4.11677 ms.
 
-QR decomposition Linscale took 0.779584 ms.
+QR decomposition Linscale took 0.376448 ms.
 Run 3
 
-QR decomposition CUSolver took 4.26032 ms.
+QR decomposition CUSolver took 6.6719 ms.
 
-QR decomposition Linscale took 1.81862 ms.
+QR decomposition Linscale took 0.374912 ms.
 Run 4
 
-QR decomposition CUSolver took 4.60256 ms.
+QR decomposition CUSolver took 3.98586 ms.
 
-QR decomposition Linscale took 0.79056 ms.
+QR decomposition Linscale took 0.375296 ms.
 Run 5
 
-QR decomposition CUSolver took 4.12435 ms.
+QR decomposition CUSolver took 3.95469 ms.
 
-QR decomposition Linscale took 0.878464 ms.
+QR decomposition Linscale took 0.376704 ms.
 ***
 ***
 First table: 800 x 4 Second table: 200 x 4
 Run 1
 
-QR decomposition CUSolver took 6.09152 ms.
+QR decomposition CUSolver took 8.1743 ms.
 
-QR decomposition Linscale took 1.30867 ms.
+QR decomposition Linscale took 0.609408 ms.
 Run 2
 
-QR decomposition CUSolver took 9.1943 ms.
+QR decomposition CUSolver took 8.34746 ms.
 
-QR decomposition Linscale took 0.975008 ms.
+QR decomposition Linscale took 0.527328 ms.
 Run 3
 
-QR decomposition CUSolver took 6.6048 ms.
+QR decomposition CUSolver took 7.10634 ms.
 
-QR decomposition Linscale took 1.03382 ms.
+QR decomposition Linscale took 0.528352 ms.
 Run 4
 
-QR decomposition CUSolver took 6.99597 ms.
+QR decomposition CUSolver took 6.58877 ms.
 
-QR decomposition Linscale took 1.26816 ms.
+QR decomposition Linscale took 0.526816 ms.
 Run 5
 
-QR decomposition CUSolver took 6.93485 ms.
+QR decomposition CUSolver took 6.44304 ms.
 
-QR decomposition Linscale took 1.46432 ms.
+QR decomposition Linscale took 0.527968 ms.
 ***
 ***
 First table: 800 x 8 Second table: 200 x 8
 Run 1
 
-QR decomposition CUSolver took 11.3552 ms.
+QR decomposition CUSolver took 10.831 ms.
 
-QR decomposition Linscale took 1.40288 ms.
+QR decomposition Linscale took 0.693856 ms.
 Run 2
 
-QR decomposition CUSolver took 14.0884 ms.
+QR decomposition CUSolver took 12.2141 ms.
 
-QR decomposition Linscale took 1.10912 ms.
+QR decomposition Linscale took 0.69504 ms.
 Run 3
 
-QR decomposition CUSolver took 14.8153 ms.
+QR decomposition CUSolver took 10.746 ms.
 
-QR decomposition Linscale took 2.13478 ms.
+QR decomposition Linscale took 0.694304 ms.
 Run 4
 
-QR decomposition CUSolver took 11.5209 ms.
+QR decomposition CUSolver took 13.0334 ms.
 
-QR decomposition Linscale took 1.40269 ms.
+QR decomposition Linscale took 0.764032 ms.
 Run 5
 
-QR decomposition CUSolver took 13.476 ms.
+QR decomposition CUSolver took 10.9835 ms.
 
-QR decomposition Linscale took 1.26362 ms.
+QR decomposition Linscale took 0.694048 ms.
 ***
 ***
 First table: 800 x 16 Second table: 200 x 16
 Run 1
 
-QR decomposition CUSolver took 25.3153 ms.
+QR decomposition CUSolver took 21.5306 ms.
 
-QR decomposition Linscale took 1.3312 ms.
+QR decomposition Linscale took 0.910624 ms.
 Run 2
 
-QR decomposition CUSolver took 26.5949 ms.
+QR decomposition CUSolver took 25.6734 ms.
 
-QR decomposition Linscale took 2.03571 ms.
+QR decomposition Linscale took 0.913376 ms.
 Run 3
 
-QR decomposition CUSolver took 25.7303 ms.
+QR decomposition CUSolver took 21.5836 ms.
 
-QR decomposition Linscale took 1.32506 ms.
+QR decomposition Linscale took 0.909312 ms.
 Run 4
 
-QR decomposition CUSolver took 22.5669 ms.
+QR decomposition CUSolver took 22.2326 ms.
 
-QR decomposition Linscale took 1.38477 ms.
+QR decomposition Linscale took 0.911232 ms.
 Run 5
 
-QR decomposition CUSolver took 24.6824 ms.
+QR decomposition CUSolver took 21.1619 ms.
 
-QR decomposition Linscale took 2.91818 ms.
+QR decomposition Linscale took 0.909856 ms.
 ***
 ***
 First table: 800 x 32 Second table: 200 x 32
 Run 1
 
-QR decomposition CUSolver took 53.9572 ms.
+QR decomposition CUSolver took 51.1884 ms.
 
-QR decomposition Linscale took 2.07312 ms.
+QR decomposition Linscale took 1.3599 ms.
 Run 2
 
-QR decomposition CUSolver took 57.7851 ms.
+QR decomposition CUSolver took 50.2047 ms.
 
-QR decomposition Linscale took 1.91395 ms.
+QR decomposition Linscale took 1.44998 ms.
 Run 3
 
-QR decomposition CUSolver took 55.1588 ms.
+QR decomposition CUSolver took 50.7437 ms.
 
-QR decomposition Linscale took 1.92307 ms.
+QR decomposition Linscale took 1.36173 ms.
 Run 4
 
-QR decomposition CUSolver took 59.2467 ms.
+QR decomposition CUSolver took 53.1476 ms.
 
-QR decomposition Linscale took 1.80224 ms.
+QR decomposition Linscale took 1.69328 ms.
 Run 5
 
-QR decomposition CUSolver took 56.9975 ms.
+QR decomposition CUSolver took 49.633 ms.
 
-QR decomposition Linscale took 2.16339 ms.
+QR decomposition Linscale took 1.27306 ms.
 ***
 ***
 First table: 800 x 64 Second table: 200 x 64
 Run 1
 
-QR decomposition CUSolver took 126.9 ms.
+QR decomposition CUSolver took 120.259 ms.
 
-QR decomposition Linscale took 2.75654 ms.
+QR decomposition Linscale took 2.11891 ms.
 Run 2
 
-QR decomposition CUSolver took 117.173 ms.
+QR decomposition CUSolver took 114.008 ms.
 
-QR decomposition Linscale took 2.49021 ms.
+QR decomposition Linscale took 2.08282 ms.
 Run 3
 
-QR decomposition CUSolver took 113.776 ms.
+QR decomposition CUSolver took 102.799 ms.
 
-QR decomposition Linscale took 3.83405 ms.
+QR decomposition Linscale took 1.99104 ms.
 Run 4
 
-QR decomposition CUSolver took 114.133 ms.
+QR decomposition CUSolver took 112.079 ms.
 
-QR decomposition Linscale took 2.36122 ms.
+QR decomposition Linscale took 2.03498 ms.
 Run 5
 
-QR decomposition CUSolver took 123.253 ms.
+QR decomposition CUSolver took 102.463 ms.
 
-QR decomposition Linscale took 2.40832 ms.
+QR decomposition Linscale took 2.06214 ms.
 ***
 ***
 First table: 800 x 2 Second table: 400 x 2
 Run 1
 
-QR decomposition CUSolver took 5.83885 ms.
+QR decomposition CUSolver took 5.46077 ms.
 
-QR decomposition Linscale took 0.84912 ms.
+QR decomposition Linscale took 0.442144 ms.
 Run 2
 
-QR decomposition CUSolver took 5.95075 ms.
+QR decomposition CUSolver took 8.09165 ms.
 
-QR decomposition Linscale took 0.866752 ms.
+QR decomposition Linscale took 0.44192 ms.
 Run 3
 
-QR decomposition CUSolver took 6.63347 ms.
+QR decomposition CUSolver took 5.86547 ms.
 
-QR decomposition Linscale took 1.03014 ms.
+QR decomposition Linscale took 0.770048 ms.
 Run 4
 
-QR decomposition CUSolver took 11.0305 ms.
+QR decomposition CUSolver took 6.11744 ms.
 
-QR decomposition Linscale took 1.08326 ms.
+QR decomposition Linscale took 0.524288 ms.
 Run 5
 
-QR decomposition CUSolver took 6.8055 ms.
+QR decomposition CUSolver took 8.41523 ms.
 
-QR decomposition Linscale took 1.05789 ms.
+QR decomposition Linscale took 0.520192 ms.
 ***
 ***
 First table: 800 x 4 Second table: 400 x 4
 Run 1
 
-QR decomposition CUSolver took 12.3573 ms.
+QR decomposition CUSolver took 11.135 ms.
 
-QR decomposition Linscale took 1.16019 ms.
+QR decomposition Linscale took 0.69312 ms.
 Run 2
 
-QR decomposition CUSolver took 14.7945 ms.
+QR decomposition CUSolver took 10.5356 ms.
 
-QR decomposition Linscale took 1.51619 ms.
+QR decomposition Linscale took 0.692288 ms.
 Run 3
 
-QR decomposition CUSolver took 12.7873 ms.
+QR decomposition CUSolver took 10.6354 ms.
 
-QR decomposition Linscale took 1.22998 ms.
+QR decomposition Linscale took 0.789984 ms.
 Run 4
 
-QR decomposition CUSolver took 11.9059 ms.
+QR decomposition CUSolver took 12.3454 ms.
 
-QR decomposition Linscale took 1.19872 ms.
+QR decomposition Linscale took 0.694368 ms.
 Run 5
 
-QR decomposition CUSolver took 14.2848 ms.
+QR decomposition CUSolver took 11.3594 ms.
 
-QR decomposition Linscale took 1.25827 ms.
+QR decomposition Linscale took 0.694112 ms.
 ***
 ***
 First table: 800 x 8 Second table: 400 x 8
 Run 1
 
-QR decomposition CUSolver took 22.1553 ms.
+QR decomposition CUSolver took 19.6765 ms.
 
-QR decomposition Linscale took 2.51302 ms.
+QR decomposition Linscale took 0.894208 ms.
 Run 2
 
-QR decomposition CUSolver took 21.9408 ms.
+QR decomposition CUSolver took 22.6539 ms.
 
-QR decomposition Linscale took 1.44022 ms.
+QR decomposition Linscale took 1.55331 ms.
 Run 3
 
-QR decomposition CUSolver took 20.8876 ms.
+QR decomposition CUSolver took 21.9143 ms.
 
-QR decomposition Linscale took 1.28054 ms.
+QR decomposition Linscale took 0.892544 ms.
 Run 4
 
-QR decomposition CUSolver took 23.97 ms.
+QR decomposition CUSolver took 21.3176 ms.
 
-QR decomposition Linscale took 1.76208 ms.
+QR decomposition Linscale took 0.892544 ms.
 Run 5
 
-QR decomposition CUSolver took 22.6276 ms.
+QR decomposition CUSolver took 23.0359 ms.
 
-QR decomposition Linscale took 1.33194 ms.
+QR decomposition Linscale took 0.945536 ms.
 ***
 ***
 First table: 800 x 16 Second table: 400 x 16
 Run 1
 
-QR decomposition CUSolver took 49.1315 ms.
+QR decomposition CUSolver took 41.177 ms.
 
-QR decomposition Linscale took 1.55411 ms.
+QR decomposition Linscale took 1.13459 ms.
 Run 2
 
-QR decomposition CUSolver took 40.775 ms.
+QR decomposition CUSolver took 40.9756 ms.
 
-QR decomposition Linscale took 1.41149 ms.
+QR decomposition Linscale took 1.13421 ms.
 Run 3
 
-QR decomposition CUSolver took 40.5118 ms.
+QR decomposition CUSolver took 41.1116 ms.
 
-QR decomposition Linscale took 1.64045 ms.
+QR decomposition Linscale took 1.13459 ms.
 Run 4
 
-QR decomposition CUSolver took 47.3022 ms.
+QR decomposition CUSolver took 41.5048 ms.
 
-QR decomposition Linscale took 1.85136 ms.
+QR decomposition Linscale took 1.13459 ms.
 Run 5
 
-QR decomposition CUSolver took 44.5341 ms.
+QR decomposition CUSolver took 41.7485 ms.
 
-QR decomposition Linscale took 1.90605 ms.
+QR decomposition Linscale took 1.16714 ms.
 ***
 ***
 First table: 800 x 32 Second table: 400 x 32
 Run 1
 
-QR decomposition CUSolver took 104.784 ms.
+QR decomposition CUSolver took 94.3005 ms.
 
-QR decomposition Linscale took 2.56614 ms.
+QR decomposition Linscale took 1.60586 ms.
 Run 2
 
-QR decomposition CUSolver took 102.264 ms.
+QR decomposition CUSolver took 96.432 ms.
 
-QR decomposition Linscale took 1.99741 ms.
+QR decomposition Linscale took 1.612 ms.
 Run 3
 
-QR decomposition CUSolver took 91.107 ms.
+QR decomposition CUSolver took 84.9244 ms.
 
-QR decomposition Linscale took 1.78586 ms.
+QR decomposition Linscale took 1.64666 ms.
 Run 4
 
-QR decomposition CUSolver took 91.5168 ms.
+QR decomposition CUSolver took 85.7408 ms.
 
-QR decomposition Linscale took 1.77581 ms.
+QR decomposition Linscale took 1.38669 ms.
 Run 5
 
-QR decomposition CUSolver took 93.7692 ms.
+QR decomposition CUSolver took 84.8794 ms.
 
-QR decomposition Linscale took 2.69312 ms.
+QR decomposition Linscale took 1.68307 ms.
 ***
 ***
 First table: 800 x 64 Second table: 400 x 64
 Run 1
 
-QR decomposition CUSolver took 229.424 ms.
+QR decomposition CUSolver took 202.118 ms.
 
-QR decomposition Linscale took 2.79296 ms.
+QR decomposition Linscale took 2.30915 ms.
 Run 2
 
-QR decomposition CUSolver took 227.863 ms.
+QR decomposition CUSolver took 204.765 ms.
 
-QR decomposition Linscale took 3.91965 ms.
+QR decomposition Linscale took 2.58733 ms.
 Run 3
 
-QR decomposition CUSolver took 236.392 ms.
+QR decomposition CUSolver took 202.551 ms.
 
-QR decomposition Linscale took 3.08019 ms.
+QR decomposition Linscale took 2.3081 ms.
 Run 4
 
-QR decomposition CUSolver took 230.846 ms.
+QR decomposition CUSolver took 201.788 ms.
 
-QR decomposition Linscale took 3.40227 ms.
+QR decomposition Linscale took 2.30374 ms.
 Run 5
 
-QR decomposition CUSolver took 238.43 ms.
+QR decomposition CUSolver took 201.988 ms.
 
-QR decomposition Linscale took 3.15152 ms.
+QR decomposition Linscale took 2.31395 ms.
 ***
 ***
 First table: 800 x 2 Second table: 800 x 2
 Run 1
 
-QR decomposition CUSolver took 11.4744 ms.
+QR decomposition CUSolver took 8.54816 ms.
 
-QR decomposition Linscale took 1.36406 ms.
+QR decomposition Linscale took 0.762048 ms.
 Run 2
 
-QR decomposition CUSolver took 9.58038 ms.
+QR decomposition CUSolver took 11.0773 ms.
 
-QR decomposition Linscale took 1.21894 ms.
+QR decomposition Linscale took 0.67968 ms.
 Run 3
 
-QR decomposition CUSolver took 10.1159 ms.
+QR decomposition CUSolver took 9.83309 ms.
 
-QR decomposition Linscale took 1.25558 ms.
+QR decomposition Linscale took 0.797472 ms.
 Run 4
 
-QR decomposition CUSolver took 12.0471 ms.
+QR decomposition CUSolver took 10.535 ms.
 
-QR decomposition Linscale took 1.2984 ms.
+QR decomposition Linscale took 0.79808 ms.
 Run 5
 
-QR decomposition CUSolver took 11.778 ms.
+QR decomposition CUSolver took 10.5329 ms.
 
-QR decomposition Linscale took 1.24518 ms.
+QR decomposition Linscale took 0.81712 ms.
 ***
 ***
 First table: 800 x 4 Second table: 800 x 4
 Run 1
 
-QR decomposition CUSolver took 20.4437 ms.
+QR decomposition CUSolver took 20.6355 ms.
 
-QR decomposition Linscale took 1.82682 ms.
+QR decomposition Linscale took 1.0184 ms.
 Run 2
 
-QR decomposition CUSolver took 20.4111 ms.
+QR decomposition CUSolver took 18.9911 ms.
 
-QR decomposition Linscale took 2.72973 ms.
+QR decomposition Linscale took 1.01786 ms.
 Run 3
 
-QR decomposition CUSolver took 24.7589 ms.
+QR decomposition CUSolver took 18.4372 ms.
 
-QR decomposition Linscale took 3.31773 ms.
+QR decomposition Linscale took 1.01734 ms.
 Run 4
 
-QR decomposition CUSolver took 22.8434 ms.
+QR decomposition CUSolver took 18.7499 ms.
 
-QR decomposition Linscale took 2.01555 ms.
+QR decomposition Linscale took 1.02202 ms.
 Run 5
 
-QR decomposition CUSolver took 21.3519 ms.
+QR decomposition CUSolver took 21.1491 ms.
 
-QR decomposition Linscale took 2.98685 ms.
+QR decomposition Linscale took 1.01821 ms.
 ***
 ***
 First table: 800 x 8 Second table: 800 x 8
 Run 1
 
-QR decomposition CUSolver took 40.1522 ms.
+QR decomposition CUSolver took 36.5384 ms.
 
-QR decomposition Linscale took 1.77066 ms.
+QR decomposition Linscale took 1.24755 ms.
 Run 2
 
-QR decomposition CUSolver took 40.644 ms.
+QR decomposition CUSolver took 37.9053 ms.
 
-QR decomposition Linscale took 2.06944 ms.
+QR decomposition Linscale took 1.24749 ms.
 Run 3
 
-QR decomposition CUSolver took 39.6814 ms.
+QR decomposition CUSolver took 36.8661 ms.
 
-QR decomposition Linscale took 3.09862 ms.
+QR decomposition Linscale took 1.25114 ms.
 Run 4
 
-QR decomposition CUSolver took 41.013 ms.
+QR decomposition CUSolver took 38.9829 ms.
 
-QR decomposition Linscale took 1.9513 ms.
+QR decomposition Linscale took 1.24554 ms.
 Run 5
 
-QR decomposition CUSolver took 40.3333 ms.
+QR decomposition CUSolver took 37.6355 ms.
 
-QR decomposition Linscale took 1.76794 ms.
+QR decomposition Linscale took 1.25085 ms.
 ***
 ***
 First table: 800 x 16 Second table: 800 x 16
 Run 1
 
-QR decomposition CUSolver took 86.8273 ms.
+QR decomposition CUSolver took 78.4871 ms.
 
-QR decomposition Linscale took 1.89792 ms.
+QR decomposition Linscale took 1.4807 ms.
 Run 2
 
-QR decomposition CUSolver took 72.1163 ms.
+QR decomposition CUSolver took 69.8577 ms.
 
-QR decomposition Linscale took 1.68896 ms.
+QR decomposition Linscale took 1.27622 ms.
 Run 3
 
-QR decomposition CUSolver took 70.8178 ms.
+QR decomposition CUSolver took 68.1513 ms.
 
-QR decomposition Linscale took 1.6855 ms.
+QR decomposition Linscale took 1.27571 ms.
 Run 4
 
-QR decomposition CUSolver took 70.9523 ms.
+QR decomposition CUSolver took 68.1129 ms.
 
-QR decomposition Linscale took 1.70781 ms.
+QR decomposition Linscale took 1.27578 ms.
 Run 5
 
-QR decomposition CUSolver took 72.9239 ms.
+QR decomposition CUSolver took 71.4457 ms.
 
-QR decomposition Linscale took 1.66301 ms.
+QR decomposition Linscale took 1.27478 ms.
 ***
 ***
 First table: 800 x 32 Second table: 800 x 32
 Run 1
 
-QR decomposition CUSolver took 178.614 ms.
+QR decomposition CUSolver took 169.601 ms.
 
-QR decomposition Linscale took 2.15802 ms.
+QR decomposition Linscale took 1.96669 ms.
 Run 2
 
-QR decomposition CUSolver took 180.374 ms.
+QR decomposition CUSolver took 173.706 ms.
 
-QR decomposition Linscale took 2.08358 ms.
+QR decomposition Linscale took 1.71427 ms.
 Run 3
 
-QR decomposition CUSolver took 176.961 ms.
+QR decomposition CUSolver took 183.146 ms.
 
-QR decomposition Linscale took 2.10419 ms.
+QR decomposition Linscale took 1.98451 ms.
 Run 4
 
-QR decomposition CUSolver took 174.453 ms.
+QR decomposition CUSolver took 164.248 ms.
 
-QR decomposition Linscale took 2.50682 ms.
+QR decomposition Linscale took 2.10346 ms.
 Run 5
 
-QR decomposition CUSolver took 176.554 ms.
+QR decomposition CUSolver took 165.605 ms.
 
-QR decomposition Linscale took 2.19088 ms.
+QR decomposition Linscale took 1.75165 ms.
 ***
 ***
 First table: 800 x 64 Second table: 800 x 64
 Run 1
 
-QR decomposition CUSolver took 423.657 ms.
+QR decomposition CUSolver took 395.597 ms.
 
-QR decomposition Linscale took 4.36723 ms.
+QR decomposition Linscale took 2.67923 ms.
 Run 2
 
-QR decomposition CUSolver took 421.819 ms.
+QR decomposition CUSolver took 395.352 ms.
 
-QR decomposition Linscale took 3.12525 ms.
+QR decomposition Linscale took 2.68054 ms.
 Run 3
 
-QR decomposition CUSolver took 421.919 ms.
+QR decomposition CUSolver took 394.231 ms.
 
-QR decomposition Linscale took 3.07818 ms.
+QR decomposition Linscale took 2.68006 ms.
 Run 4
 
-QR decomposition CUSolver took 418.323 ms.
+QR decomposition CUSolver took 396.834 ms.
 
-QR decomposition Linscale took 3.13344 ms.
+QR decomposition Linscale took 2.69107 ms.
 Run 5
 
-QR decomposition CUSolver took 408.07 ms.
+QR decomposition CUSolver took 394.572 ms.
 
-QR decomposition Linscale took 3.95434 ms.
+QR decomposition Linscale took 2.6872 ms.
 ***
