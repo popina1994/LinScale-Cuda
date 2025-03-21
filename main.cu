@@ -204,10 +204,22 @@ __global__ void concatenateHeadsAndTails(T* d_mat, T* d_mat2Mod, T* dOutMat, int
     }
 }
 
+template <typename T> 
+__global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
+{
+	int colIdx = threadIdx.x;
+	for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
+	{
+		if (rowIdx > colIdx)
+		{
+			d_A[IDX_C(rowIdx, colIdx, numRows, numCols)] = 0;
+		}
+	}
+}
 
 template <typename T>
 int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2, int numCols2,
-    std::string& fileName, bool computeSVD = false)
+    std::string& fileName, int compute)
 {
     int numRowsOut = numRows1 + numRows2 - 1;
     int numColsOut = numCols1 + numCols2;
@@ -220,8 +232,9 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
     T* d_mat1 = thrust::raw_pointer_cast(d_mat1DV.data());
     T *d_mat2 = thrust::raw_pointer_cast(d_mat2DV.data());
     T* d_matOut = thrust::raw_pointer_cast(d_matOutDV.data());
+    T *d_S;
     T* d_matOutTran = thrust::raw_pointer_cast(d_matTranDV.data());
-
+    bool computeSVD = compute == 2;
     cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
 
@@ -297,26 +310,24 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
     {
         CUSOLVER_CALL(cusolverDnDgeqrf (cusolverH, numRowsOut, numColsOut, d_matOutTran, numRowsOut, d_tau, d_work, workspace_size, devInfo));
     	if (computeSVD)
-	    {
-		    char jobu = 'N';  // No computation of U
-		    char jobvt = 'N'; // No computation of V^T
+	{
+		setZerosUpperTriangular<<<1, numColsOut>>>(d_matOutTran, numRowsOut, numColsOut);
+		char jobu = 'N';  // No computation of U
+		char jobvt = 'N'; // No computation of V^T
 		// cuSOLVER handle
 		int *d_info;
 		double *d_work;
-		double *d_S;
 		int lwork = 0;
 		int ldA = numRowsOut;
 	
 		cusolverDnHandle_t cusolverH1 = nullptr;
 		CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
 		CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
-		CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numRowsOut, numColsOut, &lwork));
+		CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numColsOut, numColsOut, &lwork));
 		CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
-	    CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numColsOut));
-	
-		cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRowsOut, numColsOut, d_matOutTran, ldA, d_S, nullptr, numRowsOut, nullptr, numColsOut, 
+	    	CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numColsOut));
+		cusolverDnDgesvd(cusolverH1, jobu, jobvt, numColsOut, numColsOut, d_matOutTran, ldA, d_S, nullptr, numColsOut, nullptr, numColsOut, 
 				        d_work, lwork, nullptr, d_info);
-		printMatrix<T, MajorOrder::COL_MAJOR>(d_S, numRowsOut, 1, numRowsOut, fileName + "LinScaleS", true);
         }	
     }
 
@@ -327,10 +338,21 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
     // Compute elapsed time
     float milliseconds = 0;
     CUDA_CALL(cudaEventElapsedTime(&milliseconds, start, stop));
-
-    T *h_matOut = new T[numRowsOut * numColsOut];
-    CUDA_CALL(cudaMemcpy(h_matOut, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
-
+	
+    if (computeSVD)
+    {
+	thrust::host_vector<T> h_matS(numColsOut);
+    	T *h_S = thrust::raw_pointer_cast(h_matS.data());
+	
+	CUDA_CALL(cudaMemcpy(h_S, d_S, numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
+        printMatrix<T, MajorOrder::COL_MAJOR>(h_S, numColsOut, 1, numColsOut, fileName + "LinScaleS", false);
+    }
+    else 
+    {
+    	thrust::host_vector<T> h_matOutH(numRowsOut * numColsOut);
+    	T *h_matOut = thrust::raw_pointer_cast(h_matOutH.data());
+    	CUDA_CALL(cudaMemcpy(h_matOut, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
+    }
     //printMatrix<T, MajorOrder::COL_MAJOR>(h_matOut, numRowsOut, numColsOut, numColsOut, fileName + "LinScale", true);
 
     CUDA_CALL(cudaFree(d_tau));
@@ -342,15 +364,22 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
 
     delete [] h_mat1;
     delete [] h_mat2;
-    delete [] h_matOut;
-
-    std::cout << "\nQR decomposition Linscale took " << milliseconds << " ms.\n";
+    std::cout << "\n";
+    if (computeSVD)
+    {
+	    std::cout << "SVD decomposition ";
+    }
+    else 
+    {
+	    std::cout << "QR decomposition ";
+    }
+    std::cout << "Linscale took " << milliseconds << " ms.\n";
 
     return 0;
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName, bool computeSVD = true)
+int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName, int compute)
 {
     // Allocate device memory
     T *d_A, *d_tau, *d_matOutTran, *h_S;
@@ -364,7 +393,7 @@ int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName
     h_S = thrust::raw_pointer_cast(h_matS.data());
     T *d_S;
     CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(numRows, numCols) * sizeof(T)));
-
+    bool computeSVD = compute == 2;
      // Copy data to GPU
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
@@ -491,7 +520,8 @@ int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName
     //printMatrix<T, MajorOrder::COL_MAJOR>(h_A, numRows, numCols, numCols, fileName + "CUDA", true);
 
     // Print execution time
-    std::cout << "\nQR decomposition CUSolver took " << milliseconds << " ms.\n";
+    std::string nameDecomp = computeSVD ? "SVD" : "QR"; 
+    std::cout << "\n" + nameDecomp + " decomposition CUSolver took " << milliseconds << " ms.\n";
 
     // Cleanup
     CUDA_CALL(cudaFree(d_tau));
@@ -504,7 +534,7 @@ int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName
     return 0;
 }
 
-void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::string& fileName)
+void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::string& fileName, int compute)
 {
     double *h_mat1, *h_mat2, *pArr;
     generateRandom(h_mat1, numRows1, numCols1, 0);
@@ -513,16 +543,17 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
     // printMatrix<double, MajorOrder::ROW_MAJOR>(h_mat2, numRows, numCols, numRows, false);
 	
     generateCartesianProduct<double, MajorOrder::ROW_MAJOR>(h_mat1, h_mat2, numRows1, numCols1, numRows2, numCols2, pArr);
-    printMatrix<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, numRows1 * numRows2, "mat.csv", false);
+    //printMatrix<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, numRows1 * numRows2, "mat.csv", false);
 
-    computeGeneral<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, fileName);
-    computeFigaro<double>(h_mat1, h_mat2, numRows1, numCols1, numRows2, numCols2, fileName);
+    computeGeneral<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, fileName, compute);
+    computeFigaro<double>(h_mat1, h_mat2, numRows1, numCols1, numRows2, numCols2, fileName, compute);
 }
 
 int main(int argc, char* argv[])
 {
     int numRows1 = 1000, numCols1 = 4;
     int numRows2 = 2, numCols2 = 4;
+    int compute = 1;
     try {
         // Define the command-line options
         po::options_description desc("Allowed options");
@@ -533,6 +564,7 @@ int main(int argc, char* argv[])
             ("m2", po::value<int>(), "Number of rows 2")
             ("n1", po::value<int>(), "Number of columns 1")
             ("n2", po::value<int>(), "Number of columns 2")
+            ("compute", po::value<int>(), "Compute mode")
             ("verbose,v", "Enable verbose mode");
 
         // Parse the command-line arguments
@@ -561,8 +593,12 @@ int main(int argc, char* argv[])
         {
             numCols2 = vm["n2"].as<int>();
         }
+	if (vm.count("compute"))
+	{
+		compute = vm["compute"].as<int>();
+	}
         std::string fileName = "results/" + std::to_string(numRows1) + "x" + std::to_string(numCols1) + "," + std::to_string(numRows2) + "x" + std::to_string(numCols2);
-        evaluate(numRows1, numCols1, numRows2, numCols2, fileName);
+        evaluate(numRows1, numCols1, numRows2, numCols2, fileName, compute);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
