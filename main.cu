@@ -301,6 +301,8 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
         nullptr, numColsOut,               // No B matrix (set to nullptr)
         d_matOutTran, numRowsOut);                  // Output matrix C and its leading dimension
     }
+    int rank = min(numRowsOut, numColsOut);
+
     // // Compute QR factorization
     if constexpr (std::is_same<T, float>::value)
     {
@@ -323,9 +325,9 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
 		cusolverDnHandle_t cusolverH1 = nullptr;
 		CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
 		CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
-		CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numColsOut, numColsOut, &lwork));
+		CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, rank, numColsOut, &lwork));
 		CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
-	    	CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numColsOut));
+	    	CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * rank));
 		cusolverDnDgesvd(cusolverH1, jobu, jobvt, numColsOut, numColsOut, d_matOutTran, ldA, d_S, nullptr, numColsOut, nullptr, numColsOut, 
 				        d_work, lwork, nullptr, d_info);
         }	
