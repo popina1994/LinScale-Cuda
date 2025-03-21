@@ -4,6 +4,7 @@
 #include <cusolverDn.h>
 #include <cublas_v2.h>
 #include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 #include <random>
 #include <boost/program_options.hpp>
 
@@ -70,7 +71,7 @@ void printMatrix(T* pArr, int numRows, int numCols, int numRowsCut, const std::s
             outFile << " ";
         }
         outFile << std::endl;
-    }
+    }	
 }
 
 // column major version
@@ -206,7 +207,7 @@ __global__ void concatenateHeadsAndTails(T* d_mat, T* d_mat2Mod, T* dOutMat, int
 
 template <typename T>
 int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2, int numCols2,
-    std::string& fileName)
+    std::string& fileName, bool computeSVD = false)
 {
     int numRowsOut = numRows1 + numRows2 - 1;
     int numColsOut = numCols1 + numCols2;
@@ -295,6 +296,28 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
     else
     {
         CUSOLVER_CALL(cusolverDnDgeqrf (cusolverH, numRowsOut, numColsOut, d_matOutTran, numRowsOut, d_tau, d_work, workspace_size, devInfo));
+    	if (computeSVD)
+	    {
+		    char jobu = 'N';  // No computation of U
+		    char jobvt = 'N'; // No computation of V^T
+		// cuSOLVER handle
+		int *d_info;
+		double *d_work;
+		double *d_S;
+		int lwork = 0;
+		int ldA = numRowsOut;
+	
+		cusolverDnHandle_t cusolverH1 = nullptr;
+		CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
+		CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
+		CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numRowsOut, numColsOut, &lwork));
+		CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
+	    CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numColsOut));
+	
+		cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRowsOut, numColsOut, d_matOutTran, ldA, d_S, nullptr, numRowsOut, nullptr, numColsOut, 
+				        d_work, lwork, nullptr, d_info);
+		printMatrix<T, MajorOrder::COL_MAJOR>(d_S, numRowsOut, 1, numRowsOut, fileName + "LinScaleS", true);
+        }	
     }
 
     // Stop measuring time
@@ -327,17 +350,19 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName)
+int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName, bool computeSVD = true)
 {
     // Allocate device memory
-    T *d_A, *d_tau, *d_matOutTran;
+    T *d_A, *d_tau, *d_matOutTran, *h_S;
 
     thrust::device_vector<T> d_matA(h_A, h_A + numRows * numCols);
     thrust::device_vector<T> d_matADV(numRows * numCols);
-
+    thrust::host_vector<T> h_matS(numCols);
+   
     d_A = thrust::raw_pointer_cast(d_matA.data());
     d_matOutTran = thrust::raw_pointer_cast(d_matADV.data());
-
+    h_S = thrust::raw_pointer_cast(h_matS.data());
+    T *d_S;
     CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(numRows, numCols) * sizeof(T)));
 
      // Copy data to GPU
@@ -414,7 +439,32 @@ int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName
     }
     else
     {
-        CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, d_matOutTran, numRows, d_tau, d_work, workspace_size, devInfo));
+	if (computeSVD)
+        {
+                char jobu = 'N';  // No computation of U
+                char jobvt = 'N'; // No computation of V^T
+                // cuSOLVER handle
+                int *d_info;
+                double *d_work;
+                int lwork = 0;
+                int ldA = numRows;
+
+                cusolverDnHandle_t cusolverH1 = nullptr;
+                CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
+                CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
+                CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numRows, numCols, &lwork));
+                CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
+		CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numCols));
+
+                cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRows, numCols, d_matOutTran, ldA, d_S, nullptr, numRows, nullptr, numCols,
+                                        d_work, lwork, nullptr, d_info);
+
+        }
+	else 
+	{
+        	CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, d_matOutTran, numRows, d_tau, d_work, workspace_size, devInfo));
+    
+	}
     }
 
     // Stop measuring time
@@ -426,6 +476,16 @@ int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName
     CUDA_CALL(cudaEventElapsedTime(&milliseconds, start, stop));
 
     // Copy results back to host
+    if (computeSVD)
+    {
+        CUDA_CALL(cudaMemcpy(h_S, d_S, numCols * sizeof(T), cudaMemcpyDeviceToHost));
+        printMatrix<T, MajorOrder::COL_MAJOR>(h_S, numCols, 1, numCols, fileName + "cuSolverS", false);
+    }
+    else 
+    {
+        CUDA_CALL(cudaMemcpy(h_A, d_matOutTran, numRows * numCols * sizeof(T), cudaMemcpyDeviceToHost));
+    }
+    	 
     CUDA_CALL(cudaMemcpy(h_A, d_matOutTran, numRows * numCols * sizeof(T), cudaMemcpyDeviceToHost));
 
     //printMatrix<T, MajorOrder::COL_MAJOR>(h_A, numRows, numCols, numCols, fileName + "CUDA", true);
@@ -451,9 +511,9 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
     generateRandom(h_mat2, numRows2, numCols2, 10);
     // printMatrix<double, MajorOrder::ROW_MAJOR>(h_mat1, numRows, numCols, numRows, false);
     // printMatrix<double, MajorOrder::ROW_MAJOR>(h_mat2, numRows, numCols, numRows, false);
-
+	
     generateCartesianProduct<double, MajorOrder::ROW_MAJOR>(h_mat1, h_mat2, numRows1, numCols1, numRows2, numCols2, pArr);
-    // printMatrix<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, numRows1 * numRows2, "mat.csv", false);
+    printMatrix<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, numRows1 * numRows2, "mat.csv", false);
 
     computeGeneral<double, MajorOrder::ROW_MAJOR>(pArr, numRows1 * numRows2, numCols1 + numCols2, fileName);
     computeFigaro<double>(h_mat1, h_mat2, numRows1, numCols1, numRows2, numCols2, fileName);
