@@ -7,22 +7,7 @@
 #include <mkl_vml.h>
 #include "types.h"
 
-#define IDX(rowIdx, colIdx, width) ((rowIdx) * (width) + (colIdx))
-#define IDX_R(rowIdx, colIdx, numRows, numCols) ((rowIdx) * (numCols) + (colIdx) )
-#define IDX_C(rowIdx, colIdx, numRows, numCols) ((rowIdx)  + (colIdx) * (numRows))
 
-template<MajorOrder majorOrder>
-int64_t getPosId(int64_t rowIdx, int64_t colIdx, int64_t numRows, int64_t numCols)
-{
-    if (MajorOrder::ROW_MAJOR == majorOrder)
-    {
-        return IDX_R(rowIdx, colIdx, numRows, numCols);
-    }
-    else
-    {
-        return IDX_C(rowIdx, colIdx, numRows, numCols);
-    }
-}
 
 template <typename T, MajorOrder majorOrder>
 struct Matrix
@@ -143,26 +128,6 @@ void printMatrix(const T* pArr, int numRows, int numCols, int numRowsCut, const 
 
         }
         outFile << std::endl;
-    }
-}
-
-template <typename T, MajorOrder order>
-void copyMatrix(const T* pArr, T*& pArrOut, int numRows, int numCols, int numRowsCopy, int numColsCopy, bool upperTriangular = false)
-{
-    // pArrOut = new T[numRowsCopy * numColsCopy];
-    for (int rowIdx = 0; rowIdx < numRowsCopy; rowIdx++)
-    {
-        for (int colIdx = 0; colIdx < numColsCopy; colIdx++)
-        {
-            if (upperTriangular and (rowIdx > colIdx))
-            {
-                pArrOut[getPosId<order>(rowIdx, colIdx, numRowsCopy,  numColsCopy)]  = 0;
-            }
-            else
-            {
-                pArrOut[getPosId<order>(rowIdx, colIdx, numRowsCopy,  numColsCopy)]  = pArr[getPosId<order>(rowIdx, colIdx, numRows,  numCols)];
-            }
-        }
     }
 }
 
@@ -375,40 +340,6 @@ double computeMeanSquaredError(T* pA, T* pB, int numRows)
     return mse;
 }
 
-
-void computeVectors(const MatrixDCol& matCartProd, const MatrixDCol& matMKLR,
-    const MatrixDRow& matFigR, const double* pVectBTrain,
-double*& h_vectXCompMKL, double*& h_vectXCompFig, int seed)
-{
-  //   printMatrix<double, MajorOrder::COL_MAJOR>(matMKLR.getDataC(), matMKLR.getNumRows(),
-    // matMKLR.getNumCols(), matMKLR.getNumRows(), std::to_string(seed) +"UPDATE2_MKL_R.csv", false);
-      //   printMatrix<double, MajorOrder::ROW_MAJOR>(matFigR.getDataC(), matFigR.getNumRows(),
-    // matFigR.getNumCols(), matFigR.getNumRows(), std::to_string(seed) +"UPDATE2_FIG_R.csv", false);
-    solveLLS<double, MajorOrder::COL_MAJOR, MajorOrder::COL_MAJOR>(matCartProd.getDataC(), matMKLR.getDataC(), pVectBTrain, h_vectXCompMKL, matCartProd.getNumRows(), matCartProd.getNumCols(), std::to_string(seed) + "results/MKL");
-    solveLLS<double, MajorOrder::COL_MAJOR, MajorOrder::ROW_MAJOR>(matCartProd.getDataC(), matFigR.getDataC(), pVectBTrain, h_vectXCompFig, matCartProd.getNumRows(), matCartProd.getNumCols(), std::to_string(seed) + "results/LinScale");
-}
-
-template<typename T>
-void evaluateTest(int numRows1, int numCols1, int numRows2, int numCols2, MatrixDRow& vectX,
-    T* h_vectXCompMKL, T* h_vectXCompFig, int seed)
-{
-    T *pOutVectBTest;
-    auto mat1Test = generateRandom<double>(numRows1, numCols1, 17);
-    auto mat2Test = generateRandom<double>(numRows2, numCols2, 19);
-    MatrixDCol matCartProdTest{1, 1};
-    generateCartesianProduct<double, MajorOrder::ROW_MAJOR, MajorOrder::COL_MAJOR>(
-            mat1Test, mat2Test,  matCartProdTest);
-    computeMatrixVector<double, MajorOrder::COL_MAJOR>(matCartProdTest.getData(), vectX.getData(), pOutVectBTest, numRows1 * numRows2, numCols1 + numCols2, false);
-
-    double* pOutVectBTestCompMKL, *pOutVectBTestCompFig;
-    computeMatrixVector<double, MajorOrder::COL_MAJOR>(matCartProdTest.getData(), h_vectXCompMKL, pOutVectBTestCompMKL, numRows1 * numRows2, numCols1 + numCols2, false);
-    computeMatrixVector<double, MajorOrder::COL_MAJOR>(matCartProdTest.getData(), h_vectXCompFig, pOutVectBTestCompFig, numRows1 * numRows2, numCols1 + numCols2, false);
-    double mklError = computeMeanSquaredError(pOutVectBTestCompMKL, pOutVectBTest, numRows1 * numRows2);
-    double figError = computeMeanSquaredError(pOutVectBTestCompFig, pOutVectBTest, numRows1 * numRows2);
-
-    std::cout << "MKL MSE " << mklError << std::endl;
-    std::cout << "Figaro MSE " << figError << std::endl;
-}
 
 void readCSV(const std::string& fileName, double *h_mat)
 {
