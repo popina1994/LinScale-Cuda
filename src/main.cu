@@ -162,8 +162,8 @@ __global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
 }
 
 template <typename T>
-int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2, int numCols2,
-    std::string& fileName, int compute)
+int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int numCols1, int numRows2, int numCols2,
+    const std::string& fileName, int compute)
 {
     int numRowsOut = numRows1 + numRows2 - 1;
     int numColsOut = numCols1 + numCols2;
@@ -303,13 +303,13 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
     }
     else
     {
-    	thrust::host_vector<T> h_matOutH(numRowsOut * numColsOut);
-    	T *h_matOut = thrust::raw_pointer_cast(h_matOutH.data());
-    	CUDA_CALL(cudaMemcpy(h_matOut, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
-        printMatrix<T, MajorOrder::COL_MAJOR>(h_matOut, numRowsOut, numColsOut, numColsOut, fileName + "LinScale", true);
+    	// thrust::host_vector<T> h_matOutH(numRowsOut * numColsOut);
+    	// T *h_matOut = thrust::raw_pointer_cast(h_matOutH.data());
+    	CUDA_CALL(cudaMemcpy(h_matR, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
+        printMatrix<T, MajorOrder::COL_MAJOR>(h_matR, numRowsOut, numColsOut, numColsOut, fileName + "LinScale", true);
 
-        printMatrix<T, MajorOrder::ROW_MAJOR>(h_pTmpOutOrig, numRowsOut, numColsOut, numColsOut, fileName + "LinScaleOrig", false);
-        printMatrix<T, MajorOrder::COL_MAJOR>(h_pTmpOutTran, numRowsOut, numColsOut, numColsOut, fileName + "LinScaleTran", false);
+        // printMatrix<T, MajorOrder::ROW_MAJOR>(h_pTmpOutOrig, numRowsOut, numColsOut, numColsOut, fileName + "LinScaleOrig", false);
+        // printMatrix<T, MajorOrder::COL_MAJOR>(h_pTmpOutTran, numRowsOut, numColsOut, numColsOut, fileName + "LinScaleTran", false);
     }
 
 
@@ -320,8 +320,6 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
     CUDA_CALL(cudaEventDestroy(stop));
     CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
 
-    // delete [] h_mat1;
-    // delete [] h_mat2;
     std::cout << "\n";
     if (computeSVD)
     {
@@ -337,7 +335,7 @@ int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2
 }
 extern "C++" {
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName, int compute)
+int computeGeneral(T* h_A, T* h_matR, int numRows, int numCols, const std::string& fileName, int compute)
 {
     // Allocate device memory
     T *d_A, *d_tau, *d_matOutTran, *h_S;
@@ -493,9 +491,9 @@ int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName
 }
 }
 
-template int computeGeneral<double, MajorOrder::ROW_MAJOR>(double* h_A, int numRows, int numCols, const std::string& fileName, int compute);
+template int computeGeneral<double, MajorOrder::ROW_MAJOR>(double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
 
-template int computeGeneral<double, MajorOrder::COL_MAJOR>(double* h_A, int numRows, int numCols, const std::string& fileName, int compute);
+template int computeGeneral<double, MajorOrder::COL_MAJOR>(double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
 
-template int computeFigaro<double>(double* h_mat1, double* h_mat2, int numRows1, int numCols1, int numRows2, int numCols2,
-    std::string& fileName, int compute);
+template int computeFigaro<double>(const double* h_mat1, const double* h_mat2, double* h_matR, int numRows1, int numCols1, int numRows2, int numCols2,
+    const std::string& fileName, int compute);

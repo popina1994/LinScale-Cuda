@@ -430,7 +430,7 @@ void readCSV(const std::string& fileName, double *h_mat)
     }
 }
 template <typename T>
-int computeFigaro(T* h_mat1, T* h_mat2, int numRows1, int numCols1, int numRows2, int numCols2,
-    std::string& fileName, int compute);
+int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int numCols1, int numRows2, int numCols2,
+    const std::string& fileName, int compute);
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(T* h_A, int numRows, int numCols, const std::string& fileName, int compute);
+int computeGeneral(T* h_A, T* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
