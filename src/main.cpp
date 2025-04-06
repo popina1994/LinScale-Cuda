@@ -43,12 +43,15 @@ void evaluateTest(int numRows1, int numCols1, int numRows2, int numCols2,
     auto matUniformAdd = generateRandom<double>(matCartProdTest.getNumRows(),
         matCartProdTest.getNumCols(), 37);
     decltype(matUniformAdd) matUniformCopy {matUniformAdd.getNumRows(), matUniformAdd.getNumCols()};
-    divValue(matUniformAdd, 100.0, matUniformCopy);
+    divValue(matUniformAdd, 1e9, matUniformCopy);
+    // printMatrix<double, MajorOrder::COL_MAJOR>(matUniformAdd.getDataC(), matUniformAdd.getNumRows(), matUniformAdd.getNumCols(), matUniformAdd.getNumRows(),  "variance.csv", false);
+    MatrixDCol outVectBTestVariance{1, 1};
+    addVectors(outVectBTest, matUniformCopy, outVectBTestVariance);
 
     auto outVectBTestCompMKL = computeMatrixVector(matCartProdTest, vectXCompMKL, numRows1 * numRows2, numCols1 + numCols2, false);
     auto outVectBTestCompFig = computeMatrixVector(matCartProdTest, vectXCompFig, numRows1 * numRows2, numCols1 + numCols2, false);
-    double cudaError = computeMeanSquaredError(outVectBTestCompMKL.getDataC(), outVectBTest.getDataC(), numRows1 * numRows2);
-    double figError = computeMeanSquaredError(outVectBTestCompFig.getDataC(), outVectBTest.getDataC(), numRows1 * numRows2);
+    double cudaError = computeMeanSquaredError(outVectBTestCompMKL.getDataC(), outVectBTestVariance.getDataC(), numRows1 * numRows2);
+    double figError = computeMeanSquaredError(outVectBTestCompFig.getDataC(), outVectBTestVariance.getDataC(), numRows1 * numRows2);
 
     std::cout << "CUDA MSE " << cudaError << std::endl;
     std::cout << "Figaro MSE " << figError << std::endl;

@@ -339,11 +339,11 @@ Matrix<T, rMajorOrder> solveLLS(const Matrix<T, rMajorOrder>& matA,
     return vectOut;
 }
 
-template<typename T, MajorOrder order>
-void addVectors(const Matrix<T, order>& mat1, const Matrix<T, order>& mat2,
-Matrix<T, order>& matOut)
+template<typename T, MajorOrder order1, MajorOrder order2>
+void addVectors(const Matrix<T, order1>& mat1, const Matrix<T, order2>& mat2,
+Matrix<T, order1>& matOut)
 {
-    matOut = Matrix<T, order>{mat1.getNumRows(), mat1.getNumCols()};
+    matOut = Matrix<T, order1>{mat1.getNumRows(), mat1.getNumCols()};
     vdAdd(mat1.getNumElements(), mat1.getDataC(), mat2.getDataC(), matOut.getData());
 }
 
@@ -390,8 +390,7 @@ void fillValues(Matrix<T, order>& mat, T elem)
 }
 
 template<typename T, MajorOrder order>
-void divValue(const Matrix<T, order>& mat, T val,
-    Matrix<T, order>& matOut)
+void divValue(const Matrix<T, order>& mat, T val, Matrix<T, order>& matOut)
 {
     matOut = Matrix<T, order>{mat.getNumRows(), mat.getNumCols()};
     if constexpr (order == MajorOrder::ROW_MAJOR)
@@ -400,7 +399,7 @@ void divValue(const Matrix<T, order>& mat, T val,
         {
             for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
             {
-                matOut(rowIdx, colIdx) / val;
+                matOut(rowIdx, colIdx) = mat(rowIdx, colIdx)/ val;
             }
         }
     }
@@ -410,7 +409,7 @@ void divValue(const Matrix<T, order>& mat, T val,
         {
             for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
             {
-                matOut(rowIdx, colIdx) = mat / val;
+                matOut(rowIdx, colIdx) = mat(rowIdx, colIdx) / val;
             }
         }
     }
