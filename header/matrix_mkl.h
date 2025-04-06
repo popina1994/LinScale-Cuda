@@ -45,9 +45,9 @@ Matrix<T, MajorOrder::ROW_MAJOR> generateRandom(int numRows, int numCols, int se
     std::uniform_real_distribution<T> dist(0.0, 1.0);
     auto matA = std::move(Matrix<T, MajorOrder::ROW_MAJOR>{numRows, numCols});
     // col_major
-    for (int colIdx = 0; colIdx < numCols; colIdx++)
+    for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
     {
-        for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
+        for (int colIdx = 0; colIdx < numCols; colIdx++)
         {
             matA(rowIdx, colIdx) = dist(gen);
         }

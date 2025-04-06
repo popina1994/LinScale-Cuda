@@ -2,18 +2,21 @@
 #include <iomanip>
 #include <boost/program_options.hpp>
 #include "model.h"
+#include "table.h"
 #include <iostream>
+
 namespace po = boost::program_options;
+
 
 
 void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::string& fileName, int compute)
 {
-    // double *h_mat1, *h_mat2, *pArr;
-    auto mat1 = generateRandom<double>(numRows1, numCols1, 0);
-    auto mat2 = generateRandom<double>(numRows2, numCols2, 10);
+    auto mat1 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows1, numCols1, 1, 5, 0);
+    auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, 5, 10);
+    printMatrix(mat1, mat1.getNumRows(), "mat1.csv", false);
+    printMatrix(mat2, mat2.getNumRows(), "mat2.csv", false);
     MatrixDCol matCartProd{1, 1};
     generateCartesianProduct<double, MajorOrder::ROW_MAJOR, MajorOrder::COL_MAJOR>(mat1, mat2, matCartProd);
-    // printMatrix<double, MajorOrder::COL_MAJOR>(matCartProd.getDataC(), matCartProd.getNumRows(), matCartProd.getNumCols(), matCartProd.getNumRows(), fileName + "cartProd.csv", false);
 
     auto vectX = generateRandom<double>(1, numCols1 + numCols2, 15);
     auto outVectBTrain = computeMatrixVector(matCartProd, vectX,
@@ -27,9 +30,6 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
     MatrixDCol matVectXFig{1, 1};
     computeVectors(matCartProd, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig, -1);
     evaluateTest(numRows1, numCols1, numRows2, numCols2, vectX, matVectXMKL, matVectXFig, -1);
-
-    // printMatrix<double, MajorOrder::ROW_MAJOR>(mat1.getData(), numRows1, numCols1, numRows1, "AS.csv", false);
-    // printMatrix<double, MajorOrder::ROW_MAJOR>(mat2.getData(), numRows2, numCols2, numRows2, "BS.csv", false);
 }
 
 int main(int argc, char* argv[])
@@ -37,7 +37,9 @@ int main(int argc, char* argv[])
     int numRows1 = 1000, numCols1 = 4;
     int numRows2 = 2, numCols2 = 4;
     int compute = 1;
-    try {
+
+    try
+    {
         // Define the command-line options
         po::options_description desc("Allowed options");
         desc.add_options()
@@ -76,13 +78,14 @@ int main(int argc, char* argv[])
         {
             numCols2 = vm["n2"].as<int>();
         }
-	if (vm.count("compute"))
-	{
-		compute = vm["compute"].as<int>();
-	}
+        if (vm.count("compute"))
+        {
+            compute = vm["compute"].as<int>();
+        }
         std::string fileName = "results/" + std::to_string(numRows1) + "x" + std::to_string(numCols1) + "," + std::to_string(numRows2) + "x" + std::to_string(numCols2);
         evaluate(numRows1, numCols1, numRows2, numCols2, fileName, compute);
-    } catch (const std::exception& e) {
+    } catch (const std::exception& e)
+    {
         std::cerr << "Error: " << e.what() << std::endl;
     }
     std::cout << "SUCCESSFULL" << std::endl;

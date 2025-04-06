@@ -128,4 +128,34 @@ void printMatrix(const T* pArr, int numRows, int numCols, int numRowsCut, const 
         outFile << std::endl;
     }
 }
+
+template <typename T, MajorOrder order>
+void printMatrix(const Matrix<T, order>& matA, int numRowsCut, const std::string& fileName, bool upperTriangular = false)
+{
+    std::ofstream outFile(fileName);
+    if (!outFile.is_open())
+    {
+        std::cerr << "WTF?" << fileName << std::endl;
+    }
+    for (int rowIdx = 0; rowIdx < std::min(matA.getNumRows(), numRowsCut); rowIdx++)
+    {
+        for (int colIdx = 0; colIdx < matA.getNumCols(); colIdx++)
+        {
+            if (colIdx > 0)
+            {
+                outFile << ",";
+            }
+            if (upperTriangular and (rowIdx > colIdx))
+            {
+                outFile << "0";
+            }
+            else
+            {
+                outFile << matA(rowIdx, colIdx);
+            }
+
+        }
+        outFile << std::endl;
+    }
+}
 #endif
