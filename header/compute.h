@@ -89,6 +89,11 @@ struct Matrix
     {
         return numCols;
     }
+
+    int getNumElements(void) const
+    {
+        return numRows * numCols;
+    }
 };
 
 using MatrixDCol = Matrix<double, MajorOrder::COL_MAJOR>;
@@ -224,6 +229,31 @@ void computeMatrixVector(const T* pMat, const T* pVect, T*& pOutVect, int numRow
 }
 
 
+template<typename T, MajorOrder majorOrderA, MajorOrder majorOrderV>
+Matrix<T, majorOrderA> computeMatrixVector(const Matrix<T, majorOrderA>& matA,
+    const Matrix<T, majorOrderV>& vect, int numRows, int numCols,
+    bool transpose = false)
+{
+    T alpha = 1.0;
+    T beta = 0.0;
+    CBLAS_TRANSPOSE aTran = (transpose ?  CblasTrans : CblasNoTrans);
+
+    int rowsOut = (transpose ? numCols : numRows);
+    Matrix<T, majorOrderA> matOut{rowsOut, 1};
+    // pOutVect = new T[cntOut];
+
+    if constexpr (MajorOrder::ROW_MAJOR == majorOrderA)
+    {
+        cblas_dgemv(CblasRowMajor, aTran, numRows, numCols, alpha, matA.getDataC(), numCols, vect.getDataC(), 1, beta, matOut.getData(), 1);
+    }
+    else
+    {
+        cblas_dgemv(CblasColMajor, aTran, numRows, numCols, alpha, matA.getDataC(), numRows, vect.getDataC(), 1, beta, matOut.getData(), 1);
+    }
+    return matOut;
+}
+
+
 template<typename T, MajorOrder majorOrder>
 void computeMatrixMatrix(T* pMat1, T* pMat2, T*& pOutMat, int numRows1, int numCols1,
     int numCols2, bool transpose = false)
@@ -294,32 +324,100 @@ void computeInverse(T* pMat, int numRows, int numCols)
 // = A^T * A * x = A^T * b
 // x = (A^T * A)^ inv * A^T * b
 // A^T * A = R^T * R
-template<typename T, MajorOrder majorOrder, MajorOrder rMajorOrder>
-void solveLLS(const T* pMatA, const T* pMatR, const T* pVectB, T*& pOutVect, int  numRows, int numCols, const std::string& fileName)
+template<typename T, MajorOrder rMajorOrder>
+Matrix<T, rMajorOrder> solveLLS(const Matrix<T, rMajorOrder>& matA,
+    const Matrix<T, rMajorOrder>& matR, const Matrix<T, rMajorOrder>& vectB,
+    int numRows, int numCols, const std::string& fileName)
 {
-    T* pOutMat;
-    T* pTempVect;
+    Matrix<T, rMajorOrder> outMat{numCols, numCols};
 
-    selfTransposeMatrixMultiplication<double, rMajorOrder>(pMatR, pOutMat, numCols, numCols);
-    // printMatrix<double, MajorOrder::COL_MAJOR>(pOutMat, numCols, numCols, numCols, fileName + "STMM.csv", false);
+    selfTransposeMatrixMultiplication<double, rMajorOrder>(matR.getDataC(), outMat.getData(), numCols, numCols);
+    computeInverse<double, rMajorOrder>(outMat.getData(), numCols, numCols);
+    auto tempVect = computeMatrixVector(matA, vectB, numRows, numCols, true);
+    auto vectOut = computeMatrixVector(outMat, tempVect, numCols, numCols, false);
 
-    computeInverse<double, rMajorOrder>(pOutMat, numCols, numCols);
-    // printMatrix<double, MajorOrder::COL_MAJOR>(pOutMat, numCols, numCols, numCols, fileName +"STMMINV.csv", false);
+    return vectOut;
+}
 
-    // printMatrix<double, MajorOrder::COL_MAJOR>(pMatA, numRows, numCols, numRows, fileName +"matAOrig.csv", false);
-    ////   printMatrix<double, MajorOrder::COL_MAJOR>(pVectB, numRows, 1, numRows, "matBOrig.csv", false);
-    computeMatrixVector<double, MajorOrder::COL_MAJOR>(pMatA, pVectB, pTempVect, numRows, numCols, true);
-    // printMatrix<double, MajorOrder::COL_MAJOR>(pTempVect, numCols, 1, numCols, "ATv.csv", false);
+template<typename T, MajorOrder order>
+void addVectors(const Matrix<T, order>& mat1, const Matrix<T, order>& mat2,
+Matrix<T, order>& matOut)
+{
+    matOut = Matrix<T, order>{mat1.getNumRows(), mat1.getNumCols()};
+    vdAdd(mat1.getNumElements(), mat1.getDataC(), mat2.getDataC(), matOut.getData());
+}
 
-    computeMatrixVector<double, MajorOrder::COL_MAJOR>(pOutMat, pTempVect, pOutVect, numCols, numCols, false);
-    // printMatrix<double, MajorOrder::COL_MAJOR>(pOutVect, numCols, 1, numCols, fileName + "x_prod_sol.csv",
-        // false);
-    delete [] pTempVect;
-    delete [] pOutMat;
+
+template<typename T, MajorOrder order>
+void subVectors(const Matrix<T, order>& mat1, const Matrix<T, order>& mat2,
+    Matrix<T, order>& matOut)
+{
+    matOut = Matrix<T, order>{mat1.getNumRows(), mat1.getNumCols()};
+    vdSub(mat1.getNumElements(), mat1.getDataC(), mat2.getDataC(), matOut.getData());
+}
+
+template<typename T, MajorOrder order>
+void divVectors(const Matrix<T, order>& mat1, const Matrix<T, order>& mat2,
+    Matrix<T, order>& matOut)
+{
+    matOut = Matrix<T, order>{mat1.getNumRows(), mat1.getNumCols()};
+    vdDiv(mat1.getNumElements(), mat1.getDataC(), mat2.getDataC(), matOut.getData());
+}
+
+template<typename T, MajorOrder order>
+void fillValues(Matrix<T, order>& mat, T elem)
+{
+    if constexpr (order == MajorOrder::ROW_MAJOR)
+    {
+        for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+        {
+            for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+            {
+                mat(rowIdx, colIdx) = elem;
+            }
+        }
+    }
+    else
+    {
+        for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+        {
+            for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+            {
+                mat(rowIdx, colIdx) = elem;
+            }
+        }
+    }
+}
+
+template<typename T, MajorOrder order>
+void divValue(const Matrix<T, order>& mat, T val,
+    Matrix<T, order>& matOut)
+{
+    matOut = Matrix<T, order>{mat.getNumRows(), mat.getNumCols()};
+    if constexpr (order == MajorOrder::ROW_MAJOR)
+    {
+        for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+        {
+            for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+            {
+                matOut(rowIdx, colIdx) / val;
+            }
+        }
+    }
+    else
+    {
+        for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+        {
+            for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+            {
+                matOut(rowIdx, colIdx) = mat / val;
+            }
+        }
+    }
 }
 
 template <typename T>
-double computeMeanSquaredError(T* pA, T* pB, int numRows)
+double computeMeanSquaredError(const T* pA, const T* pB, int numRows)
 {
     double* diff = new double[numRows];
     double* squared = new double[numRows];
@@ -364,4 +462,4 @@ template <typename T>
 int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int numCols1, int numRows2, int numCols2,
     const std::string& fileName, int compute);
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(T* h_A, T* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
+int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std::string& fileName, int compute);

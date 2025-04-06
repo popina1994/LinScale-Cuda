@@ -291,7 +291,7 @@ int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(T* h_A, T* h_matR, int numRows, int numCols, const std::string& fileName, int compute)
+int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std::string& fileName, int compute)
 {
     // Allocate device memory
     T *d_A, *d_tau, *d_matOutTran, *h_S, *h_aCopy;
@@ -449,9 +449,9 @@ int computeGeneral(T* h_A, T* h_matR, int numRows, int numCols, const std::strin
     return 0;
 }
 
-template int computeGeneral<double, MajorOrder::ROW_MAJOR>(double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
+template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
 
-template int computeGeneral<double, MajorOrder::COL_MAJOR>(double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
+template int computeGeneral<double, MajorOrder::COL_MAJOR>(const double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
 
 template int computeFigaro<double>(const double* h_mat1, const double* h_mat2, double* h_matR, int numRows1, int numCols1, int numRows2, int numCols2,
     const std::string& fileName, int compute);
