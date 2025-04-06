@@ -41,7 +41,7 @@ void evaluateTest(int numRows1, int numCols1, int numRows2, int numCols2,
     auto matUniformAdd = generateRandom<double>(matCartProdTest.getNumRows(),
         matCartProdTest.getNumCols(), 37);
     decltype(matUniformAdd) matUniformCopy {matUniformAdd.getNumRows(), matUniformAdd.getNumCols()};
-    divValue(matUniformAdd, 1e9, matUniformCopy);
+    divValue(matUniformAdd, 1e3, matUniformCopy);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matUniformAdd.getDataC(), matUniformAdd.getNumRows(), matUniformAdd.getNumCols(), matUniformAdd.getNumRows(),  "variance.csv", false);
     MatrixDCol outVectBTestVariance{1, 1};
     addVectors(outVectBTest, matUniformCopy, outVectBTestVariance);
