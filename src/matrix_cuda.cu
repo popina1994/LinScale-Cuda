@@ -123,7 +123,7 @@ __global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
 
 template <typename T>
 int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
-    Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, int compute)
+    Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, ComputeDecomp decompType)
 {
     int numRows1 = mat1.getNumRows();
     int numCols1 = mat1.getNumCols();
@@ -142,7 +142,7 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
     T* d_matOut = thrust::raw_pointer_cast(d_matOutDV.data());
     T *d_S;
     T* d_matOutTran = thrust::raw_pointer_cast(d_matTranDV.data());
-    bool computeSVD = compute == 2;
+    bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
     cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
 
@@ -290,7 +290,7 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, int compute)
+int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, ComputeDecomp decompType)
 {
     // Allocate device memory
     T *d_A, *d_tau, *d_matOutTran, *h_S, *h_aCopy;
@@ -308,7 +308,7 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_
     h_aCopy = thrust::raw_pointer_cast(h_matACopy.data());
     T *d_S;
     CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(numRows, numCols) * sizeof(T)));
-    bool computeSVD = compute == 2;
+    bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
      // Copy data to GPU
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
@@ -449,10 +449,10 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_
 }
 
 template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const MatrixDRow& matA,
-    MatrixDCol& matR, const std::string& fileName, int compute);
+    MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
 
 template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& matA,
-        MatrixDCol& matR, const std::string& fileName, int compute);
+        MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
 
 template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
-    Matrix<double, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, int compute);
+    Matrix<double, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, ComputeDecomp decompType);

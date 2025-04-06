@@ -7,7 +7,7 @@
 
 namespace po = boost::program_options;
 
-void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::string& fileName, int compute)
+void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::string& fileName, ComputeDecomp decompType)
 {
     auto mat1 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows1, numCols1, 1, 5, 0);
     auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, 5, 10);
@@ -25,7 +25,7 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
     MatrixDCol matCUDAR{1, 1};
     MatrixDCol matFigR{1, 1};
 
-    evaluateTrain(mat1, mat2, matCartProd, matCUDAR, matFigR, fileName, compute);
+    evaluateTrain(mat1, mat2, matCartProd, matCUDAR, matFigR, fileName, decompType);
     MatrixDCol matVectXMKL{1, 1};
     MatrixDCol matVectXFig{1, 1};
     computeVectors(matCartProd, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig, -1);
@@ -83,7 +83,22 @@ int main(int argc, char* argv[])
             compute = vm["compute"].as<int>();
         }
         std::string fileName = "results/" + std::to_string(numRows1) + "x" + std::to_string(numCols1) + "," + std::to_string(numRows2) + "x" + std::to_string(numCols2);
-        evaluate(numRows1, numCols1, numRows2, numCols2, fileName, compute);
+        ComputeDecomp decompType;
+        switch (compute) {
+        case 0:
+            decompType = ComputeDecomp::R_ONLY;
+            break;
+        case 1:
+            decompType = ComputeDecomp::Q_AND_R;
+            break;
+        case 2:
+            decompType = ComputeDecomp::SIGMA_ONLY;
+            break;
+        case 3:
+            decompType = ComputeDecomp::U_AND_S_AND_V;
+            break;
+        }
+        evaluate(numRows1, numCols1, numRows2, numCols2, fileName, decompType);
     } catch (const std::exception& e)
     {
         std::cerr << "Error: " << e.what() << std::endl;

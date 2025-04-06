@@ -7,6 +7,14 @@ enum class MajorOrder
     COL_MAJOR = 1
 };
 
+enum class ComputeDecomp
+{
+    R_ONLY = 0,
+    Q_AND_R = 1,
+    SIGMA_ONLY = 2,
+    U_AND_S_AND_V = 3
+};
+
 #define IDX(rowIdx, colIdx, width) ((rowIdx) * (width) + (colIdx))
 #define IDX_R(rowIdx, colIdx, numRows, numCols) ((rowIdx) * (numCols) + (colIdx) )
 #define IDX_C(rowIdx, colIdx, numRows, numCols) ((rowIdx)  + (colIdx) * (numRows))

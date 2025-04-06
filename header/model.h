@@ -5,14 +5,14 @@
 
 void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     const MatrixDCol& matCartProdTrain, MatrixDCol& matCUDAR, MatrixDCol& matFigR,
-    const std::string& fileName, int compute)
+    const std::string& fileName, ComputeDecomp decompType)
 {
     /*********** TRAINING ***********************/
     computeGeneral<double, MajorOrder::COL_MAJOR>(matCartProdTrain, matCUDAR,
-         fileName, compute);
+         fileName, decompType);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR.getData(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), fileName + "CUDA.csv", false);
 
-    computeFigaro<double>(mat1, mat2, matFigR, fileName, compute);
+    computeFigaro<double>(mat1, mat2, matFigR, fileName, decompType);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matFigR.getData(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), fileName + "LinScale.csv", false);
 }
 
