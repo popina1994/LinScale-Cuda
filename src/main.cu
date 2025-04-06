@@ -9,6 +9,7 @@
 #include <random>
 #include <iomanip>
 #include "types.h"
+#include "matrix.h"
 
 // CUDA error check macro
 #define CUDA_CALL(call) \
@@ -69,7 +70,7 @@ __global__ void computeHeadsAndTails(T* d_mat, int numRows, int numCols) {
 }
 
 template <typename T>
-__global__ void concatenateHeadsAndTails(T* d_mat, T* d_mat2Mod, T* dOutMat, int numRows1, int numCols1, int numRows2, int numCols2) {
+__global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* dOutMat, int numRows1, int numCols1, int numRows2, int numCols2) {
     int colIdx = threadIdx.x;
     int headRowIdx = 0;
     const int numRowsOut = numRows1 + numRows2 - 1;
@@ -182,7 +183,6 @@ int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int
     const T alpha = 1.0f; // Scalar for matrix A (no scaling)
     const T beta = 0.0f;  // Scalar for matrix B (no B matrix, so no scaling)
 
-    // CUDA_CALL(cudaMemcpy(h_pTmpOutOrig, d_matOut, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
     if constexpr (std::is_same<T, float>::value)
     {
         cublasSgeam(handle,
@@ -260,12 +260,7 @@ int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int
     	thrust::host_vector<T> h_matOutH(numRowsOut * numColsOut);
     	T *h_matOut = thrust::raw_pointer_cast(h_matOutH.data());
     	CUDA_CALL(cudaMemcpy(h_matOut, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
-        // CUDA_CALL(cudaMemcpy(h_matOut, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
         copyMatrix<T, MajorOrder::COL_MAJOR>(h_matOut, h_matR, numRowsOut, numColsOut, numColsOut, numColsOut, false);
-        // printMatrix<T, MajorOrder::COL_MAJOR>(h_matR, numRowsOut, numColsOut, numColsOut, fileName + "LinScale", false);
-
-        // printMatrix<T, MajorOrder::ROW_MAJOR>(h_pTmpOutOrig, numRowsOut, numColsOut, numColsOut, fileName + "LinScaleOrig", false);
-        // printMatrix<T, MajorOrder::COL_MAJOR>(h_pTmpOutTran, numRowsOut, numColsOut, numColsOut, fileName + "LinScaleTran", false);
     }
 
 
@@ -405,7 +400,6 @@ int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std:
 
             cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRows, numCols, d_matOutTran, ldA, d_S, nullptr, numRows, nullptr, numCols,
                                     d_work, lwork, nullptr, d_info);
-
         }
         else
         {
