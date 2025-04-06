@@ -291,12 +291,14 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std::string& fileName, int compute)
+int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, int compute)
 {
     // Allocate device memory
     T *d_A, *d_tau, *d_matOutTran, *h_S, *h_aCopy;
+    int numRows = matA.getNumRows();
+    int numCols = matA.getNumCols();
 
-    thrust::device_vector<T> d_matA(h_A, h_A + numRows * numCols);
+    thrust::device_vector<T> d_matA(matA.getDataC(), matA.getDataC() + numRows * numCols);
     thrust::host_vector<T> h_matACopy(numRows * numCols);
     thrust::device_vector<T> d_matADV(numRows * numCols);
     thrust::host_vector<T> h_matS(numCols);
@@ -428,7 +430,8 @@ int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std:
     else
     {
         CUDA_CALL(cudaMemcpy(h_aCopy, d_matOutTran, numRows * numCols * sizeof(T), cudaMemcpyDeviceToHost));
-        copyMatrix<T, MajorOrder::COL_MAJOR>(h_aCopy, h_matR, numRows, numCols, numCols, numCols, true);
+        matR = Matrix<T, MajorOrder::COL_MAJOR>{numCols, numCols};
+        copyMatrix<T, MajorOrder::COL_MAJOR>(h_aCopy, matR.getData(), numRows, numCols, numCols, numCols, true);
     }
 
     // Print execution time
@@ -446,9 +449,11 @@ int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std:
     return 0;
 }
 
-template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
+template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const MatrixDRow& matA,
+    MatrixDCol& matR, const std::string& fileName, int compute);
 
-template int computeGeneral<double, MajorOrder::COL_MAJOR>(const double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
+template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& matA,
+        MatrixDCol& matR, const std::string& fileName, int compute);
 
 template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
     Matrix<double, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, int compute);

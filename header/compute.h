@@ -11,7 +11,7 @@
 #include "types.h"
 #include "matrix.h"
 #include "matrix_mkl.h"
-
+#include "matrix_cuda.h"
 template <typename T>
 double computeMeanSquaredError(const T* pA, const T* pB, int numRows)
 {
@@ -54,10 +54,6 @@ void readCSV(const std::string& fileName, double *h_mat)
         }
     }
 }
-template <typename T>
-int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
-    Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, int compute);
-template <typename T, MajorOrder majorOrder>
-int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
+
 
 #endif

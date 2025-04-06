@@ -7,10 +7,9 @@ void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     const MatrixDCol& matCartProdTrain, MatrixDCol& matCUDAR, MatrixDCol& matFigR,
     const std::string& fileName, int compute)
 {
-    matCUDAR = MatrixDCol{mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols()};
     /*********** TRAINING ***********************/
-    computeGeneral<double, MajorOrder::COL_MAJOR>(matCartProdTrain.getDataC(), matCUDAR.getData(),
-        mat1.getNumRows() * mat2.getNumRows(), mat1.getNumCols() + mat2.getNumCols(), fileName, compute);
+    computeGeneral<double, MajorOrder::COL_MAJOR>(matCartProdTrain, matCUDAR,
+         fileName, compute);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR.getData(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), fileName + "CUDA.csv", false);
 
     computeFigaro<double>(mat1, mat2, matFigR, fileName, compute);
