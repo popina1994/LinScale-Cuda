@@ -135,7 +135,7 @@ void printMatrix(const Matrix<T, order>& matA, int numRowsCut, const std::string
     std::ofstream outFile(fileName);
     if (!outFile.is_open())
     {
-        std::cerr << "WTF?" << fileName << std::endl;
+        std::cerr << "WTF?  " << fileName << std::endl;
     }
     for (int rowIdx = 0; rowIdx < std::min(matA.getNumRows(), numRowsCut); rowIdx++)
     {

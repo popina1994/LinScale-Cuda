@@ -168,48 +168,110 @@ void selfTransposeMatrixMultiplication(const T* pMat, T*& pOutMat, int numRows, 
 }
 
 template<typename T, MajorOrder majorOrder>
-void computeInverse(T* pMat, int numRows, int numCols)
+void selfMatrixTransposeMultiplication(const T* pMat, T*& pOutMat, int numRows, int numCols)
 {
-    int N = 3;  // Matrix size
-    int LDA = 3, info;
-    int *ipiv = new int [numCols];  // Pivot indices
-    if constexpr (MajorOrder::ROW_MAJOR == majorOrder)
+    pOutMat = new T[numCols * numCols];
+    double alpha = 1.0, beta = 0.0;
+    if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
-        // Step 1: Perform LU decomposition
-        LAPACKE_dgetrf(LAPACK_ROW_MAJOR, numRows, numRows, pMat, numCols, ipiv);
-
-        // Step 2: Compute inverse using LU factorization
-        LAPACKE_dgetri(LAPACK_ROW_MAJOR, numRows, pMat, numCols, ipiv);
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
+                    numCols, numCols, numRows, alpha, pMat, numCols, pMat, numCols, beta,
+                     pOutMat, numCols);
     }
     else
     {
-          // Step 1: Perform LU decomposition
-        LAPACKE_dgetrf(LAPACK_COL_MAJOR, numRows, numRows, pMat, numCols, ipiv);
+        cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans,
+            numCols, numCols, numRows, alpha, pMat, numRows, pMat, numRows, beta,
+                     pOutMat, numCols);
+    }
+}
 
-        // Step 2: Compute inverse using LU factorization
-        LAPACKE_dgetri(LAPACK_COL_MAJOR, numRows, pMat, numCols, ipiv);
+template<typename T, MajorOrder majorOrder>
+void computeInverse(T* pMat, int numRows, int numCols, bool upperTriangular = true)
+{
+    if (upperTriangular)
+    {
+        if constexpr (MajorOrder::COL_MAJOR == majorOrder)
+        {
+            LAPACKE_dtrtri(LAPACK_COL_MAJOR, 'U', 'N', numRows, pMat, numRows);
+        }
+        else
+        {
+            LAPACKE_dtrtri(LAPACK_ROW_MAJOR, 'U', 'N', numRows, pMat, numCols);
+        }
+    }
+    else
+    {
+        int N = 3;  // Matrix size
+        int LDA = 3, info;
+        int *ipiv = new int [numCols];  // Pivot indices
+        if constexpr (MajorOrder::ROW_MAJOR == majorOrder)
+        {
+            // Step 1: Perform LU decomposition
+            LAPACKE_dgetrf(LAPACK_ROW_MAJOR, numRows, numRows, pMat, numCols, ipiv);
+
+            // Step 2: Compute inverse using LU factorization
+            LAPACKE_dgetri(LAPACK_ROW_MAJOR, numRows, pMat, numCols, ipiv);
+        }
+        else
+        {
+            // Step 1: Perform LU decomposition
+            LAPACKE_dgetrf(LAPACK_COL_MAJOR, numRows, numRows, pMat, numCols, ipiv);
+
+            // Step 2: Compute inverse using LU factorization
+            LAPACKE_dgetri(LAPACK_COL_MAJOR, numRows, pMat, numCols, ipiv);
+        }
+        delete [] ipiv;
     }
 
-    delete [] ipiv;
 }
 
 // Ax = b --- pMatA * pOutVect = pVectB,
 // = A^T * A * x = A^T * b
 // x = (A^T * A)^ inv * A^T * b
 // A^T * A = R^T * R
-template<typename T, MajorOrder rMajorOrder>
-Matrix<T, rMajorOrder> solveLLS(const Matrix<T, rMajorOrder>& matA,
-    const Matrix<T, rMajorOrder>& matR, const Matrix<T, rMajorOrder>& vectB,
+template<typename T, MajorOrder majorOrder>
+Matrix<T, majorOrder> solveLLSNormalEquation(const Matrix<T, majorOrder>& matA,
+    const Matrix<T, majorOrder>& matR, const Matrix<T, majorOrder>& vectB,
     int numRows, int numCols, const std::string& fileName)
 {
-    Matrix<T, rMajorOrder> outMat{numCols, numCols};
+    Matrix<T, majorOrder> matRCopy{numCols, numCols};
+    Matrix<T, majorOrder> outMat{numCols, numCols};
+    copyMatrix<T, majorOrder>(matR.getDataC(), matRCopy.getData(), numCols, numCols, numCols, numCols, true);
+    // printMatrix(matRCopy, numCols, fileName +"RCOPY.csv", false);
+    computeInverse<double, majorOrder>(matRCopy.getData(), numCols, numCols, true);
+printMatrix(matRCopy, numCols, fileName +"RCOPYInverse.csv", false);
+    selfMatrixTransposeMultiplication<double, majorOrder>(matRCopy.getDataC(), outMat.getData(), numCols, numCols);
+    // printMatrix(outMat, numCols, fileName +"SMTINV.csv", false);
 
-    selfTransposeMatrixMultiplication<double, rMajorOrder>(matR.getDataC(), outMat.getData(), numCols, numCols);
-    computeInverse<double, rMajorOrder>(outMat.getData(), numCols, numCols);
     auto tempVect = computeMatrixVector(matA, vectB, numRows, numCols, true);
-    auto vectOut = computeMatrixVector(outMat, tempVect, numCols, numCols, false);
+    auto vectXOut = computeMatrixVector(outMat, tempVect, numCols, numCols, false);
 
-    return vectOut;
+    return vectXOut;
+}
+
+template<typename T, MajorOrder majorOrder>
+Matrix<T, majorOrder> solveLLSMKL(const Matrix<T, majorOrder>& matA,
+    const Matrix<T, majorOrder>& matR, const Matrix<T, majorOrder>& vectB,
+    int numRows, int numCols, const std::string& fileName)
+{
+    Matrix<T, majorOrder> matCopy{matA.getNumRows(), matA.getNumCols()};
+    Matrix<T, majorOrder> vectXOut{vectB.getNumRows(), vectB.getNumCols()};
+
+    copyMatrix<T, majorOrder>(vectB.getDataC(), vectXOut.getData(), vectB.getNumRows(), vectB.getNumCols(), vectB.getNumRows(), vectB.getNumCols(), false);
+    copyMatrix<T, majorOrder>(matA.getDataC(), matCopy.getData(), matA.getNumRows(), matA.getNumCols(), matA.getNumRows(), matA.getNumCols(), false);
+
+    if constexpr (majorOrder == MajorOrder::COL_MAJOR)
+    {
+        LAPACKE_dgels(LAPACK_COL_MAJOR, 'N', matA.getNumRows(), matA.getNumCols(), 1,
+            matCopy.getData(), matA.getNumRows(), vectXOut.getData(), vectXOut.getNumRows());
+    }
+    else
+    {
+        LAPACKE_dgels(LAPACK_ROW_MAJOR, 'N', matA.getNumRows(), matA.getNumCols(), 1,
+            matCopy.getData(), matA.getNumCols(), vectXOut.getData(), 1);
+    }
+    return vectXOut;
 }
 
 template<typename T, MajorOrder order1, MajorOrder order2>

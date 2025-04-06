@@ -20,8 +20,8 @@ void computeVectors(const MatrixDCol& matCartProd, const MatrixDCol& matCUDAR,
     const MatrixDCol& matFigR, const MatrixDCol& vectBTrain,
     MatrixDCol& vectXCompMKL, MatrixDCol& vectXCompFig, int seed)
 {
-    vectXCompMKL = solveLLS(matCartProd, matCUDAR, vectBTrain, matCartProd.getNumRows(), matCartProd.getNumCols(), std::to_string(seed) + "results/Cuda");
-    vectXCompFig = solveLLS(matCartProd, matFigR, vectBTrain, matCartProd.getNumRows(), matCartProd.getNumCols(), std::to_string(seed) + "results/LinScale");
+    vectXCompMKL = solveLLSMKL(matCartProd, matCUDAR, vectBTrain, matCartProd.getNumRows(), matCartProd.getNumCols(),  "results/Cuda"+ std::to_string(seed));
+    vectXCompFig = solveLLSNormalEquation(matCartProd, matFigR, vectBTrain, matCartProd.getNumRows(), matCartProd.getNumCols(), "results/LinScale" + std::to_string(seed) );
 }
 
 void evaluateTest(int numRows1, int numCols1, int numRows2, int numCols2,

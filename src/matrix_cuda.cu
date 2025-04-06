@@ -253,10 +253,9 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
 
     if (computeSVD)
     {
-	thrust::host_vector<T> h_matS(numColsOut);
-    	T *h_S = thrust::raw_pointer_cast(h_matS.data());
-
-	CUDA_CALL(cudaMemcpy(h_S, d_S, numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
+        thrust::host_vector<T> h_matS(numColsOut);
+        T *h_S = thrust::raw_pointer_cast(h_matS.data());
+        CUDA_CALL(cudaMemcpy(h_S, d_S, numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
         printMatrix<T, MajorOrder::COL_MAJOR>(h_S, numColsOut, 1, numColsOut, fileName + "LinScaleS", false);
     }
     else
