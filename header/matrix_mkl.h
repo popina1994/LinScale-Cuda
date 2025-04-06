@@ -62,7 +62,6 @@ void generateCartesianProduct(const Matrix<T, orderInput>& mat1,  const Matrix<T
     int numRows = mat1.getNumRows() * mat2.getNumRows();
     int numCols =  mat1.getNumCols() + mat2.getNumCols();
     matOut = std::move(Matrix<T, orderOutput>{numRows, numCols});
-    // pArr = new T[numRows * numCols];
     for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
     {
         int rowIdx1 = rowIdx / mat2.getNumRows();
@@ -115,7 +114,6 @@ Matrix<T, majorOrderA> computeMatrixVector(const Matrix<T, majorOrderA>& matA,
 
     int rowsOut = (transpose ? numCols : numRows);
     Matrix<T, majorOrderA> matOut{rowsOut, 1};
-    // pOutVect = new T[cntOut];
 
     if constexpr (MajorOrder::ROW_MAJOR == majorOrderA)
     {
