@@ -102,22 +102,38 @@ Matrix<T, majorOrder> sortTable(const Matrix<T, majorOrder>& mat, int numSortAtt
 }
 
 
+template <typename T, MajorOrder majorOrder>
+int computeJoinSize(Matrix<T, majorOrder>& mat1, Matrix<T, majorOrder>& mat2,
+    std::map<T, std::vector<int>>& rangeIdx1,
+    std::map<T, std::vector<int>>& rangeIdx2)
+{
+    int joinSize = 0;
+    for (auto& [val, vRowIdxs]: rangeIdx1)
+    {
+        int curJoinSize = 0;
+        if (rangeIdx2.contains(val))
+        {
+            curJoinSize = rangeIdx2[val].size() * vRowIdxs.size();
+        }
+        joinSize += curJoinSize;
+    }
 
-// template <typename T, MajorOrder majorOrder>
-// Matrix<T, majorOrder>
-// computeJoinSize(Matrix<T, majorOrder>& mat1, Matrix<T, majorOrder>& mat2, int numJoinAttrs)
-// {
-
-// }
+    return joinSize;
+}
 
 template <typename T, MajorOrder majorOrder>
 Matrix<T, majorOrder>
 computeJoin(Matrix<T, majorOrder>& mat1, Matrix<T, majorOrder>& mat2, int numJoinAttrs)
 {
 
-    Matrix<T, majorOrder> matA{mat1.getNumRows(), mat2.getNumCols()};
+    auto rangeIdx1 = buildRangeIndex(mat1, numJoinAttrs);
+    auto rangeIdx2 = buildRangeIndex(mat2, numJoinAttrs);
+    auto joinSize = computeJoinSize(mat1, mat2, 1);
 
-    return std::move(matA);
+    Matrix<T, majorOrder> matOut{joinSize, mat1.getNumCols() + mat2.getNumCols()};
+    //
+
+    return std::move(matOut);
 }
 
 #endif

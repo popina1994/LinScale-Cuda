@@ -13,9 +13,7 @@ void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
         mat1.getNumRows() * mat2.getNumRows(), mat1.getNumCols() + mat2.getNumCols(), fileName, compute);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR.getData(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), fileName + "CUDA.csv", false);
 
-    matFigR = MatrixDCol{mat1.getNumRows() + mat2.getNumRows() - 1, mat1.getNumCols() + mat2.getNumCols()};
-    computeFigaro<double>(mat1.getDataC(), mat2.getDataC(), matFigR.getData(), mat1.getNumRows(), mat1.getNumCols(), mat2.getNumRows(), mat2.getNumCols(),
-    fileName, compute);
+    computeFigaro<double>(mat1, mat2, matFigR, fileName, compute);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matFigR.getData(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), fileName + "LinScale.csv", false);
 }
 
@@ -41,8 +39,7 @@ void evaluateTest(int numRows1, int numCols1, int numRows2, int numCols2,
     auto matUniformAdd = generateRandom<double>(matCartProdTest.getNumRows(),
         matCartProdTest.getNumCols(), 37);
     decltype(matUniformAdd) matUniformCopy {matUniformAdd.getNumRows(), matUniformAdd.getNumCols()};
-    divValue(matUniformAdd, 1e3, matUniformCopy);
-    // printMatrix<double, MajorOrder::COL_MAJOR>(matUniformAdd.getDataC(), matUniformAdd.getNumRows(), matUniformAdd.getNumCols(), matUniformAdd.getNumRows(),  "variance.csv", false);
+    divValue(matUniformAdd, 1e64, matUniformCopy);
     MatrixDCol outVectBTestVariance{1, 1};
     addVectors(outVectBTest, matUniformCopy, outVectBTestVariance);
 

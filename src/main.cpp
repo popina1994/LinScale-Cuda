@@ -12,9 +12,7 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
     auto mat1 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows1, numCols1, 1, 5, 0);
     auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, 5, 10);
     mat1 = sortTable(mat1, 1);
-    std::cout << "HERE" << std::endl;
     mat2 = sortTable(mat2, 1);
-    std::cout << "HERE2" << std::endl;
     printMatrix(mat1, mat1.getNumRows(), "mat1.csv", false);
     printMatrix(mat2, mat2.getNumRows(), "mat2.csv", false);
     MatrixDCol matCartProd{1, 1};

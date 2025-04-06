@@ -122,14 +122,18 @@ __global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
 }
 
 template <typename T>
-int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int numCols1, int numRows2, int numCols2,
-    const std::string& fileName, int compute)
+int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
+    Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, int compute)
 {
+    int numRows1 = mat1.getNumRows();
+    int numCols1 = mat1.getNumCols();
+    int numRows2 = mat2.getNumRows();
+    int numCols2 = mat2.getNumCols();
     int numRowsOut = numRows1 + numRows2 - 1;
     int numColsOut = numCols1 + numCols2;
 
-    thrust::device_vector<T> d_mat1DV(h_mat1, h_mat1 + numRows1 * numCols1);
-    thrust::device_vector<T> d_mat2DV(h_mat2, h_mat2 + numRows2 * numCols2);
+    thrust::device_vector<T> d_mat1DV(mat1.getDataC(), mat1.getDataC() + numRows1 * numCols1);
+    thrust::device_vector<T> d_mat2DV(mat2.getDataC(), mat2.getDataC() + numRows2 * numCols2);
     thrust::device_vector<T> d_matOutDV(numRowsOut * numColsOut);
     thrust::device_vector<T> d_matTranDV(numRowsOut * numColsOut);
 
@@ -208,7 +212,7 @@ int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int
 
     int rank = min(numRowsOut, numColsOut);
 
-    // // Compute QR factorization
+    // Compute QR factorization
     if constexpr (std::is_same<T, float>::value)
     {
         CUSOLVER_CALL(cusolverDnSgeqrf(cusolverH, numRowsOut, numColsOut, d_matOutTran, numRowsOut, d_tau, d_work, workspace_size, devInfo));
@@ -260,7 +264,8 @@ int computeFigaro(const T* h_mat1, const T* h_mat2, T* h_matR, int numRows1, int
     	thrust::host_vector<T> h_matOutH(numRowsOut * numColsOut);
     	T *h_matOut = thrust::raw_pointer_cast(h_matOutH.data());
     	CUDA_CALL(cudaMemcpy(h_matOut, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
-        copyMatrix<T, MajorOrder::COL_MAJOR>(h_matOut, h_matR, numRowsOut, numColsOut, numColsOut, numColsOut, false);
+        matR = Matrix<T, MajorOrder::COL_MAJOR>{numColsOut, numColsOut};
+        copyMatrix<T, MajorOrder::COL_MAJOR>(h_matOut, matR.getData(), numRowsOut, numColsOut, numColsOut, numColsOut, false);
     }
 
 
@@ -374,7 +379,6 @@ int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std:
     CUDA_CALL(cudaEventRecord(start));
 
     // Compute QR factorization
-
     if constexpr (std::is_same<T, float>::value)
     {
         CUSOLVER_CALL(cusolverDnSgeqrf(cusolverH, numRows, numCols, d_matOutTran, numRows, d_tau, d_work, workspace_size, devInfo));
@@ -404,7 +408,6 @@ int computeGeneral(const T* h_A, T* h_matR, int numRows, int numCols, const std:
         else
         {
             CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, d_matOutTran, numRows, d_tau, d_work, workspace_size, devInfo));
-
         }
     }
 
@@ -447,5 +450,5 @@ template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const double* h_A, do
 
 template int computeGeneral<double, MajorOrder::COL_MAJOR>(const double* h_A, double* h_matR, int numRows, int numCols, const std::string& fileName, int compute);
 
-template int computeFigaro<double>(const double* h_mat1, const double* h_mat2, double* h_matR, int numRows1, int numCols1, int numRows2, int numCols2,
-    const std::string& fileName, int compute);
+template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
+    Matrix<double, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, int compute);
