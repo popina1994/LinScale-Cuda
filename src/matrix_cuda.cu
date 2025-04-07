@@ -8,8 +8,8 @@
 #include <thrust/host_vector.h>
 #include <random>
 #include <iomanip>
-#include "types.h"
 #include "matrix.h"
+#include "matrix_cuda.h"
 
 // CUDA error check macro
 #define CUDA_CALL(call) \
@@ -121,9 +121,46 @@ __global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
 	}
 }
 
+// TODO: Add inverse, matrix matrix multiplication
+
+__global__ void findUniqueOffsets(const int* d_arr, int* d_offsets, int n) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx == 0 || (idx < n && d_arr[idx] != d_arr[idx - 1])) {
+        d_offsets[idx] = idx;
+    } else if (idx < n) {
+        d_offsets[idx] = -1;
+    }
+}
+
+// void computeIndices(thrust::device_vector<int>& d_indices, thrust::device_vector<int>& d_indices)
+// {
+//     const int n = 12;
+//     int h_arr[n] = {1, 1, 2, 2, 2, 3, 4, 4, 5, 6, 6, 7};
+//     int h_offsets[n];
+
+//     // Allocate memory on device
+//     thrust::device_vector<int> d_arr(h_arr, h_arr + n);
+//     thrust::device_vector<int> d_offsets(n);
+
+//     int blockSize = 256;
+//     int numBlocks = (n + blockSize - 1) / blockSize;
+//     findUniqueOffsets<<<numBlocks, blockSize>>>(thrust::raw_pointer_cast(d_arr.data()), thrust::raw_pointer_cast(d_offsets.data()), n);
+
+//     // Step to remove -1 entries (non-starting positions)
+//     int countDif = thrust::count(d_offsets, begin(), d_offsets.end(), -1);
+//     thrust::device_vector<int> d_result(countDif);
+//     auto new_end = thrust::copy_if(d_offsets.begin(), d_offsets.end(), d_result.begin(), [] __device__ (int val) { return val != -1; });
+
+//     // Sort the offsets (in case atomic ordering caused non-determinism)
+//     thrust::sort(d_result.begin(), d_result.end());
+
+//     // Copy result to host and print
+//     thrust::host_vector<int> h_result = d_result;
+// }
+
 template <typename T>
 int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
-    Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, ComputeDecomp decompType)
+    Matrix<T, MajorOrder::COL_MAJOR>& matR, Matrix<T, MajorOrder::COL_MAJOR>& matQ, const std::string& fileName, ComputeDecomp decompType)
 {
     int numRows1 = mat1.getNumRows();
     int numCols1 = mat1.getNumCols();
@@ -132,16 +169,13 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
     int numRowsOut = numRows1 + numRows2 - 1;
     int numColsOut = numCols1 + numCols2;
 
-    thrust::device_vector<T> d_mat1DV(mat1.getDataC(), mat1.getDataC() + numRows1 * numCols1);
-    thrust::device_vector<T> d_mat2DV(mat2.getDataC(), mat2.getDataC() + numRows2 * numCols2);
-    thrust::device_vector<T> d_matOutDV(numRowsOut * numColsOut);
-    thrust::device_vector<T> d_matTranDV(numRowsOut * numColsOut);
+    MatrixCuda<T, MajorOrder::ROW_MAJOR> matCuda1(mat1);
+    MatrixCuda<T, MajorOrder::ROW_MAJOR> matCuda2(mat2);
+    MatrixCuda<T, MajorOrder::ROW_MAJOR> matCudaOut(numRowsOut, numColsOut);
+    MatrixCuda<T, MajorOrder::COL_MAJOR> matCudaTran(numRowsOut, numColsOut);
 
-    T* d_mat1 = thrust::raw_pointer_cast(d_mat1DV.data());
-    T *d_mat2 = thrust::raw_pointer_cast(d_mat2DV.data());
-    T* d_matOut = thrust::raw_pointer_cast(d_matOutDV.data());
     T *d_S;
-    T* d_matOutTran = thrust::raw_pointer_cast(d_matTranDV.data());
+    T* d_matOutTran = matCudaTran.getData();
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
     cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
@@ -150,11 +184,11 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
     int workspace_size = 0;
     if constexpr (std::is_same<T, float>::value)
     {
-        CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cusolverH, numRowsOut, numColsOut, d_matOut, numRowsOut, &workspace_size));
+        CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cusolverH, numRowsOut, numColsOut, matCudaOut.getData(), numRowsOut, &workspace_size));
     }
     else
     {
-        CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cusolverH, numRowsOut, numColsOut, d_matOut, numRowsOut, &workspace_size));
+        CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cusolverH, numRowsOut, numColsOut, matCudaOut.getData(), numRowsOut, &workspace_size));
     }
 
     // Initialize cuBLAS handle
@@ -180,8 +214,8 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
     // Compute join offsets for both tables
     // compute join offsets
     // for loop call for each subset the
-    computeHeadsAndTails<<<1, numCols2>>>(d_mat2, numRows2, numCols2);
-    concatenateHeadsAndTails<<<1, max(numCols1, numCols2)>>>(d_mat1, d_mat2, d_matOut, numRows1, numCols1, numRows2, numCols2);
+    computeHeadsAndTails<<<1, numCols2>>>(matCuda2.getData(), numRows2, numCols2);
+    concatenateHeadsAndTails<<<1, max(numCols1, numCols2)>>>(matCuda1.getDataC(), matCuda2.getDataC(), matCudaOut.getData(), numRows1, numCols1, numRows2, numCols2);
 
     // Define scalars alpha and beta
     const T alpha = 1.0f; // Scalar for matrix A (no scaling)
@@ -193,10 +227,10 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
         CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
         numRowsOut, numColsOut,                     // Matrix dimensions
         &alpha,                   // Scalar for A
-        d_matOut, numColsOut,                   // Input matrix A and its leading dimension
+        matCudaOut.getDataC(), numColsOut,                   // Input matrix A and its leading dimension
         &beta,                    // Scalar for B (not used)
         nullptr, numColsOut,               // No B matrix (set to nullptr)
-        d_matOutTran, numRowsOut);                  // Output matrix C and its leading dimension
+        matCudaTran.getData(), numRowsOut);                  // Output matrix C and its leading dimension
     }
     else
     {
@@ -204,10 +238,10 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
         CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
         numRowsOut, numColsOut,                     // Matrix dimensions
         &alpha,                   // Scalar for A
-        d_matOut, numColsOut,                   // Input matrix A and its leading dimension
+        matCudaOut.getDataC(), numColsOut,                   // Input matrix A and its leading dimension
         &beta,                    // Scalar for B (not used)
         nullptr, numColsOut,               // No B matrix (set to nullptr)
-        d_matOutTran, numRowsOut);                  // Output matrix C and its leading dimension
+        matCudaTran.getData(), numRowsOut);                  // Output matrix C and its leading dimension
     }
 
     int rank = min(numRowsOut, numColsOut);
@@ -215,12 +249,12 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
     // Compute QR factorization
     if constexpr (std::is_same<T, float>::value)
     {
-        CUSOLVER_CALL(cusolverDnSgeqrf(cusolverH, numRowsOut, numColsOut, d_matOutTran, numRowsOut, d_tau, d_work, workspace_size, devInfo));
+        CUSOLVER_CALL(cusolverDnSgeqrf(cusolverH, numRowsOut, numColsOut, matCudaTran.getData(), numRowsOut, d_tau, d_work, workspace_size, devInfo));
     }
     else
     {
-        CUSOLVER_CALL(cusolverDnDgeqrf (cusolverH, numRowsOut, numColsOut, d_matOutTran, numRowsOut, d_tau, d_work, workspace_size, devInfo));
-        setZerosUpperTriangular<<<1, numColsOut>>>(d_matOutTran, numRowsOut, numColsOut);
+        CUSOLVER_CALL(cusolverDnDgeqrf (cusolverH, numRowsOut, numColsOut, matCudaTran.getData(), numRowsOut, d_tau, d_work, workspace_size, devInfo));
+        setZerosUpperTriangular<<<1, numColsOut>>>(matCudaTran.getData(), numRowsOut, numColsOut);
     	if (computeSVD)
 	    {
             std::cout << "WTF" << std::endl;
@@ -238,7 +272,7 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
             CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, rank, numColsOut, &lwork));
             CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
                 CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * rank));
-            cusolverDnDgesvd(cusolverH1, jobu, jobvt, numColsOut, numColsOut, d_matOutTran, ldA, d_S, nullptr, numColsOut, nullptr, numColsOut,
+            cusolverDnDgesvd(cusolverH1, jobu, jobvt, numColsOut, numColsOut, matCudaTran.getData(), ldA, d_S, nullptr, numColsOut, nullptr, numColsOut,
                             d_work, lwork, nullptr, d_info);
         }
     }
@@ -262,7 +296,7 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
     {
     	thrust::host_vector<T> h_matOutH(numRowsOut * numColsOut);
     	T *h_matOut = thrust::raw_pointer_cast(h_matOutH.data());
-    	CUDA_CALL(cudaMemcpy(h_matOut, d_matOutTran, numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
+    	CUDA_CALL(cudaMemcpy(h_matOut, matCudaTran.getDataC(), numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
         matR = Matrix<T, MajorOrder::COL_MAJOR>{numColsOut, numColsOut};
         copyMatrix<T, MajorOrder::COL_MAJOR>(h_matOut, matR.getData(), numRowsOut, numColsOut, numColsOut, numColsOut, false);
     }
@@ -455,4 +489,4 @@ template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& mat
         MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
 
 template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
-    Matrix<double, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, ComputeDecomp decompType);
+    Matrix<double, MajorOrder::COL_MAJOR>& matR, Matrix<double, MajorOrder::COL_MAJOR>& matQ, const std::string& fileName, ComputeDecomp decompType);

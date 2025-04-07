@@ -5,14 +5,14 @@
 
 void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     const MatrixDCol& matCartProdTrain, MatrixDCol& matCUDAR, MatrixDCol& matFigR,
-    const std::string& fileName, ComputeDecomp decompType)
+    MatrixDCol& matFigQ, const std::string& fileName, ComputeDecomp decompType)
 {
     /*********** TRAINING ***********************/
     computeGeneral<double, MajorOrder::COL_MAJOR>(matCartProdTrain, matCUDAR,
          fileName, decompType);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR.getData(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), fileName + "CUDA.csv", false);
 
-    computeFigaro<double>(mat1, mat2, matFigR, fileName, decompType);
+    computeFigaro<double>(mat1, mat2, matFigR, matFigQ, fileName, decompType);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matFigR.getData(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), mat1.getNumCols() + mat2.getNumCols(), fileName + "LinScale.csv", false);
 }
 
@@ -38,7 +38,7 @@ void evaluateTest(int numRows1, int numCols1, int numRows2, int numCols2,
     auto matUniformAdd = generateRandom<double>(matCartProdTest.getNumRows(),
         matCartProdTest.getNumCols(), 37);
     decltype(matUniformAdd) matUniformCopy {matUniformAdd.getNumRows(), matUniformAdd.getNumCols()};
-    divValue(matUniformAdd, 1e64, matUniformCopy);
+    divValue(matUniformAdd, 1e15, matUniformCopy);
     MatrixDCol outVectBTestVariance{1, 1};
     addVectors(outVectBTest, matUniformCopy, outVectBTestVariance);
 
@@ -49,6 +49,7 @@ void evaluateTest(int numRows1, int numCols1, int numRows2, int numCols2,
 
     std::cout << "CUDA MSE " << cudaError << std::endl;
     std::cout << "Figaro MSE " << figError << std::endl;
-}
+    std::cout << "MKL is " << figError / cudaError  << " more accurate" << std::endl;
+ }
 
 #endif

@@ -1,7 +1,6 @@
 #ifndef LINSCALE_TABLE_H_
 #define LINSCALE_TABLE_H_
 
-#include "types.h"
 #include "matrix_mkl.h"
 #include <map>
 #include <vector>

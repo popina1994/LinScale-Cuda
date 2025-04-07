@@ -4,14 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <random>
-#include <mkl_lapacke.h>
-#include <mkl_cblas.h>
-#include <mkl_vml.h>
-#include "types.h"
-#include "matrix.h"
 #include "matrix_mkl.h"
-#include "matrix_cuda.h"
+#include "matrix_cuda_general.h"
+
 template <typename T>
 double computeMeanSquaredError(const T* pA, const T* pB, int numRows)
 {
@@ -37,6 +32,7 @@ double computeMeanSquaredError(const T* pA, const T* pB, int numRows)
 
 void readCSV(const std::string& fileName, double *h_mat)
 {
+
     std::ifstream file(fileName);
 
     if (!file.is_open()) {

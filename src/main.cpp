@@ -24,8 +24,9 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
 
     MatrixDCol matCUDAR{1, 1};
     MatrixDCol matFigR{1, 1};
+    MatrixDCol matFigQ{1, 1};
 
-    evaluateTrain(mat1, mat2, matCartProd, matCUDAR, matFigR, fileName, decompType);
+    evaluateTrain(mat1, mat2, matCartProd, matCUDAR, matFigR, matFigQ, fileName, decompType);
     MatrixDCol matVectXMKL{1, 1};
     MatrixDCol matVectXFig{1, 1};
     computeVectors(matCartProd, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig, -1);

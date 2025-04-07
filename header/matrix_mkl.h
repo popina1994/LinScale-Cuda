@@ -8,7 +8,6 @@
 #include <mkl_lapacke.h>
 #include <mkl_cblas.h>
 #include <mkl_vml.h>
-#include "types.h"
 #include "matrix.h"
 
 template <typename T, MajorOrder order>
