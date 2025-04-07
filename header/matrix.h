@@ -1,6 +1,8 @@
 #ifndef _LIN_SCALE_MATRIX_H_
 #define _LIN_SCALE_MATRIX_H_
 
+#include <iostream>
+
 enum class MajorOrder
 {
     ROW_MAJOR = 0,
@@ -92,14 +94,22 @@ void copyMatrix(const T* pArr, T*& pArrOut, int numRows, int numCols, int numRow
 }
 
 template <typename T, MajorOrder majorOrder>
-struct Matrix
+class Matrix
 {
     int numRows = 0;
     int numCols = 0;
     T* pArr = nullptr;
+public:
     Matrix(int _numRows, int _numCols): numRows(_numRows), numCols(_numCols)
     {
         pArr = new T[int64_t(numRows) * int64_t(numCols)];
+        // std::cout << "CREATE" << pArr << std::endl;
+    }
+
+    Matrix(T* pArrCopy, int _numRows, int _numCols): numRows(_numRows), numCols(_numCols)
+    {
+        pArr = new T[int64_t(numRows) * int64_t(numCols)];
+        memcpy(pArr, pArrCopy, getSize());
         // std::cout << "CREATE" << pArr << std::endl;
     }
 
@@ -175,6 +185,28 @@ struct Matrix
     int getNumElements(void) const
     {
         return numRows * numCols;
+    }
+
+    int getSize() const
+    {
+        return getNumElements() * sizeof(T);
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, const Matrix<T, majorOrder>& mat)
+    {
+        out << " Matrix: (" << mat.getNumRows() << "x" << mat.getNumCols() << ")" << std::endl;
+        for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+        {
+            for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+            {
+                out << mat(rowIdx, colIdx) << " ";
+            }
+            out << std::endl;
+        }
+        out << std::endl;
+
+
+        return out;
     }
 };
 

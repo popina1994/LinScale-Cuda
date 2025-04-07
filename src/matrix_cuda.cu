@@ -6,6 +6,7 @@
 #include <cublas_v2.h>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
+#include <thrust/count.h>
 #include <random>
 #include <iomanip>
 #include "matrix.h"
@@ -123,40 +124,35 @@ __global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
 
 // TODO: Add inverse, matrix matrix multiplication
 
-__global__ void findUniqueOffsets(const int* d_arr, int* d_offsets, int n) {
+template <typename T>
+__global__ void findUniqueOffsets(const T* d_arr, int* d_offsets, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx == 0 || (idx < n && d_arr[idx] != d_arr[idx - 1])) {
+    if (idx == 0 || (idx < n && d_arr[idx] != d_arr[idx - 1]))
+    {
         d_offsets[idx] = idx;
-    } else if (idx < n) {
+    }
+    else if (idx < n)
+    {
         d_offsets[idx] = -1;
     }
 }
 
-// void computeIndices(thrust::device_vector<int>& d_indices, thrust::device_vector<int>& d_indices)
-// {
-//     const int n = 12;
-//     int h_arr[n] = {1, 1, 2, 2, 2, 3, 4, 4, 5, 6, 6, 7};
-//     int h_offsets[n];
+template <typename T>
+void computeOffsets(const MatrixCudaRow<T>& matA, thrust::device_vector<int>& dOut)
+{
+    int numRows = matA.getNumRows();
+    thrust::device_vector<int> d_offsets(numRows);
 
-//     // Allocate memory on device
-//     thrust::device_vector<int> d_arr(h_arr, h_arr + n);
-//     thrust::device_vector<int> d_offsets(n);
+    int blockSize = 256;
+    int numBlocks = (numRows + blockSize - 1) / blockSize;
+    auto matAJoinCol = matA.getColumn(0);
+    std::cout << matAJoinCol << std::endl;
+    findUniqueOffsets<<<numBlocks, blockSize>>>(thrust::raw_pointer_cast(matAJoinCol.getDataC()), thrust::raw_pointer_cast(d_offsets.data()), numRows);
 
-//     int blockSize = 256;
-//     int numBlocks = (n + blockSize - 1) / blockSize;
-//     findUniqueOffsets<<<numBlocks, blockSize>>>(thrust::raw_pointer_cast(d_arr.data()), thrust::raw_pointer_cast(d_offsets.data()), n);
-
-//     // Step to remove -1 entries (non-starting positions)
-//     int countDif = thrust::count(d_offsets, begin(), d_offsets.end(), -1);
-//     thrust::device_vector<int> d_result(countDif);
-//     auto new_end = thrust::copy_if(d_offsets.begin(), d_offsets.end(), d_result.begin(), [] __device__ (int val) { return val != -1; });
-
-//     // Sort the offsets (in case atomic ordering caused non-determinism)
-//     thrust::sort(d_result.begin(), d_result.end());
-
-//     // Copy result to host and print
-//     thrust::host_vector<int> h_result = d_result;
-// }
+    int countDif = thrust::count(d_offsets.begin(), d_offsets.end(), -1);
+    dOut = std::move(thrust::device_vector<int>(countDif));
+    thrust::copy_if(d_offsets.begin(), d_offsets.end(), dOut.begin(), [] __device__ (int val) { return val != -1; });
+}
 
 template <typename T>
 int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
@@ -173,6 +169,12 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     MatrixCudaRow<T> matCuda2(mat2);
     MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
     MatrixCudaCol<T> matCudaTran(numRowsOut, numColsOut);
+    thrust::device_vector<int> dOffsets1;
+    thrust::device_vector<int> dOffsets2;
+    std::cout << "C1" << matCuda1;
+    computeOffsets(matCuda1, dOffsets1);
+    std::cout << "C2" << matCuda2;
+    computeOffsets(matCuda2, dOffsets2);
 
     T *d_S;
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;

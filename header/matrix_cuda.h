@@ -4,14 +4,22 @@
 #include "matrix.h"
 #include <string>
 #include <thrust/device_vector.h>
+#include <thrust/copy.h>
+#include <thrust/iterator/counting_iterator.h>
 
 template <typename T, MajorOrder majorOrder>
-struct MatrixCuda
+class MatrixCuda
 {
     int numRows = 0;
     int numCols = 0;
     T* pArr = nullptr;
     thrust::device_vector<T> dVector;
+
+    MatrixCuda(int _numRows, int _numCols, const thrust::device_vector<T>& mdVector): numRows(_numRows), numCols(_numCols), dVector(mdVector)
+    {
+        // std::cout << "CREATE" << pArr << std::endl;
+    }
+public:
     MatrixCuda(const MatrixCuda& matIn) = delete;
     MatrixCuda& operator=(const MatrixCuda& matIn) = delete;
     MatrixCuda(int _numRows, int _numCols): numRows(_numRows), numCols(_numCols), dVector(int64_t(numRows) * int64_t(numCols))
@@ -84,6 +92,47 @@ struct MatrixCuda
     int getSize(void) const
     {
         return numRows * numCols * sizeof(T);
+    }
+
+    MatrixCuda<T, majorOrder> getColumn(int colIdx) const
+    {
+        thrust::device_vector<T> outVect;
+
+        if constexpr (majorOrder == MajorOrder::COL_MAJOR)
+        {
+            outVect = std::move(thrust::device_vector<T>(getDataC(), getDataC() + getNumRows()));
+        }
+        else
+        {
+            int numColsCur = numCols;
+            auto isNthElement = [numColsCur] __device__ (int idx) { return (idx %  numColsCur == 0); };
+            auto onlyEvenIter = thrust::make_counting_iterator(0);
+            outVect = thrust::device_vector<T>(numRows);
+            thrust::copy_if(
+                dVector.begin() + colIdx,
+                dVector.end(),
+                onlyEvenIter,
+                outVect.begin(),
+                isNthElement);
+        }
+        MatrixCuda<T, majorOrder> matOut(getNumRows(), 1, outVect);
+        return matOut;
+    }
+
+    Matrix<T, majorOrder> getHostCopy(void) const
+    {
+        thrust::host_vector<T> hostVector = dVector;;
+        Matrix<T, majorOrder> matOut(thrust::raw_pointer_cast(hostVector.data()), getNumRows(), getNumCols());
+        return matOut;
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, MatrixCuda<T, majorOrder>& matCuda)
+    {
+        Matrix<T, majorOrder> matHost = matCuda.getHostCopy();
+
+        out << matHost;
+
+        return out;
     }
 };
 
