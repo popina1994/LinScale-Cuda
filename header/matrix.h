@@ -180,6 +180,10 @@ struct Matrix
 
 using MatrixDCol = Matrix<double, MajorOrder::COL_MAJOR>;
 using MatrixDRow = Matrix<double, MajorOrder::ROW_MAJOR>;
+template <typename T>
+using MatrixCol = Matrix<T, MajorOrder::COL_MAJOR>;
+template <typename T>
+using MatrixRow = Matrix<T, MajorOrder::ROW_MAJOR>;
 
 template <typename T, MajorOrder order>
 void printMatrix(const T* pArr, int numRows, int numCols, int numRowsCut, const std::string& fileName, bool upperTriangular = false)

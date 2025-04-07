@@ -159,8 +159,8 @@ __global__ void findUniqueOffsets(const int* d_arr, int* d_offsets, int n) {
 // }
 
 template <typename T>
-int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
-    Matrix<T, MajorOrder::COL_MAJOR>& matR, Matrix<T, MajorOrder::COL_MAJOR>& matQ, const std::string& fileName, ComputeDecomp decompType)
+int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
+    MatrixCol<T>& matR, MatrixCol<T>& matQ, const std::string& fileName, ComputeDecomp decompType)
 {
     int numRows1 = mat1.getNumRows();
     int numCols1 = mat1.getNumCols();
@@ -169,13 +169,12 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
     int numRowsOut = numRows1 + numRows2 - 1;
     int numColsOut = numCols1 + numCols2;
 
-    MatrixCuda<T, MajorOrder::ROW_MAJOR> matCuda1(mat1);
-    MatrixCuda<T, MajorOrder::ROW_MAJOR> matCuda2(mat2);
-    MatrixCuda<T, MajorOrder::ROW_MAJOR> matCudaOut(numRowsOut, numColsOut);
-    MatrixCuda<T, MajorOrder::COL_MAJOR> matCudaTran(numRowsOut, numColsOut);
+    MatrixCudaRow<T> matCuda1(mat1);
+    MatrixCudaRow<T> matCuda2(mat2);
+    MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
+    MatrixCudaCol<T> matCudaTran(numRowsOut, numColsOut);
 
     T *d_S;
-    T* d_matOutTran = matCudaTran.getData();
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
     cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
@@ -324,35 +323,29 @@ int computeFigaro(const MatrixDRow& mat1, const MatrixDRow& mat2,
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_MAJOR>& matR, const std::string& fileName, ComputeDecomp decompType)
+int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const std::string& fileName, ComputeDecomp decompType)
 {
-    // Allocate device memory
-    T *d_A, *d_tau, *d_matOutTran, *h_S, *h_aCopy;
+    T *d_tau, *h_S;
     int numRows = matA.getNumRows();
     int numCols = matA.getNumCols();
 
-    thrust::device_vector<T> d_matA(matA.getDataC(), matA.getDataC() + numRows * numCols);
-    thrust::host_vector<T> h_matACopy(numRows * numCols);
-    thrust::device_vector<T> d_matADV(numRows * numCols);
+    MatrixCudaCol<T> matACuda(matA);
+    MatrixCol<T> matOut(numRows, numCols);
+    MatrixCudaCol<T> matACudaCol(numRows, numCols);
     thrust::host_vector<T> h_matS(numCols);
 
-    d_A = thrust::raw_pointer_cast(d_matA.data());
-    d_matOutTran = thrust::raw_pointer_cast(d_matADV.data());
     h_S = thrust::raw_pointer_cast(h_matS.data());
-    h_aCopy = thrust::raw_pointer_cast(h_matACopy.data());
     T *d_S;
     CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(numRows, numCols) * sizeof(T)));
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
-     // Copy data to GPU
+
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
-        // Initialize cuBLAS handle
         cublasHandle_t handle;
         cublasCreate(&handle);
 
-        // Define scalars alpha and beta
-        const T alpha = 1.0f; // Scalar for matrix A (no scaling)
-        const T beta = 0.0f;  // Scalar for matrix B (no B matrix, so no scaling)
+        const T alpha = 1.0f;
+        const T beta = 0.0f;
 
         if constexpr (std::is_same<T, float>::value)
         {
@@ -360,10 +353,10 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_
             CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
             numRows, numCols,                     // Matrix dimensions
             &alpha,                   // Scalar for A
-            d_A, numCols,                   // Input matrix A and its leading dimension
+            matACuda.getDataC(), numCols,                   // Input matrix A and its leading dimension
             &beta,                    // Scalar for B (not used)
             nullptr, numCols,               // No B matrix (set to nullptr)
-            d_matOutTran, numRows);                  // Output matrix C and its leading dimension
+            matACudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
         }
         else
         {
@@ -371,52 +364,43 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_
             CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
             numRows, numCols,                     // Matrix dimensions
             &alpha,                   // Scalar for A
-            d_A, numCols,                   // Input matrix A and its leading dimension
+            matACuda.getDataC(), numCols,                   // Input matrix A and its leading dimension
             &beta,                    // Scalar for B (not used)
             nullptr, numCols,               // No B matrix (set to nullptr)
-            d_matOutTran, numRows);                  // Output matrix C and its leading dimension
+            matACudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
         }
         cublasDestroy(handle);
     }
     else
     {
-        d_matOutTran = d_A;
+        matACudaCol = std::move(matACuda);
     }
 
-    // cuSOLVER handle
     cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
 
-    // Compute buffer size for QR
     int workspace_size = 0;
     if constexpr (std::is_same<T, float>::value)
     {
-        CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cusolverH, numRows, numCols, d_matOutTran, numRows, &workspace_size));
+        CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, &workspace_size));
     }
     else
     {
-        CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cusolverH, numRows, numCols, d_matOutTran, numRows, &workspace_size));
+        CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, &workspace_size));
     }
-    // Allocate workspace
     T *d_work;
-    CUDA_CALL(cudaMalloc((void**)&d_work, workspace_size * sizeof(T)));
-
-    // Allocate device status variable
     int *devInfo;
+    CUDA_CALL(cudaMalloc((void**)&d_work, workspace_size * sizeof(T)));
     CUDA_CALL(cudaMalloc((void**)&devInfo, sizeof(int)));
 
-    // CUDA event timing variables
     cudaEvent_t start, stop;
     CUDA_CALL(cudaEventCreate(&start));
     CUDA_CALL(cudaEventCreate(&stop));
-
-    // Start measuring time
     CUDA_CALL(cudaEventRecord(start));
 
-    // Compute QR factorization
     if constexpr (std::is_same<T, float>::value)
     {
-        CUSOLVER_CALL(cusolverDnSgeqrf(cusolverH, numRows, numCols, d_matOutTran, numRows, d_tau, d_work, workspace_size, devInfo));
+        CUSOLVER_CALL(cusolverDnSgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
     }
     else
     {
@@ -424,7 +408,7 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_
         {
             char jobu = 'N';  // No computation of U
             char jobvt = 'N'; // No computation of V^T
-            // cuSOLVER handle
+
             int *d_info;
             double *d_work;
             int lwork = 0;
@@ -437,20 +421,17 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_
             CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
             CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numCols));
 
-            cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRows, numCols, d_matOutTran, ldA, d_S, nullptr, numRows, nullptr, numCols,
+            cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRows, numCols, matACudaCol.getData(), ldA, d_S, nullptr, numRows, nullptr, numCols,
                                     d_work, lwork, nullptr, d_info);
         }
         else
         {
-            CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, d_matOutTran, numRows, d_tau, d_work, workspace_size, devInfo));
+            CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
         }
     }
 
-    // Stop measuring time
     CUDA_CALL(cudaEventRecord(stop));
     CUDA_CALL(cudaEventSynchronize(stop));
-
-    // Compute elapsed time
     float milliseconds = 0;
     CUDA_CALL(cudaEventElapsedTime(&milliseconds, start, stop));
 
@@ -462,16 +443,15 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_
     }
     else
     {
-        CUDA_CALL(cudaMemcpy(h_aCopy, d_matOutTran, numRows * numCols * sizeof(T), cudaMemcpyDeviceToHost));
+        CUDA_CALL(cudaMemcpy(matOut.getData(), matACudaCol.getDataC(), matACudaCol.getSize(), cudaMemcpyDeviceToHost));
         matR = Matrix<T, MajorOrder::COL_MAJOR>{numCols, numCols};
-        copyMatrix<T, MajorOrder::COL_MAJOR>(h_aCopy, matR.getData(), numRows, numCols, numCols, numCols, true);
+        copyMatrix<T, MajorOrder::COL_MAJOR>(matOut.getDataC(), matR.getData(), numRows, numCols, numCols, numCols, true);
     }
 
     // Print execution time
     std::string nameDecomp = computeSVD ? "SVD" : "QR";
     std::cout << "\n" + nameDecomp + " decomposition CUSolver took " << milliseconds << " ms.\n";
 
-    // Cleanup
     CUDA_CALL(cudaFree(d_tau));
     CUDA_CALL(cudaFree(d_work));
     CUDA_CALL(cudaFree(devInfo));
@@ -482,8 +462,8 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, Matrix<T, MajorOrder::COL_
     return 0;
 }
 
-template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const MatrixDRow& matA,
-    MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
+// template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const MatrixDRow& matA,
+//     MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
 
 template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& matA,
         MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);

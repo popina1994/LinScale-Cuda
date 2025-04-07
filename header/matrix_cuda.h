@@ -12,6 +12,8 @@ struct MatrixCuda
     int numCols = 0;
     T* pArr = nullptr;
     thrust::device_vector<T> dVector;
+    MatrixCuda(const MatrixCuda& matIn) = delete;
+    MatrixCuda& operator=(const MatrixCuda& matIn) = delete;
     MatrixCuda(int _numRows, int _numCols): numRows(_numRows), numCols(_numCols), dVector(int64_t(numRows) * int64_t(numCols))
     {
         // std::cout << "CREATE" << pArr << std::endl;
@@ -23,8 +25,7 @@ struct MatrixCuda
         // std::cout << "CREATE" << pArr << std::endl;
     }
 
-    MatrixCuda(const MatrixCuda& matIn) = delete;
-    MatrixCuda& operator=(const MatrixCuda& matIn) = delete;
+
     MatrixCuda(MatrixCuda&& matIn)
     {
         dVector = std::move(matIn.dVector);
@@ -79,6 +80,17 @@ struct MatrixCuda
     {
         return numRows * numCols;
     }
+
+    int getSize(void) const
+    {
+        return numRows * numCols * sizeof(T);
+    }
 };
+
+
+template <typename T>
+using MatrixCudaCol = MatrixCuda<T, MajorOrder::COL_MAJOR>;
+template <typename T>
+using MatrixCudaRow = MatrixCuda<T, MajorOrder::ROW_MAJOR>;
 
 #endif
