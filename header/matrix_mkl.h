@@ -237,11 +237,8 @@ Matrix<T, majorOrder> solveLLSNormalEquation(const Matrix<T, majorOrder>& matA,
     Matrix<T, majorOrder> matRCopy{numCols, numCols};
     Matrix<T, majorOrder> outMat{numCols, numCols};
     copyMatrix<T, majorOrder>(matR.getDataC(), matRCopy.getData(), numCols, numCols, numCols, numCols, true);
-    // printMatrix(matRCopy, numCols, fileName +"RCOPY.csv", false);
     computeInverse<double, majorOrder>(matRCopy.getData(), numCols, numCols, true);
-    // printMatrix(matRCopy, numCols, fileName +"RCOPYInverse.csv", false);
     selfMatrixTransposeMultiplication<double, majorOrder>(matRCopy.getDataC(), outMat.getData(), numCols, numCols);
-    // printMatrix(outMat, numCols, fileName +"SMTINV.csv", false);
 
     auto tempVect = computeMatrixVector(matA, vectB, numRows, numCols, true);
     auto vectXOut = computeMatrixVector(outMat, tempVect, numCols, numCols, false);

@@ -13,8 +13,10 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
     auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, 5, 10);
     mat1 = sortTable(mat1, 1);
     mat2 = sortTable(mat2, 1);
-    printMatrix(mat1, mat1.getNumRows(), "mat1.csv", false);
-    printMatrix(mat2, mat2.getNumRows(), "mat2.csv", false);
+    // printMatrix(mat1, mat1.getNumRows(), "mat1.csv", false);
+    // printMatrix(mat2, mat2.getNumRows(), "mat2.csv", false);
+    auto matJoin = computeJoin(mat1, mat2, 1);
+    // std::cout << matJoin << std::endl;
     MatrixDCol matCartProd{1, 1};
     generateCartesianProduct<double, MajorOrder::ROW_MAJOR, MajorOrder::COL_MAJOR>(mat1, mat2, matCartProd);
 

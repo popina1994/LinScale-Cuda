@@ -20,7 +20,7 @@ void computeVectors(const MatrixDCol& matCartProd, const MatrixDCol& matCUDAR,
     const MatrixDCol& matFigR, const MatrixDCol& vectBTrain,
     MatrixDCol& vectXCompMKL, MatrixDCol& vectXCompFig, int seed)
 {
-    vectXCompMKL = solveLLSMKL(matCartProd, matCUDAR, vectBTrain, matCartProd.getNumRows(), matCartProd.getNumCols(),  "results/Cuda"+ std::to_string(seed));
+    vectXCompMKL = solveLLSNormalEquation(matCartProd, matCUDAR, vectBTrain, matCartProd.getNumRows(), matCartProd.getNumCols(),  "results/Cuda"+ std::to_string(seed));
     vectXCompFig = solveLLSNormalEquation(matCartProd, matFigR, vectBTrain, matCartProd.getNumRows(), matCartProd.getNumCols(), "results/LinScale" + std::to_string(seed) );
 }
 
@@ -38,9 +38,10 @@ void evaluateTest(int numRows1, int numCols1, int numRows2, int numCols2,
     auto matUniformAdd = generateRandom<double>(matCartProdTest.getNumRows(),
         matCartProdTest.getNumCols(), 37);
     decltype(matUniformAdd) matUniformCopy {matUniformAdd.getNumRows(), matUniformAdd.getNumCols()};
-    divValue(matUniformAdd, 1e15, matUniformCopy);
+    divValue(matUniformAdd, 1e10, matUniformCopy);
     MatrixDCol outVectBTestVariance{1, 1};
     addVectors(outVectBTest, matUniformCopy, outVectBTestVariance);
+    outVectBTestVariance = std::move(outVectBTest);
 
     auto outVectBTestCompMKL = computeMatrixVector(matCartProdTest, vectXCompMKL, numRows1 * numRows2, numCols1 + numCols2, false);
     auto outVectBTestCompFig = computeMatrixVector(matCartProdTest, vectXCompFig, numRows1 * numRows2, numCols1 + numCols2, false);

@@ -103,16 +103,16 @@ Matrix<T, majorOrder> sortTable(const Matrix<T, majorOrder>& mat, int numSortAtt
 
 template <typename T, MajorOrder majorOrder>
 int computeJoinSize(Matrix<T, majorOrder>& mat1, Matrix<T, majorOrder>& mat2,
-    std::map<T, std::vector<int>>& rangeIdx1,
-    std::map<T, std::vector<int>>& rangeIdx2)
+    const std::map<T, std::vector<int>>& rangeIdx1,
+    const std::map<T, std::vector<int>>& rangeIdx2)
 {
     int joinSize = 0;
-    for (auto& [val, vRowIdxs]: rangeIdx1)
+    for (const auto& [val, vRowIdxs]: rangeIdx1)
     {
         int curJoinSize = 0;
         if (rangeIdx2.contains(val))
         {
-            curJoinSize = rangeIdx2[val].size() * vRowIdxs.size();
+            curJoinSize = rangeIdx2.at(val).size() * vRowIdxs.size();
         }
         joinSize += curJoinSize;
     }
@@ -124,15 +124,39 @@ template <typename T, MajorOrder majorOrder>
 Matrix<T, majorOrder>
 computeJoin(Matrix<T, majorOrder>& mat1, Matrix<T, majorOrder>& mat2, int numJoinAttrs)
 {
-
     auto rangeIdx1 = buildRangeIndex(mat1, numJoinAttrs);
     auto rangeIdx2 = buildRangeIndex(mat2, numJoinAttrs);
-    auto joinSize = computeJoinSize(mat1, mat2, 1);
+    auto joinSize = computeJoinSize(mat1, mat2, rangeIdx1, rangeIdx2);
 
     Matrix<T, majorOrder> matOut{joinSize, mat1.getNumCols() + mat2.getNumCols()};
-    //
+    int outRowIdx = 0;
+    for (const auto& [val, rowIdxs1]: rangeIdx1)
+    {
+        for (auto& rowIdx1: rowIdxs1)
+        {
+            if (not rangeIdx2.contains(val))
+            {
+                continue;
+            }
 
-    return std::move(matOut);
+            const auto& rowIdxs2 = rangeIdx2[val];
+            for (auto& rowIdx2: rowIdxs2)
+            {
+                for (int colIdx = 0; colIdx < mat1.getNumCols(); colIdx++)
+                {
+                    matOut(outRowIdx, colIdx) = mat1(rowIdx1, colIdx);
+                }
+
+                for (int colIdx = mat1.getNumCols(); colIdx < matOut.getNumCols(); colIdx++)
+                {
+                    matOut(outRowIdx, colIdx) = mat2(rowIdx2, colIdx - mat1.getNumCols());
+                }
+                outRowIdx++;
+            }
+        }
+    }
+
+    return matOut;
 }
 
 #endif
