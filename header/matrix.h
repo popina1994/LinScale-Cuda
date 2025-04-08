@@ -208,6 +208,7 @@ public:
 
         return out;
     }
+
 };
 
 using MatrixDCol = Matrix<double, MajorOrder::COL_MAJOR>;

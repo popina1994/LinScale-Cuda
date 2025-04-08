@@ -16,24 +16,23 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
     // printMatrix(mat1, mat1.getNumRows(), "mat1.csv", false);
     // printMatrix(mat2, mat2.getNumRows(), "mat2.csv", false);
     auto matJoin = computeJoin(mat1, mat2, 1);
-    printMatrix(matJoin, matJoin.getNumRows(), "matJoin.csv", false);
-    // std::cout << matJoin << std::endl;
-    MatrixDCol matCartProd{1, 1};
-    generateCartesianProduct<double, MajorOrder::ROW_MAJOR, MajorOrder::COL_MAJOR>(mat1, mat2, matCartProd);
+    auto matJoinCol = changeLayout(matJoin);
+    printMatrix(matJoinCol, matJoinCol.getNumRows(), "matJoinCol.csv", false);
 
-    auto vectX = generateRandom<double>(1, numCols1 + numCols2, 15);
-    auto outVectBTrain = computeMatrixVector(matCartProd, vectX,
-        matCartProd.getNumRows(), matCartProd.getNumCols(), false);
+    auto vectX = generateRandom<double, MajorOrder::ROW_MAJOR>(1, matJoin.getNumCols(), 15);
+    printMatrix(vectX, vectX.getNumRows(), "x.csv", false);
+    auto outVectBTrain = computeMatrixVector(matJoinCol, vectX,
+        matJoinCol.getNumRows(), matJoinCol.getNumCols(), false);
 
     MatrixDCol matCUDAR{1, 1};
     MatrixDCol matFigR{1, 1};
     MatrixDCol matFigQ{1, 1};
 
-    evaluateTrain(mat1, mat2, matCartProd, matCUDAR, matFigR, matFigQ, fileName, decompType);
+    evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matFigR, matFigQ, fileName, decompType);
     MatrixDCol matVectXMKL{1, 1};
     MatrixDCol matVectXFig{1, 1};
-    computeVectors(matCartProd, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig, -1);
-    evaluateTest(numRows1, numCols1, numRows2, numCols2, vectX, matVectXMKL, matVectXFig, -1);
+    computeVectors(matJoinCol, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig, -1);
+    evaluateTest(matJoinCol.getNumRows(), matJoinCol.getNumCols(), vectX, matVectXMKL, matVectXFig, -1);
 }
 
 int main(int argc, char* argv[])

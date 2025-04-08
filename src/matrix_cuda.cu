@@ -150,8 +150,8 @@ __global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* 
 
 
 template <typename T>
-__global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* dOutMat, int* dNumRows1, int numCols1,
-        int* dNumRows2, int numCols2, int* dOffsets1, int* dOffsets2, int* dOffsets) {
+__global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* dOutMat, const int* dNumRows1, int numCols1,
+        const int* dNumRows2, int numCols2, const int* dOffsets1, const int* dOffsets2, const int* dOffsets) {
     int colIdx = threadIdx.x;
     int headRowIdx1 = dOffsets1[blockIdx.x];
     int headRowIdx2 = dOffsets2[blockIdx.x];
@@ -247,24 +247,24 @@ void computeJoinSizes(const thrust::device_vector<int>& dOffsets, thrust::device
     thrust::transform(first, last, dJoinSizes.begin(), [] __device__ (const thrust::tuple<int, int>& x) { return thrust::get<1>(x) - thrust::get<0>(x); });
 }
 
-void computeJoinSizeOfTwoTables(const thrust::device_vector<int>& dJoinSize1, const thrust::device_vector<int>& dJoinSize2,
+void computeJoinSizeOfTwoTables(const thrust::device_vector<int>& dJoinSizes1, const thrust::device_vector<int>& dJoinSizes2,
     thrust::device_vector<int>& dJoinSize, thrust::device_vector<int>& dJoinOffsets)
 {
-    dJoinSize = std::move(thrust::device_vector<int>(dJoinSize1.size()));
-    dJoinOffsets = std::move(thrust::device_vector<int>(dJoinSize1.size()));
+    dJoinSize = std::move(thrust::device_vector<int>(dJoinSizes1.size()));
+    dJoinOffsets = std::move(thrust::device_vector<int>(dJoinSizes1.size()));
 
-    thrust::transform(dJoinSize1.begin(), dJoinSize1.end(), dJoinSize2.begin(), dJoinSize.begin(), thrust::multiplies<int>());
+    thrust::transform(dJoinSizes1.begin(), dJoinSizes1.end(), dJoinSizes2.begin(), dJoinSize.begin(), thrust::multiplies<int>());
     dJoinOffsets.front() = 0;
     thrust::inclusive_scan(dJoinSize.begin(), dJoinSize.end(), dJoinOffsets.begin() + 1);
 }
 
-void computeFigaroOutputOffsetsTwoTables(const thrust::device_vector<int>& dJoinSize1, const thrust::device_vector<int>& dJoinSize2,
+void computeFigaroOutputOffsetsTwoTables(const thrust::device_vector<int>& dJoinSizes1, const thrust::device_vector<int>& dJoinSizes2,
     thrust::device_vector<int>& dJoinSizes, thrust::device_vector<int>& dJoinOffsets)
 {
-    dJoinSizes = std::move(thrust::device_vector<int>(dJoinSize1.size()));
-    dJoinOffsets = std::move(thrust::device_vector<int>(dJoinSize1.size() + 1));
+    dJoinSizes = std::move(thrust::device_vector<int>(dJoinSizes1.size()));
+    dJoinOffsets = std::move(thrust::device_vector<int>(dJoinSizes1.size() + 1));
 
-    thrust::transform(dJoinSize1.begin(), dJoinSize1.end(), dJoinSize2.begin(), dJoinSizes.begin(), thrust::plus<int>());
+    thrust::transform(dJoinSizes1.begin(), dJoinSizes1.end(), dJoinSizes2.begin(), dJoinSizes.begin(), thrust::plus<int>());
     thrust::transform(dJoinSizes.begin(), dJoinSizes.end(), dJoinSizes.begin(),  [] __device__ (int x) { return x - 1; });
 
     dJoinOffsets.front() = 0;
@@ -278,6 +278,13 @@ void computeHeadsAndTails(MatrixCudaRow<T>& matCuda)
 }
 
 template <typename T>
+void computeHeadsAndTails(MatrixCudaRow<T>& matCuda, thrust::device_vector<int>& dOffsets)
+{
+    computeHeadsAndTails<<<dOffsets.size(), matCuda.getNumCols(), matCuda.getNumCols()>>>
+        (matCuda.getData(), dOffsets.data().get(), matCuda.getNumCols());
+}
+
+template <typename T>
 void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCudaRow<T>& matCuda2, MatrixCudaRow<T>& matCudaOut)
 {
     int numRows1 = matCuda1.getNumRows();
@@ -287,6 +294,22 @@ void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCuda
     concatenateHeadsAndTails<<<1, max(numCols1, numCols2)>>>(
             matCuda1.getDataC(), matCuda2.getDataC(), matCudaOut.getData(),
             numRows1, numCols1, numRows2, numCols2);
+}
+
+template <typename T>
+void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCudaRow<T>& matCuda2, MatrixCudaRow<T>& matCudaOut,
+    const thrust::device_vector<int>& dJoinSizes1, const thrust::device_vector<int>& dJoinSizes2, const thrust::device_vector<int>& dOffsets1,
+        const thrust::device_vector<int>& dOffsets2, const thrust::device_vector<int>& dJoinOffsets)
+{
+    int numRows1 = matCuda1.getNumRows();
+    int numCols1 = matCuda1.getNumCols();
+    int numRows2 = matCuda2.getNumRows();
+    int numCols2 = matCuda2.getNumCols();
+
+    concatenateHeadsAndTails<<<dOffsets2.size(), max(numCols1, numCols2)>>>(
+        matCuda1.getDataC(), matCuda2.getDataC(), matCudaOut.getData(),
+        dJoinSizes1.data().get(), numCols1, dJoinSizes2.data().get(), numCols2,
+        dOffsets1.data().get(), dOffsets2.data().get(), dJoinOffsets.data().get());
 }
 
 template <typename T>
@@ -320,7 +343,8 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
 
-    int numRowsOut{numRows1 + numRows2 - 1}, numColsOut{numCols1 + numCols2};
+    // int numRowsOut{numRows1 + numRows2 - 1}, numColsOut{numCols1 + numCols2};
+    int numRowsOut{dJoinOffsets.back()}, numColsOut{numCols1 + numCols2 - 1};
     MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
     MatrixCudaCol<T> matCudaTran(numRowsOut, numColsOut);
     // Compute buffer size for QR
@@ -354,29 +378,12 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     // Start measuring time
     CUDA_CALL(cudaEventRecord(start));
 
-    // Compute join offsets for both tables
-    // compute join offsets
-    // for loop call for each subset the
-    // We assume there are no dangling tuples.
-    // computeHeadsAndTails<<<dOffsets2.size(), numCols2, numCols2>>>(
-    //     matCuda2.getData(),
-    //     dOffsets2.data().get(),
-    //     numCols2);
-
-    computeHeadsAndTails(matCuda2);
-    // concatenateHeadsAndTails<<<dOffsets2.size(), max(numCols1, numCols2)>>>(
-        //matCuda1.getDataC(),
-        // matCuda2.getDataC(),
-        // matCudaOut.getData(),
-        // dJoinSize1.data().get(),
-        // numCols1,
-        // dJoinSize2.data().get(),
-        //numCols2,
-        // dOffsets1.data().get(),
-        // dOffsets2.data().get(),
-        // dJoinOffsets.data().get(),
-        // );
-    concatenateHeadsAndTails(matCuda1, matCuda2, matCudaOut);
+    // computeHeadsAndTails(matCuda2);
+    computeHeadsAndTails(matCuda2, dOffsets2);
+    concatenateHeadsAndTails(matCuda1, matCuda2, matCudaOut, dJoinSizes1, dJoinSizes2, dOffsets1, dOffsets2, dJoinOffsets);
+    // void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCudaRow<T>& matCuda2, MatrixCudaRow<T>& matCudaOut,
+        // const thrust::device_vector<T>& dJoinSizes1, const thrust::device_vector<T>& dJoinSizes2, const thrust::device_vector<T>& dOffsets1,
+        //     const thrust::device_vector<T>& dOffsets2, const thrust::device_vector<T>& dJoinOffsets)
 
     // Define scalars alpha and beta
     const T alpha = 1.0f; // Scalar for matrix A (no scaling)

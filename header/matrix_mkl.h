@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <random>
+#include <mkl.h>
 #include <mkl_lapacke.h>
 #include <mkl_cblas.h>
 #include <mkl_vml.h>
@@ -36,19 +37,48 @@ void concatenateMatrices(const Matrix<T, order>& mat1, const Matrix<T, order>& m
 }
 
 
-// column major version
 template <typename T>
-Matrix<T, MajorOrder::ROW_MAJOR> generateRandom(int numRows, int numCols, int seed)
+MatrixCol<T> changeLayout(const MatrixRow<T>& mat)
+{
+    T alpha = 1.0;
+    MatrixCol<T> matOut{mat.getNumRows(), mat.getNumCols()};
+    // mkl_domatcopy('R', 'T', mat.getNumRows(), mat.getNumCols(),
+    //     alpha, mat.getDataC(), mat.getNumCols(), matOut.getData(), matOut.getNumRows());
+    for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+    {
+        for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+        {
+            matOut(rowIdx, colIdx) = mat(rowIdx, colIdx);
+        }
+    }
+    return matOut;
+}
+
+template <typename T, MajorOrder majorOrder>
+Matrix<T, majorOrder> generateRandom(int numRows, int numCols, int seed, double start = 0.0, double end = 1.0)
 {
     std::mt19937 gen(seed); // Fixed seed
-    std::uniform_real_distribution<T> dist(0.0, 1.0);
-    auto matA = std::move(Matrix<T, MajorOrder::ROW_MAJOR>{numRows, numCols});
-    // col_major
-    for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
+    std::uniform_real_distribution<T> dist(start, end);
+    auto matA = std::move(Matrix<T, majorOrder>{numRows, numCols});
+    if constexpr (MajorOrder::COL_MAJOR == majorOrder)
     {
-        for (int colIdx = 0; colIdx < numCols; colIdx++)
+        for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
         {
-            matA(rowIdx, colIdx) = dist(gen);
+            for (int colIdx = 0; colIdx < numCols; colIdx++)
+            {
+                matA(rowIdx, colIdx) = dist(gen);
+            }
+        }
+    }
+    else
+    {
+        for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
+        {
+            for (int colIdx = 0; colIdx < numCols; colIdx++)
+            {
+                matA(rowIdx, colIdx) = dist(gen);
+                std::cout << rowIdx << " " << colIdx << " " << matA(rowIdx, colIdx) << std::endl;
+            }
         }
     }
     return std::move(matA);
