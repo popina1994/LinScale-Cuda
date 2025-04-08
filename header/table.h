@@ -128,7 +128,7 @@ computeJoin(Matrix<T, majorOrder>& mat1, Matrix<T, majorOrder>& mat2, int numJoi
     auto rangeIdx2 = buildRangeIndex(mat2, numJoinAttrs);
     auto joinSize = computeJoinSize(mat1, mat2, rangeIdx1, rangeIdx2);
 
-    Matrix<T, majorOrder> matOut{joinSize, mat1.getNumCols() + mat2.getNumCols()};
+    Matrix<T, majorOrder> matOut{joinSize, mat1.getNumCols() + mat2.getNumCols() - numJoinAttrs};
     int outRowIdx = 0;
     for (const auto& [val, rowIdxs1]: rangeIdx1)
     {
@@ -147,9 +147,9 @@ computeJoin(Matrix<T, majorOrder>& mat1, Matrix<T, majorOrder>& mat2, int numJoi
                     matOut(outRowIdx, colIdx) = mat1(rowIdx1, colIdx);
                 }
 
-                for (int colIdx = mat1.getNumCols(); colIdx < matOut.getNumCols(); colIdx++)
+                for (int colIdx = mat1.getNumCols() + numJoinAttrs; colIdx < mat1.getNumCols() + mat2.getNumCols(); colIdx++)
                 {
-                    matOut(outRowIdx, colIdx) = mat2(rowIdx2, colIdx - mat1.getNumCols());
+                    matOut(outRowIdx, colIdx - numJoinAttrs) = mat2(rowIdx2, colIdx - mat1.getNumCols());
                 }
                 outRowIdx++;
             }

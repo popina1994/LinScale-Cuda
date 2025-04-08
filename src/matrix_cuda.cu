@@ -271,6 +271,23 @@ void computeFigaroOutputOffsetsTwoTables(const thrust::device_vector<int>& dJoin
     thrust::inclusive_scan(dJoinSizes.begin(), dJoinSizes.end(), dJoinOffsets.begin() + 1);
 }
 
+template <typename T>
+void computeHeadsAndTails(MatrixCudaRow<T>& matCuda)
+{
+    computeHeadsAndTails<<<1, matCuda.getNumCols(), matCuda.getNumCols()>>>(matCuda.getData(), matCuda.getNumRows(), matCuda.getNumCols());
+}
+
+template <typename T>
+void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCudaRow<T>& matCuda2, MatrixCudaRow<T>& matCudaOut)
+{
+    int numRows1 = matCuda1.getNumRows();
+    int numCols1 = matCuda1.getNumCols();
+    int numRows2 = matCuda2.getNumRows();
+    int numCols2 = matCuda2.getNumCols();
+    concatenateHeadsAndTails<<<1, max(numCols1, numCols2)>>>(
+            matCuda1.getDataC(), matCuda2.getDataC(), matCudaOut.getData(),
+            numRows1, numCols1, numRows2, numCols2);
+}
 
 template <typename T>
 int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
@@ -278,15 +295,12 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 {
     int numRows1{mat1.getNumRows()}, numCols1{mat1.getNumCols()};
     int numRows2{mat2.getNumRows()}, numCols2{mat2.getNumCols()};
-    int numRowsOut{numRows1 + numRows2 - 1}, numColsOut{numCols1 + numCols2};
-
-    MatrixCudaRow<T> matCuda1(mat1), matCuda2(mat2), matCudaOut(numRowsOut, numColsOut);
-    MatrixCudaCol<T> matCudaTran(numRowsOut, numColsOut);
+    MatrixCudaRow<T> matCuda1(mat1), matCuda2(mat2);
     thrust::device_vector<int> dOffsets1, dOffsets2;
 
-    std::cout << "C1" << matCuda1;
+    // std::cout << "C1" << matCuda1;
     computeOffsets(matCuda1, dOffsets1);
-    printDeviceVector(dOffsets1);
+    // printDeviceVector(dOffsets1);
     std::cout << "C2" << matCuda2;
     computeOffsets(matCuda2, dOffsets2);
     printDeviceVector(dOffsets2);
@@ -306,6 +320,9 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
 
+    int numRowsOut{numRows1 + numRows2 - 1}, numColsOut{numCols1 + numCols2};
+    MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
+    MatrixCudaCol<T> matCudaTran(numRowsOut, numColsOut);
     // Compute buffer size for QR
     int workspace_size = 0;
     if constexpr (std::is_same<T, float>::value)
@@ -341,25 +358,25 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     // compute join offsets
     // for loop call for each subset the
     // We assume there are no dangling tuples.
-    // std::host_vector<T*> vMatCuda2Ptrs(dOffsets2.size(), nullptr);
-    // std::host_vector<int> vNumRows1(dOffsets1.size(), nullptr);
-    // std::host_vector<int > vNumRows2(dOffsets2.size(), nullptr);
     // computeHeadsAndTails<<<dOffsets2.size(), numCols2, numCols2>>>(
     //     matCuda2.getData(),
     //     dOffsets2.data().get(),
     //     numCols2);
 
-    computeHeadsAndTails<<<1, numCols2, numCols2>>>(matCuda2.getData(), numRows2, numCols2);
+    computeHeadsAndTails(matCuda2);
     // concatenateHeadsAndTails<<<dOffsets2.size(), max(numCols1, numCols2)>>>(
         //matCuda1.getDataC(),
         // matCuda2.getDataC(),
         // matCudaOut.getData(),
-        // dOffsets1.data().get(),
+        // dJoinSize1.data().get(),
         // numCols1,
-        // dOffsets2.data().get(),
+        // dJoinSize2.data().get(),
         //numCols2,
+        // dOffsets1.data().get(),
+        // dOffsets2.data().get(),
+        // dJoinOffsets.data().get(),
         // );
-    concatenateHeadsAndTails<<<1, max(numCols1, numCols2)>>>(matCuda1.getDataC(), matCuda2.getDataC(), matCudaOut.getData(), numRows1, numCols1, numRows2, numCols2);
+    concatenateHeadsAndTails(matCuda1, matCuda2, matCudaOut);
 
     // Define scalars alpha and beta
     const T alpha = 1.0f; // Scalar for matrix A (no scaling)

@@ -16,6 +16,7 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::strin
     // printMatrix(mat1, mat1.getNumRows(), "mat1.csv", false);
     // printMatrix(mat2, mat2.getNumRows(), "mat2.csv", false);
     auto matJoin = computeJoin(mat1, mat2, 1);
+    printMatrix(matJoin, matJoin.getNumRows(), "matJoin.csv", false);
     // std::cout << matJoin << std::endl;
     MatrixDCol matCartProd{1, 1};
     generateCartesianProduct<double, MajorOrder::ROW_MAJOR, MajorOrder::COL_MAJOR>(mat1, mat2, matCartProd);
