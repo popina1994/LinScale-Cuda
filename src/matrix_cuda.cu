@@ -37,142 +37,77 @@
 __device__ double sqrt(double x);
 
 template<typename T>
-__global__ void computeHeadsAndTails(T* d_mat, int numRows, int numCols) {
-    extern __shared__ T dataHeads  [];
-    int colIdx = threadIdx.x;
-    int headRowIdx = 0;
-
-    if (colIdx < numCols)
-    {
-        dataHeads[colIdx] = d_mat[IDX_R(headRowIdx, colIdx, numRows, numCols)];
-    }
-    __syncthreads();
-    for (int rowIdx = headRowIdx + 1; rowIdx < numRows; rowIdx++)
-    {
-        T i = rowIdx - headRowIdx + 1;
-        if (colIdx < numCols)
-        {
-            T prevRowSum;
-            T tailVal;
-            prevRowSum = dataHeads[colIdx];
-            T matVal = d_mat[IDX_R(rowIdx, colIdx, numRows, numCols)];
-            dataHeads[colIdx] += matVal;
-            tailVal = (matVal * (i - 1) - prevRowSum) / sqrt(i * (i - 1));
-            d_mat[IDX_R(rowIdx, colIdx, numRows, numCols)] = tailVal;
-            // printf("TAIL VAL %d %d %.3f %.3f\n", rowIdx, colIdx, i, tailVal);
-        }
-        __syncthreads();
-    }
-    if (colIdx < numCols)
-    {
-        d_mat[IDX_R(headRowIdx, colIdx, numRows, numCols)] = dataHeads[colIdx] / sqrt((double)numRows);
-        // printf("HT: %.3f\n", dataHeads[colIdx] / sqrt(numRows));
-    }
-}
-
-// computeHeadsAndTails<<<dOffsets2.size(), numCols2>>>(
-//     matCuda2.getData(),
-//     dOffsets2,
-//     numCols2);
-
-template<typename T>
-__global__ void computeHeadsAndTails(T* d_mat, const int* d_offsets, int numCols) {
+__global__ void computeHeadsAndTails(T* dMat, const int* dOffsets, const int* dJoinSizes, int numCols) {
     extern __shared__ T dataHeads  [];
     int colIdx = threadIdx.x;
     int offsetIdx = blockIdx.x;
-    int headRowIdx = d_offsets[offsetIdx];
-    int numRows = d_offsets[offsetIdx + 1] - d_offsets[offsetIdx];
-
-    if (colIdx < numCols)
+    int headRowIdx = dOffsets[offsetIdx];
+    int numRows = dJoinSizes[offsetIdx];
+    if (colIdx == 0)
     {
-        dataHeads[colIdx] = d_mat[IDX_R(headRowIdx, colIdx, numRows, numCols)];
+        // printf("HERE OIDX: %d HRIDX: %d NR: %d NC %d\n", offsetIdx, headRowIdx, numRows, numCols);
+
+    }
+
+    if (colIdx > 0 and colIdx < numCols)
+    {
+        dataHeads[colIdx] = dMat[IDX_R(headRowIdx, colIdx, numRows, numCols)];
     }
     __syncthreads();
-    for (int rowIdx = headRowIdx + 1; rowIdx < numRows; rowIdx++)
+    for (int rowIdx = headRowIdx + 1; rowIdx < headRowIdx + numRows; rowIdx++)
     {
         T i = rowIdx - headRowIdx + 1;
-        if (colIdx < numCols)
+        if (colIdx > 0 and colIdx < numCols)
         {
             T prevRowSum;
             T tailVal;
             prevRowSum = dataHeads[colIdx];
-            T matVal = d_mat[IDX_R(rowIdx, colIdx, numRows, numCols)];
+            T matVal = dMat[IDX_R(rowIdx, colIdx, numRows, numCols)];
             dataHeads[colIdx] += matVal;
             tailVal = (matVal * (i - 1) - prevRowSum) / sqrt(i * (i - 1));
-            d_mat[IDX_R(rowIdx, colIdx, numRows, numCols)] = tailVal;
+            dMat[IDX_R(rowIdx, colIdx, numRows, numCols)] = tailVal;
             // printf("TAIL VAL %d %d %.3f %.3f\n", rowIdx, colIdx, i, tailVal);
         }
         __syncthreads();
     }
-    if (colIdx < numCols)
+    if (colIdx > 0 and colIdx < numCols)
     {
-        d_mat[IDX_R(headRowIdx, colIdx, numRows, numCols)] = dataHeads[colIdx] / sqrt((double)numRows);
-        // printf("HT: %.3f\n", dataHeads[colIdx] / sqrt(numRows));
-    }
-}
-
-template <typename T>
-__global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* dOutMat, int numRows1, int numCols1, int numRows2, int numCols2) {
-    int colIdx = threadIdx.x;
-    int headRowIdx = 0;
-    const int numRowsOut = numRows1 + numRows2 - 1;
-    const int numColsOut = numCols1 + numCols2;
-
-    for (int rowIdx = headRowIdx; rowIdx < headRowIdx + numRows1; rowIdx++)
-    {
-        int outRowIdx = rowIdx;
-        if (colIdx < numCols1)
-        {
-            int posIdx = IDX_R(outRowIdx, colIdx, numRowsOut, numColsOut);
-            dOutMat[posIdx] = d_mat[IDX_R(rowIdx, colIdx, numRows1, numCols1)] * sqrt((double)numRows2);
-        }
-        if (colIdx < numCols2)
-        {
-            int posIdx2 = IDX_R(outRowIdx, colIdx + numCols1, numRowsOut, numColsOut);
-            dOutMat[posIdx2] = d_mat2Mod[IDX_R(headRowIdx, colIdx, numRows2, numCols2)];
-        }
-    }
-    for (int rowIdx = headRowIdx + numRows1; rowIdx < headRowIdx + numRowsOut; rowIdx++)
-    {
-        int outRowIdx = rowIdx;
-        if (colIdx < numCols1)
-        {
-            int posIdx = IDX_R(outRowIdx, colIdx, numRowsOut, numColsOut);
-            dOutMat[posIdx] = 0;
-        }
-        if (colIdx < numCols2)
-        {
-            int posIdx2 = IDX_R(outRowIdx, colIdx + numCols1, numRowsOut, numColsOut);
-            dOutMat[posIdx2] = d_mat2Mod[IDX_R(rowIdx - numRows1 + 1, colIdx, numRows2, numCols2)] * sqrt((double)numRows1);
-        }
+        dMat[IDX_R(headRowIdx, colIdx, numRows, numCols)] = dataHeads[colIdx] / sqrt((double)numRows);
+        // printf("HT: %.3f\n", dataHeads[colIdx] / sqrt((double)numRows));
     }
 }
 
 
 template <typename T>
-__global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* dOutMat, const int* dNumRows1, int numCols1,
+__global__ void concatenateHeadsAndTails(const T* dMat, const T* dMat2Mod, T* dOutMat, const int* dNumRows1, int numCols1,
         const int* dNumRows2, int numCols2, const int* dOffsets1, const int* dOffsets2, const int* dOffsets) {
     int colIdx = threadIdx.x;
-    int headRowIdx1 = dOffsets1[blockIdx.x];
-    int headRowIdx2 = dOffsets2[blockIdx.x];
-    int headRowsIdxOut = dOffsets[blockIdx.x];
-    int numRows1 = dNumRows1[blockIdx.x];
-    int numRows2 = dNumRows2[blockIdx.x];
+    int offsetIdx = blockIdx.x;
+    int headRowIdx1 = dOffsets1[offsetIdx];
+    int headRowIdx2 = dOffsets2[offsetIdx];
+    int headRowsIdxOut = dOffsets[offsetIdx];
+    int numRows1 = dNumRows1[offsetIdx];
+    int numRows2 = dNumRows2[offsetIdx];
     const int numRowsOut = numRows1 + numRows2 - 1;
-    const int numColsOut = numCols1 + numCols2;
+    const int numColsOut = numCols1 + numCols2 - 1;
 
+    if (colIdx == 0)
+    {
+        // printf("oIdx: %d hR1: %d hr2: %d hrO: %d n1: %d n2: %d nRowOut: %d nColOut: %d \n",
+            // offsetIdx, headRowIdx1, headRowIdx2, headRowsIdxOut, numRows1, numRows2, numRowsOut, numColsOut);
+    }
     for (int rowIdx1 = headRowIdx1; rowIdx1 < headRowIdx1 + numRows1; rowIdx1++)
     {
         int outRowIdx = rowIdx1 - headRowIdx1 + headRowsIdxOut;
         if (colIdx < numCols1)
         {
             int posIdx = IDX_R(outRowIdx, colIdx, numRowsOut, numColsOut);
-            dOutMat[posIdx] = d_mat[IDX_R(rowIdx1, colIdx, numRows1, numCols1)] * sqrt((double)numRows2);
+            dOutMat[posIdx] = dMat[IDX_R(rowIdx1, colIdx, numRows1, numCols1)] * sqrt((double)numRows2);
         }
-        if (colIdx < numCols2)
+        if (colIdx > 0 and colIdx < numCols2)
         {
-            int posIdx2 = IDX_R(outRowIdx, colIdx + numCols1, numRowsOut, numColsOut);
-            dOutMat[posIdx2] = d_mat2Mod[IDX_R(headRowIdx2, colIdx, numRows2, numCols2)];
+            int posIdx2 = IDX_R(outRowIdx, colIdx + numCols1 - 1, numRowsOut, numColsOut);
+            dOutMat[posIdx2] = dMat2Mod[IDX_R(headRowIdx2, colIdx, numRows2, numCols2)];
         }
     }
     for (int rowIdx2 = headRowIdx2; rowIdx2 < headRowIdx2 + numRowsOut - numRows1; rowIdx2++)
@@ -183,10 +118,10 @@ __global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* 
             int posIdx = IDX_R(outRowIdx, colIdx, numRowsOut, numColsOut);
             dOutMat[posIdx] = 0;
         }
-        if (colIdx < numCols2)
+        if (colIdx > 0 and colIdx < numCols2)
         {
-            int posIdx2 = IDX_R(outRowIdx, colIdx + numCols1, numRowsOut, numColsOut);
-            dOutMat[posIdx2] = d_mat2Mod[IDX_R(rowIdx2 + 1, colIdx, numRows2, numCols2)] * sqrt((double)numRows1);
+            int posIdx2 = IDX_R(outRowIdx, colIdx + numCols1 - 1, numRowsOut, numColsOut);
+            dOutMat[posIdx2] = dMat2Mod[IDX_R(rowIdx2 + 1, colIdx, numRows2, numCols2)] * sqrt((double)numRows1);
         }
     }
 }
@@ -207,15 +142,15 @@ __global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
 // TODO: Add inverse, matrix matrix multiplication
 
 template <typename T>
-__global__ void findUniqueOffsets(const T* d_arr, int* d_offsets, int n) {
+__global__ void findUniqueOffsets(const T* d_arr, int* dDiffPrevRow, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx == 0 || (idx < n && d_arr[idx] != d_arr[idx - 1]))
     {
-        d_offsets[idx] = idx;
+        dDiffPrevRow[idx] = idx;
     }
     else if (idx < n)
     {
-        d_offsets[idx] = -1;
+        dDiffPrevRow[idx] = -1;
     }
 }
 
@@ -223,17 +158,17 @@ template <typename T>
 void computeOffsets(const MatrixCudaRow<T>& matA, thrust::device_vector<int>& dOffsets)
 {
     int numRows = matA.getNumRows();
-    thrust::device_vector<int> d_offsets(numRows);
+    thrust::device_vector<int> dDiffPrevRow(numRows);
 
     int blockSize = 256;
     int numBlocks = (numRows + blockSize - 1) / blockSize;
     auto matAJoinCol = matA.getColumn(0);
-    // std::cout << matAJoinCol << std::endl;
-    findUniqueOffsets<<<numBlocks, blockSize>>>(thrust::raw_pointer_cast(matAJoinCol.getDataC()), thrust::raw_pointer_cast(d_offsets.data()), numRows);
+    findUniqueOffsets<<<numBlocks, blockSize>>>(matAJoinCol.getDataC(), dDiffPrevRow.data().get(), numRows);
 
-    int countDif = thrust::count(d_offsets.begin(), d_offsets.end(), -1);
-    dOffsets = std::move(thrust::device_vector<int>(countDif + 1));
-    thrust::copy_if(d_offsets.begin(), d_offsets.end(), dOffsets.begin(), [] __device__ (int val) { return val != -1; });
+    int countDiff = numRows - thrust::count(dDiffPrevRow.begin(), dDiffPrevRow.end(), -1);
+    // std::cout << "countDIF" << countDiff << std::endl;
+    dOffsets = std::move(thrust::device_vector<int>(countDiff + 1));
+    thrust::copy_if(dDiffPrevRow.begin(), dDiffPrevRow.end(), dOffsets.begin(), [] __device__ (int val) { return val != -1; });
     dOffsets.back() = matA.getNumRows();
 }
 
@@ -272,28 +207,11 @@ void computeFigaroOutputOffsetsTwoTables(const thrust::device_vector<int>& dJoin
 }
 
 template <typename T>
-void computeHeadsAndTails(MatrixCudaRow<T>& matCuda)
+void computeHeadsAndTails(MatrixCudaRow<T>& matCuda, const thrust::device_vector<int>& dOffsets, const thrust::device_vector<int>& dJoinSizes)
 {
-    computeHeadsAndTails<<<1, matCuda.getNumCols(), matCuda.getNumCols()>>>(matCuda.getData(), matCuda.getNumRows(), matCuda.getNumCols());
-}
-
-template <typename T>
-void computeHeadsAndTails(MatrixCudaRow<T>& matCuda, thrust::device_vector<int>& dOffsets)
-{
-    computeHeadsAndTails<<<dOffsets.size(), matCuda.getNumCols(), matCuda.getNumCols()>>>
-        (matCuda.getData(), dOffsets.data().get(), matCuda.getNumCols());
-}
-
-template <typename T>
-void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCudaRow<T>& matCuda2, MatrixCudaRow<T>& matCudaOut)
-{
-    int numRows1 = matCuda1.getNumRows();
-    int numCols1 = matCuda1.getNumCols();
-    int numRows2 = matCuda2.getNumRows();
-    int numCols2 = matCuda2.getNumCols();
-    concatenateHeadsAndTails<<<1, max(numCols1, numCols2)>>>(
-            matCuda1.getDataC(), matCuda2.getDataC(), matCudaOut.getData(),
-            numRows1, numCols1, numRows2, numCols2);
+    int sharedMemorySize = matCuda.getNumCols() * sizeof(T);
+    computeHeadsAndTails<<<dJoinSizes.size(), matCuda.getNumCols(), sharedMemorySize>>>
+        (matCuda.getData(), dOffsets.data().get(), dJoinSizes.data().get(), matCuda.getNumCols());
 }
 
 template <typename T>
@@ -305,8 +223,7 @@ void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCuda
     int numCols1 = matCuda1.getNumCols();
     int numRows2 = matCuda2.getNumRows();
     int numCols2 = matCuda2.getNumCols();
-
-    concatenateHeadsAndTails<<<dOffsets2.size(), max(numCols1, numCols2)>>>(
+    concatenateHeadsAndTails<<<dJoinSizes1.size(), max(numCols1, numCols2)>>>(
         matCuda1.getDataC(), matCuda2.getDataC(), matCudaOut.getData(),
         dJoinSizes1.data().get(), numCols1, dJoinSizes2.data().get(), numCols2,
         dOffsets1.data().get(), dOffsets2.data().get(), dJoinOffsets.data().get());
@@ -323,20 +240,26 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 
     // std::cout << "C1" << matCuda1;
     computeOffsets(matCuda1, dOffsets1);
+    // std::cout << "Offsets 1" << std::endl;
     // printDeviceVector(dOffsets1);
-    std::cout << "C2" << matCuda2;
+    // std::cout << "C2" << matCuda2;
     computeOffsets(matCuda2, dOffsets2);
-    printDeviceVector(dOffsets2);
+    // std::cout << "Offsets 2" << std::endl;
+    // printDeviceVector(dOffsets2);
 
     thrust::device_vector<int> dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets;
     computeJoinSizes(dOffsets1, dJoinSizes1);
     computeJoinSizes(dOffsets2, dJoinSizes2);
     computeFigaroOutputOffsetsTwoTables(dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets);
 
-    printDeviceVector(dJoinSizes1);
-    printDeviceVector(dJoinSizes2);
-    printDeviceVector(dJoinSizes);
-    printDeviceVector(dJoinOffsets);
+    // std::cout << "JOIN SIZES 1" << std::endl;
+    // printDeviceVector(dJoinSizes1);
+    // std::cout << "JOIN SIZES 2" << std::endl;
+    // printDeviceVector(dJoinSizes2);
+    // std::cout << "JOIN SIZES" << std::endl;
+    // printDeviceVector(dJoinSizes);
+    // std::cout << "JOIN OFFSETS" << std::endl;
+    // printDeviceVector(dJoinOffsets);
 
     T *d_S;
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
@@ -378,13 +301,11 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     // Start measuring time
     CUDA_CALL(cudaEventRecord(start));
 
-    // computeHeadsAndTails(matCuda2);
-    computeHeadsAndTails(matCuda2, dOffsets2);
-    concatenateHeadsAndTails(matCuda1, matCuda2, matCudaOut, dJoinSizes1, dJoinSizes2, dOffsets1, dOffsets2, dJoinOffsets);
-    // void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCudaRow<T>& matCuda2, MatrixCudaRow<T>& matCudaOut,
-        // const thrust::device_vector<T>& dJoinSizes1, const thrust::device_vector<T>& dJoinSizes2, const thrust::device_vector<T>& dOffsets1,
-        //     const thrust::device_vector<T>& dOffsets2, const thrust::device_vector<T>& dJoinOffsets)
+    computeHeadsAndTails(matCuda2, dOffsets2, dJoinSizes2);
 
+    // std::cout << "C2 Modified" << matCuda2;
+    concatenateHeadsAndTails(matCuda1, matCuda2, matCudaOut, dJoinSizes1, dJoinSizes2, dOffsets1, dOffsets2, dJoinOffsets);
+    // std::cout << "mat out" << matCudaOut << std::endl;
     // Define scalars alpha and beta
     const T alpha = 1.0f; // Scalar for matrix A (no scaling)
     const T beta = 0.0f;  // Scalar for matrix B (no B matrix, so no scaling)
@@ -413,6 +334,7 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     }
 
     int rank = min(numRowsOut, numColsOut);
+
 
     // Compute QR factorization
     if constexpr (std::is_same<T, float>::value)

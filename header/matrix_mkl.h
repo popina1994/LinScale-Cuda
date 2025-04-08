@@ -77,7 +77,6 @@ Matrix<T, majorOrder> generateRandom(int numRows, int numCols, int seed, double 
             for (int colIdx = 0; colIdx < numCols; colIdx++)
             {
                 matA(rowIdx, colIdx) = dist(gen);
-                std::cout << rowIdx << " " << colIdx << " " << matA(rowIdx, colIdx) << std::endl;
             }
         }
     }

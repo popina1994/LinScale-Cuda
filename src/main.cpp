@@ -9,25 +9,23 @@ namespace po = boost::program_options;
 
 void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::string& fileName, ComputeDecomp decompType)
 {
-    auto mat1 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows1, numCols1, 1, 5, 0);
-    auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, 5, 10);
+    auto mat1 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows1, numCols1, 1, 10, 0);
+    auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, 10, 10);
     mat1 = sortTable(mat1, 1);
     mat2 = sortTable(mat2, 1);
     // printMatrix(mat1, mat1.getNumRows(), "mat1.csv", false);
     // printMatrix(mat2, mat2.getNumRows(), "mat2.csv", false);
     auto matJoin = computeJoin(mat1, mat2, 1);
     auto matJoinCol = changeLayout(matJoin);
-    printMatrix(matJoinCol, matJoinCol.getNumRows(), "matJoinCol.csv", false);
+    // printMatrix(matJoinCol, matJoinCol.getNumRows(), "matJoinCol.csv", false);
 
     auto vectX = generateRandom<double, MajorOrder::ROW_MAJOR>(1, matJoin.getNumCols(), 15);
-    printMatrix(vectX, vectX.getNumRows(), "x.csv", false);
     auto outVectBTrain = computeMatrixVector(matJoinCol, vectX,
         matJoinCol.getNumRows(), matJoinCol.getNumCols(), false);
 
     MatrixDCol matCUDAR{1, 1};
     MatrixDCol matFigR{1, 1};
     MatrixDCol matFigQ{1, 1};
-
     evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matFigR, matFigQ, fileName, decompType);
     MatrixDCol matVectXMKL{1, 1};
     MatrixDCol matVectXFig{1, 1};

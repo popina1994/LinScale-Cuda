@@ -10,7 +10,7 @@ Matrix<T, majorOrder>
 generateRandomJoinTable(int numRows, int numCols, int numJoinAttrs, int numJoinVals, int seed)
 {
     std::mt19937 gen(seed); // Fixed seed
-    std::uniform_real_distribution<T> distReal(0.0, 1);
+    std::uniform_real_distribution<T> distReal(0.0, 1.0);
 
     std::vector<int> values(numJoinVals);
     std::iota(values.begin(), values.end(), 1);
