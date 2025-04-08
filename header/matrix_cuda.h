@@ -142,4 +142,16 @@ using MatrixCudaCol = MatrixCuda<T, MajorOrder::COL_MAJOR>;
 template <typename T>
 using MatrixCudaRow = MatrixCuda<T, MajorOrder::ROW_MAJOR>;
 
+template <typename T>
+void printDeviceVector(const thrust::device_vector<T>& dVector)
+{
+    thrust::host_vector<T> hVector(dVector);
+    std::cout << "Device vector " << dVector.size() << std::endl;
+    for (auto& elem: hVector)
+    {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+}
+
 #endif

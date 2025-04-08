@@ -148,6 +148,49 @@ __global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* 
     }
 }
 
+
+template <typename T>
+__global__ void concatenateHeadsAndTails(const T* d_mat, const T* d_mat2Mod, T* dOutMat, int* dNumRows1, int numCols1,
+        int* dNumRows2, int numCols2, int* dOffsets1, int* dOffsets2, int* dOffsets) {
+    int colIdx = threadIdx.x;
+    int headRowIdx1 = dOffsets1[blockIdx.x];
+    int headRowIdx2 = dOffsets2[blockIdx.x];
+    int headRowsIdxOut = dOffsets[blockIdx.x];
+    int numRows1 = dNumRows1[blockIdx.x];
+    int numRows2 = dNumRows2[blockIdx.x];
+    const int numRowsOut = numRows1 + numRows2 - 1;
+    const int numColsOut = numCols1 + numCols2;
+
+    for (int rowIdx1 = headRowIdx1; rowIdx1 < headRowIdx1 + numRows1; rowIdx1++)
+    {
+        int outRowIdx = rowIdx1 - headRowIdx1 + headRowsIdxOut;
+        if (colIdx < numCols1)
+        {
+            int posIdx = IDX_R(outRowIdx, colIdx, numRowsOut, numColsOut);
+            dOutMat[posIdx] = d_mat[IDX_R(rowIdx1, colIdx, numRows1, numCols1)] * sqrt((double)numRows2);
+        }
+        if (colIdx < numCols2)
+        {
+            int posIdx2 = IDX_R(outRowIdx, colIdx + numCols1, numRowsOut, numColsOut);
+            dOutMat[posIdx2] = d_mat2Mod[IDX_R(headRowIdx2, colIdx, numRows2, numCols2)];
+        }
+    }
+    for (int rowIdx2 = headRowIdx2; rowIdx2 < headRowIdx2 + numRowsOut - numRows1; rowIdx2++)
+    {
+        int outRowIdx = rowIdx2 - headRowIdx2 + numRows1 + headRowsIdxOut;
+        if (colIdx < numCols1)
+        {
+            int posIdx = IDX_R(outRowIdx, colIdx, numRowsOut, numColsOut);
+            dOutMat[posIdx] = 0;
+        }
+        if (colIdx < numCols2)
+        {
+            int posIdx2 = IDX_R(outRowIdx, colIdx + numCols1, numRowsOut, numColsOut);
+            dOutMat[posIdx2] = d_mat2Mod[IDX_R(rowIdx2 + 1, colIdx, numRows2, numCols2)] * sqrt((double)numRows1);
+        }
+    }
+}
+
 template <typename T>
 __global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
 {
@@ -177,7 +220,7 @@ __global__ void findUniqueOffsets(const T* d_arr, int* d_offsets, int n) {
 }
 
 template <typename T>
-void computeOffsets(const MatrixCudaRow<T>& matA, thrust::device_vector<int>& dOut)
+void computeOffsets(const MatrixCudaRow<T>& matA, thrust::device_vector<int>& dOffsets)
 {
     int numRows = matA.getNumRows();
     thrust::device_vector<int> d_offsets(numRows);
@@ -189,37 +232,74 @@ void computeOffsets(const MatrixCudaRow<T>& matA, thrust::device_vector<int>& dO
     findUniqueOffsets<<<numBlocks, blockSize>>>(thrust::raw_pointer_cast(matAJoinCol.getDataC()), thrust::raw_pointer_cast(d_offsets.data()), numRows);
 
     int countDif = thrust::count(d_offsets.begin(), d_offsets.end(), -1);
-    dOut = std::move(thrust::device_vector<int>(countDif + 1));
-    thrust::copy_if(d_offsets.begin(), d_offsets.end(), dOut.begin(), [] __device__ (int val) { return val != -1; });
-    dOut.push_back(matA.getNumRows());
+    dOffsets = std::move(thrust::device_vector<int>(countDif + 1));
+    thrust::copy_if(d_offsets.begin(), d_offsets.end(), dOffsets.begin(), [] __device__ (int val) { return val != -1; });
+    dOffsets.back() = matA.getNumRows();
 }
+
+void computeJoinSizes(const thrust::device_vector<int>& dOffsets, thrust::device_vector<int>& dJoinSizes)
+{
+    dJoinSizes = std::move(thrust::device_vector<int>(dOffsets.size() - 1));
+
+    auto first = thrust::make_zip_iterator(thrust::make_tuple(dOffsets.begin(), dOffsets.begin() + 1));
+    auto last  = thrust::make_zip_iterator(thrust::make_tuple(dOffsets.end() - 1, dOffsets.end()));
+
+    thrust::transform(first, last, dJoinSizes.begin(), [] __device__ (const thrust::tuple<int, int>& x) { return thrust::get<1>(x) - thrust::get<0>(x); });
+}
+
+void computeJoinSizeOfTwoTables(const thrust::device_vector<int>& dJoinSize1, const thrust::device_vector<int>& dJoinSize2,
+    thrust::device_vector<int>& dJoinSize, thrust::device_vector<int>& dJoinOffsets)
+{
+    dJoinSize = std::move(thrust::device_vector<int>(dJoinSize1.size()));
+    dJoinOffsets = std::move(thrust::device_vector<int>(dJoinSize1.size()));
+
+    thrust::transform(dJoinSize1.begin(), dJoinSize1.end(), dJoinSize2.begin(), dJoinSize.begin(), thrust::multiplies<int>());
+    dJoinOffsets.front() = 0;
+    thrust::inclusive_scan(dJoinSize.begin(), dJoinSize.end(), dJoinOffsets.begin() + 1);
+}
+
+void computeFigaroOutputOffsetsTwoTables(const thrust::device_vector<int>& dJoinSize1, const thrust::device_vector<int>& dJoinSize2,
+    thrust::device_vector<int>& dJoinSizes, thrust::device_vector<int>& dJoinOffsets)
+{
+    dJoinSizes = std::move(thrust::device_vector<int>(dJoinSize1.size()));
+    dJoinOffsets = std::move(thrust::device_vector<int>(dJoinSize1.size() + 1));
+
+    thrust::transform(dJoinSize1.begin(), dJoinSize1.end(), dJoinSize2.begin(), dJoinSizes.begin(), thrust::plus<int>());
+    thrust::transform(dJoinSizes.begin(), dJoinSizes.end(), dJoinSizes.begin(),  [] __device__ (int x) { return x - 1; });
+
+    dJoinOffsets.front() = 0;
+    thrust::inclusive_scan(dJoinSizes.begin(), dJoinSizes.end(), dJoinOffsets.begin() + 1);
+}
+
 
 template <typename T>
 int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     MatrixCol<T>& matR, MatrixCol<T>& matQ, const std::string& fileName, ComputeDecomp decompType)
 {
-    int numRows1 = mat1.getNumRows();
-    int numCols1 = mat1.getNumCols();
-    int numRows2 = mat2.getNumRows();
-    int numCols2 = mat2.getNumCols();
-    int numRowsOut = numRows1 + numRows2 - 1;
-    int numColsOut = numCols1 + numCols2;
+    int numRows1{mat1.getNumRows()}, numCols1{mat1.getNumCols()};
+    int numRows2{mat2.getNumRows()}, numCols2{mat2.getNumCols()};
+    int numRowsOut{numRows1 + numRows2 - 1}, numColsOut{numCols1 + numCols2};
 
-    MatrixCudaRow<T> matCuda1(mat1);
-    MatrixCudaRow<T> matCuda2(mat2);
-    MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
+    MatrixCudaRow<T> matCuda1(mat1), matCuda2(mat2), matCudaOut(numRowsOut, numColsOut);
     MatrixCudaCol<T> matCudaTran(numRowsOut, numColsOut);
-    thrust::device_vector<int> dOffsets1;
-    thrust::device_vector<int> dOffsets2;
+    thrust::device_vector<int> dOffsets1, dOffsets2;
 
-    // std::cout << "C1" << matCuda1;
+    std::cout << "C1" << matCuda1;
     computeOffsets(matCuda1, dOffsets1);
-    // std::cout << "C2" << matCuda2;
+    printDeviceVector(dOffsets1);
+    std::cout << "C2" << matCuda2;
     computeOffsets(matCuda2, dOffsets2);
-    // TODO: Compute sizes of chunks
-    // TODO: computeHeadsAndTails for the array of entries
-    // TODO: concatenateHeadsAndTails for the array of entries.
+    printDeviceVector(dOffsets2);
 
+    thrust::device_vector<int> dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets;
+    computeJoinSizes(dOffsets1, dJoinSizes1);
+    computeJoinSizes(dOffsets2, dJoinSizes2);
+    computeFigaroOutputOffsetsTwoTables(dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets);
+
+    printDeviceVector(dJoinSizes1);
+    printDeviceVector(dJoinSizes2);
+    printDeviceVector(dJoinSizes);
+    printDeviceVector(dJoinOffsets);
 
     T *d_S;
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
