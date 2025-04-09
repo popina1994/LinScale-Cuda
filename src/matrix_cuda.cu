@@ -46,14 +46,13 @@ __global__ void computeHeadsAndTails(T* dMat, const int* dOffsets, const int* dJ
     if (colIdx == 0)
     {
         // printf("HERE OIDX: %d HRIDX: %d NR: %d NC %d\n", offsetIdx, headRowIdx, numRows, numCols);
-
     }
 
     if (colIdx > 0 and colIdx < numCols)
     {
         dataHeads[colIdx] = dMat[IDX_R(headRowIdx, colIdx, numRows, numCols)];
     }
-    __syncthreads();
+    // __syncthreads();
     for (int rowIdx = headRowIdx + 1; rowIdx < headRowIdx + numRows; rowIdx++)
     {
         T i = rowIdx - headRowIdx + 1;
@@ -68,7 +67,7 @@ __global__ void computeHeadsAndTails(T* dMat, const int* dOffsets, const int* dJ
             dMat[IDX_R(rowIdx, colIdx, numRows, numCols)] = tailVal;
             // printf("TAIL VAL %d %d %.3f %.3f\n", rowIdx, colIdx, i, tailVal);
         }
-        __syncthreads();
+        // __syncthreads();
     }
     if (colIdx > 0 and colIdx < numCols)
     {
