@@ -95,6 +95,18 @@ public:
         return numRows * numCols * sizeof(T);
     }
 
+    int getLeadingDimension(void) const
+    {
+        if constexpr (majorOrder == MajorOrder::COL_MAJOR)
+        {
+            return getNumRows();
+        }
+        else
+        {
+            return getNumCols();
+        }
+    }
+
     MatrixCuda<T, majorOrder> getColumn(int colIdx) const
     {
         thrust::device_vector<T> outVect;
@@ -147,10 +159,14 @@ public:
     {
         auto& mat1 = *this;
         // dgmem
-    }
+}
 
     int computeQRDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matR,
         MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ = false);
+
+    int computeSVDDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matU,
+        MatrixCuda<T, MajorOrder::COL_MAJOR>& matSigma, MatrixCuda<T, MajorOrder::COL_MAJOR>& matV,
+        bool computeU = false, bool computeV = false, bool computeSigma = true);
 };
 
 
@@ -227,28 +243,65 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
             CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), &workspace_size));
         }
         // Allocate workspace
-        T *d_work, *d_tau;
-        CUDA_CALL(cudaMalloc((void**)&d_work, workspace_size * sizeof(T)));
+        T *dWork, *dTau;
+        CUDA_CALL(cudaMalloc((void**)&dWork, workspace_size * sizeof(T)));
 
         // Allocate device status variable
         int *devInfo;
         CUDA_CALL(cudaMalloc((void**)&devInfo, sizeof(int)));
-        CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(getNumRows(), getNumCols()) * sizeof(T)));
+        CUDA_CALL(cudaMalloc((void**)&dTau, std::min(getNumRows(), getNumCols()) * sizeof(T)));
         if constexpr (std::is_same<T, float>::value)
         {
-            CUSOLVER_CALL(cusolverDnSgeqrf(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), d_tau, d_work, workspace_size, devInfo));
+            CUSOLVER_CALL(cusolverDnSgeqrf(cuSolverHandle, getNumRows(), getNumCols(), getData(), getLeadingDimension(), dTau, dWork, workspace_size, devInfo));
         }
         else
         {
-            CUSOLVER_CALL(cusolverDnDgeqrf (cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), d_tau, d_work, workspace_size, devInfo));
+            CUSOLVER_CALL(cusolverDnDgeqrf (cuSolverHandle, getNumRows(), getNumCols(), getData(), getLeadingDimension(), dTau, dWork, workspace_size, devInfo));
         }
         matR = copyMatrix(0, getNumCols() - 1, 0, getNumCols() - 1);
         setZerosUpperTriangularCol<<<matR.getNumRows(), matR.getNumCols()>>>(matR.getData(), matR.getNumRows(), matR.getNumCols());
 
-        CUDA_CALL(cudaFree(d_tau));
-        CUDA_CALL(cudaFree(d_work));
+        CUDA_CALL(cudaFree(dTau));
+        CUDA_CALL(cudaFree(dWork));
         CUDA_CALL(cudaFree(devInfo));
+        CUSOLVER_CALL(cusolverDnDestroy(cuSolverHandle));
     }
+    return 0;
+}
+
+template <typename T, MajorOrder majorOrder>
+int MatrixCuda<T, majorOrder>::computeSVDDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matU,
+        MatrixCuda<T, MajorOrder::COL_MAJOR>& matSigma, MatrixCuda<T, MajorOrder::COL_MAJOR>& matV,
+        bool computeU, bool computeV, bool computeSigma)
+{
+    char jobu = 'N';  // No computation of U
+    char jobvt = 'N'; // No computation of V^T
+    int ldA = getLeadingDimension();
+    int *dInfo;
+    double *dWork;
+    int lwork = 0;
+    int rank = std::min(getNumRows(), getNumCols());
+    matSigma = std::move(Matrix<T, majorOrder>(rank, 1));
+    cusolverDnHandle_t cusolverH = nullptr;
+    CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
+    CUDA_CALL(cudaMalloc((void**)&dInfo, sizeof(int)));
+    CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numRows, numCols, &lwork));
+    CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * lwork));
+
+    if constexpr (std::is_same<T, double>::value)
+    {
+        CUSOLVER_CALL(cusolverDnDgesvd(cusolverH, jobu, jobvt, getNumRows(), getNumCols(), getData(), ldA, matSigma.getData(), nullptr, ldA, nullptr, getNumCols(),
+                                dWork, lwork, nullptr, dInfo));
+    }
+    else
+    {
+        CUSOLVER_CALL(cusolverDnSgesvd(cusolverH, jobu, jobvt, getNumRows(), getNumCols(), getData(), ldA, matSigma.getData(), nullptr, ldA, nullptr, getNumCols(),
+                                dWork, lwork, nullptr, dInfo));
+    }
+    CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
+    CUDA_CALL(cudaFree(dInfo));
+    CUDA_CALL(cudaFree(dWork));
+
     return 0;
 }
 

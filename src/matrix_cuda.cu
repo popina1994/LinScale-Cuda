@@ -211,10 +211,7 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     // std::cout << "JOIN OFFSETS" << std::endl;
     // printDeviceVector(dJoinOffsets);
 
-    T *d_S;
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
-    cusolverDnHandle_t cusolverH;
-    CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
 
     int numRowsOut{dJoinOffsets.back()}, numColsOut{mat1.getNumCols() + mat2.getNumCols() - 1};
     MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
@@ -233,30 +230,12 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 
     int rank = min(numRowsOut, numColsOut);
     // Compute QR factorization
-    MatrixCudaCol<T> matRCuda{1, 1};
-    MatrixCudaCol<T> matQCuda{1, 1};
+    MatrixCudaCol<T> matRCuda{1, 1}, matQCuda{1, 1}, matUCuda{1, 1}, matSigmaCuda{1, 1}, matVCuda{1, 1};
     matCudaTran.computeQRDecomposition(matRCuda, matQCuda, false);
     // std::cout << matRCuda << std::endl;
     if (computeSVD)
     {
-        std::cout << "WTF" << std::endl;
-        char jobu = 'N';  // No computation of U
-        char jobvt = 'N'; // No computation of V^T
-        // cuSOLVER handle
-        int *d_info;
-        double *d_work;
-        int lwork = 0;
-        int ldA = numRowsOut;
-
-        cusolverDnHandle_t cusolverH1 = nullptr;
-        CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
-        CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
-        CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, rank, numColsOut, &lwork));
-        CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
-            CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * rank));
-        cusolverDnDgesvd(cusolverH1, jobu, jobvt, numColsOut, numColsOut, matCudaTran.getData(), ldA, d_S, nullptr, numColsOut, nullptr, numColsOut,
-                        d_work, lwork, nullptr, d_info);
-        // CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
+        matRCuda.computeSVDDecomposition(matUCuda, matSigmaCuda, matVCuda);
         // computeQ
         // compute the inverse of the R
         // compute the multiplication of the inverse by both matrices (excluding join columns)
@@ -273,20 +252,16 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 
     if (computeSVD)
     {
-        thrust::host_vector<T> h_matS(numColsOut);
-        T *h_S = thrust::raw_pointer_cast(h_matS.data());
-        CUDA_CALL(cudaMemcpy(h_S, d_S, numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
-        printMatrix<T, MajorOrder::COL_MAJOR>(h_S, numColsOut, 1, numColsOut, fileName + "LinScaleS", false);
+        auto matSigma = matSigmaCuda.getHostCopy();
+        printMatrix(matSigma, matSigma.getNumRows(), fileName + "LinScaleS", false);
     }
     else
     {
         matR = matRCuda.getHostCopy();
     }
 
-
     CUDA_CALL(cudaEventDestroy(start));
     CUDA_CALL(cudaEventDestroy(stop));
-    CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
 
     std::cout << "\n";
     if (computeSVD)
@@ -305,19 +280,10 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 template <typename T, MajorOrder majorOrder>
 int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const std::string& fileName, ComputeDecomp decompType)
 {
-    T *d_tau, *h_S;
-    int numRows = matA.getNumRows();
-    int numCols = matA.getNumCols();
+    bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
 
     MatrixCudaCol<T> matACuda(matA);
-    MatrixCol<T> matOut(numRows, numCols);
-    MatrixCudaCol<T> matACudaCol(numRows, numCols);
-    thrust::host_vector<T> h_matS(numCols);
-
-    h_S = thrust::raw_pointer_cast(h_matS.data());
-    T *d_S;
-    CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(numRows, numCols) * sizeof(T)));
-    bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
+    MatrixCudaCol<T> matACudaCol{1, 1};
 
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
@@ -328,55 +294,19 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
         matACudaCol = std::move(matACuda);
     }
 
-    cusolverDnHandle_t cusolverH;
-    CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
-
-    int workspace_size = 0;
-    if constexpr (std::is_same<T, float>::value)
-    {
-        CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, &workspace_size));
-    }
-    else
-    {
-        CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, &workspace_size));
-    }
-    T *d_work;
-    int *devInfo;
-    CUDA_CALL(cudaMalloc((void**)&d_work, workspace_size * sizeof(T)));
-    CUDA_CALL(cudaMalloc((void**)&devInfo, sizeof(int)));
-
     cudaEvent_t start, stop;
     CUDA_CALL(cudaEventCreate(&start));
     CUDA_CALL(cudaEventCreate(&stop));
     CUDA_CALL(cudaEventRecord(start));
-    MatrixCudaCol<T> matRCuda{1, 1};
-    MatrixCudaCol<T> matQCuda{1, 1};
+    MatrixCudaCol<T> matRCuda{1, 1}, matQCuda{1, 1}, matU{1, 1}, matSigmaCuda{1, 1}, matV{1, 1};
 
     if (computeSVD)
     {
-        char jobu = 'N';  // No computation of U
-        char jobvt = 'N'; // No computation of V^T
-
-        int *d_info;
-        double *d_work;
-        int lwork = 0;
-        int ldA = numRows;
-
-        cusolverDnHandle_t cusolverH1 = nullptr;
-        CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
-        CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
-        CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numRows, numCols, &lwork));
-        CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
-        CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numCols));
-
-        cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRows, numCols, matACudaCol.getData(), ldA, d_S, nullptr, numRows, nullptr, numCols,
-                                d_work, lwork, nullptr, d_info);
+        matACudaCol.computeSVDDecomposition(matU, matSigmaCuda, matV);
     }
     else
     {
-
         matACudaCol.computeQRDecomposition(matRCuda, matQCuda);
-        // CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
         // computeQ
         // compute the inverse of the R
         // compute the multiplication of the inverse by both matrices (excluding join columns)
@@ -391,8 +321,8 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
     // Copy results back to host
     if (computeSVD)
     {
-        CUDA_CALL(cudaMemcpy(h_S, d_S, numCols * sizeof(T), cudaMemcpyDeviceToHost));
-        printMatrix<T, MajorOrder::COL_MAJOR>(h_S, numCols, 1, numCols, fileName + "cuSolverS", false);
+        auto matSigma = matSigmaCuda.getHostCopy();
+        printMatrix(matSigma, matSigma.getNumRows(), fileName + "cuSolverS", false);
     }
     else
     {
@@ -403,12 +333,8 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
     std::string nameDecomp = computeSVD ? "SVD" : "QR";
     std::cout << "\n" + nameDecomp + " decomposition CUSolver took " << milliseconds << " ms.\n";
 
-    CUDA_CALL(cudaFree(d_tau));
-    CUDA_CALL(cudaFree(d_work));
-    CUDA_CALL(cudaFree(devInfo));
     CUDA_CALL(cudaEventDestroy(start));
     CUDA_CALL(cudaEventDestroy(stop));
-    CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
 
     return 0;
 }
