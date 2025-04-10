@@ -12,30 +12,10 @@
 #include "matrix.h"
 #include "matrix_cuda.h"
 
-// CUDA error check macro
-#define CUDA_CALL(call) \
-    do { \
-        cudaError_t err = call; \
-        if (err != cudaSuccess) { \
-            std::cerr << "CUDA Error: " << cudaGetErrorString(err) << " at " << __LINE__ << std::endl; \
-            return EXIT_FAILURE; \
-        } \
-    } while (0)
-
-
-// cuSOLVER error check macro
-#define CUSOLVER_CALL(call) \
-    do { \
-        cusolverStatus_t err = call; \
-        if (err != CUSOLVER_STATUS_SUCCESS) { \
-            std::cerr << "cuSOLVER Error: " << err << " at " << __LINE__ << std::endl; \
-            return EXIT_FAILURE; \
-        } \
-    } while (0)
-
-
 __device__ double sqrt(double x);
 
+// We assume there are less than 1024 columns,
+// otherwise this should be updated
 template<typename T>
 __global__ void computeHeadsAndTails(T* dMat, const int* dOffsets, const int* dJoinSizes, int numCols) {
     T dataHeadsL;
@@ -64,7 +44,8 @@ __global__ void computeHeadsAndTails(T* dMat, const int* dOffsets, const int* dJ
     dMat[IDX_R(headRowIdx, colIdx, numRows, numCols)] = dataHeadsL / sqrt((double)numRows);
 }
 
-
+// We assume there are less than 1024 columns,
+// otherwise this should be updated
 template <typename T>
 __global__ void concatenateHeadsAndTails(const T* dMat, const T* dMat2Mod, T* dOutMat, const int* dNumRows1, int numCols1,
         const int* dNumRows2, int numCols2, const int* dOffsets1, const int* dOffsets2, const int* dOffsets) {
@@ -108,29 +89,20 @@ __global__ void concatenateHeadsAndTails(const T* dMat, const T* dMat2Mod, T* dO
     }
 }
 
-template <typename T>
-__global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols)
-{
-	int colIdx = threadIdx.x;
-	for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
-	{
-		if (rowIdx > colIdx)
-		{
-			d_A[IDX_C(rowIdx, colIdx, numRows, numCols)] = 0;
-		}
-	}
-}
-
 // TODO: Add inverse, matrix matrix multiplication
 
 template <typename T>
 __global__ void findUniqueOffsets(const T* d_arr, int* dDiffPrevRow, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx == 0 || (idx < n && d_arr[idx] != d_arr[idx - 1]))
+    if (idx >= n)
+    {
+        return;
+    }
+    if (idx == 0 || (d_arr[idx] != d_arr[idx - 1]))
     {
         dDiffPrevRow[idx] = idx;
     }
-    else if (idx < n)
+    else
     {
         dDiffPrevRow[idx] = -1;
     }
@@ -148,7 +120,6 @@ void computeOffsets(const MatrixCudaRow<T>& matA, thrust::device_vector<int>& dO
     findUniqueOffsets<<<numBlocks, blockSize>>>(matAJoinCol.getDataC(), dDiffPrevRow.data().get(), numRows);
 
     int countDiff = numRows - thrust::count(dDiffPrevRow.begin(), dDiffPrevRow.end(), -1);
-    // std::cout << "countDIF" << countDiff << std::endl;
     dOffsets = std::move(thrust::device_vector<int>(countDiff + 1));
     thrust::copy_if(dDiffPrevRow.begin(), dDiffPrevRow.end(), dOffsets.begin(), [] __device__ (int val) { return val != -1; });
     dOffsets.back() = matA.getNumRows();
@@ -168,7 +139,7 @@ void computeJoinSizeOfTwoTables(const thrust::device_vector<int>& dJoinSizes1, c
     thrust::device_vector<int>& dJoinSize, thrust::device_vector<int>& dJoinOffsets)
 {
     dJoinSize = std::move(thrust::device_vector<int>(dJoinSizes1.size()));
-    dJoinOffsets = std::move(thrust::device_vector<int>(dJoinSizes1.size()));
+    dJoinOffsets = std::move(thrust::device_vector<int>(dJoinSizes1.size() + 1));
 
     thrust::transform(dJoinSizes1.begin(), dJoinSizes1.end(), dJoinSizes2.begin(), dJoinSize.begin(), thrust::multiplies<int>());
     dJoinOffsets.front() = 0;
@@ -214,66 +185,39 @@ template <typename T>
 int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     MatrixCol<T>& matR, MatrixCol<T>& matQ, const std::string& fileName, ComputeDecomp decompType)
 {
-    int numRows1{mat1.getNumRows()}, numCols1{mat1.getNumCols()};
-    int numRows2{mat2.getNumRows()}, numCols2{mat2.getNumCols()};
     MatrixCudaRow<T> matCuda1(mat1), matCuda2(mat2);
     thrust::device_vector<int> dOffsets1, dOffsets2;
 
-    // std::cout << "C1" << matCuda1;
+    std::cout << "C1" << matCuda1;
     computeOffsets(matCuda1, dOffsets1);
-    // std::cout << "Offsets 1" << std::endl;
-    // printDeviceVector(dOffsets1);
-    // std::cout << "C2" << matCuda2;
+    std::cout << "Offsets 1" << std::endl;
+    printDeviceVector(dOffsets1);
+    std::cout << "C2" << matCuda2;
     computeOffsets(matCuda2, dOffsets2);
-    // std::cout << "Offsets 2" << std::endl;
-    // printDeviceVector(dOffsets2);
+    std::cout << "Offsets 2" << std::endl;
+    printDeviceVector(dOffsets2);
 
     thrust::device_vector<int> dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets;
     computeJoinSizes(dOffsets1, dJoinSizes1);
     computeJoinSizes(dOffsets2, dJoinSizes2);
     computeFigaroOutputOffsetsTwoTables(dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets);
 
-    // std::cout << "JOIN SIZES 1" << std::endl;
-    // printDeviceVector(dJoinSizes1);
-    // std::cout << "JOIN SIZES 2" << std::endl;
-    // printDeviceVector(dJoinSizes2);
-    // std::cout << "JOIN SIZES" << std::endl;
-    // printDeviceVector(dJoinSizes);
-    // std::cout << "JOIN OFFSETS" << std::endl;
-    // printDeviceVector(dJoinOffsets);
+    std::cout << "JOIN SIZES 1" << std::endl;
+    printDeviceVector(dJoinSizes1);
+    std::cout << "JOIN SIZES 2" << std::endl;
+    printDeviceVector(dJoinSizes2);
+    std::cout << "JOIN SIZES" << std::endl;
+    printDeviceVector(dJoinSizes);
+    std::cout << "JOIN OFFSETS" << std::endl;
+    printDeviceVector(dJoinOffsets);
 
     T *d_S;
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
     cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
 
-    // int numRowsOut{numRows1 + numRows2 - 1}, numColsOut{numCols1 + numCols2};
-    int numRowsOut{dJoinOffsets.back()}, numColsOut{numCols1 + numCols2 - 1};
+    int numRowsOut{dJoinOffsets.back()}, numColsOut{mat1.getNumCols() + mat2.getNumCols() - 1};
     MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
-    MatrixCudaCol<T> matCudaTran(numRowsOut, numColsOut);
-    // Compute buffer size for QR
-    int workspace_size = 0;
-    if constexpr (std::is_same<T, float>::value)
-    {
-        CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cusolverH, numRowsOut, numColsOut, matCudaOut.getData(), numRowsOut, &workspace_size));
-    }
-    else
-    {
-        CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cusolverH, numRowsOut, numColsOut, matCudaOut.getData(), numRowsOut, &workspace_size));
-    }
-
-    // Initialize cuBLAS handle
-    cublasHandle_t handle;
-    cublasCreate(&handle);
-
-    // Allocate workspace
-    T *d_work, *d_tau;
-    CUDA_CALL(cudaMalloc((void**)&d_work, workspace_size * sizeof(T)));
-
-    // Allocate device status variable
-    int *devInfo;
-    CUDA_CALL(cudaMalloc((void**)&devInfo, sizeof(int)));
-    CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(numRowsOut, numColsOut) * sizeof(T)));
 
     cudaEvent_t start, stop;
     CUDA_CALL(cudaEventCreate(&start));
@@ -283,69 +227,34 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     CUDA_CALL(cudaEventRecord(start));
 
     computeHeadsAndTails(matCuda2, dOffsets2, dJoinSizes2);
-
     // std::cout << "C2 Modified" << matCuda2;
     concatenateHeadsAndTails(matCuda1, matCuda2, matCudaOut, dJoinSizes1, dJoinSizes2, dOffsets1, dOffsets2, dJoinOffsets);
-    // std::cout << "mat out" << matCudaOut << std::endl;
-    // Define scalars alpha and beta
-    const T alpha = 1.0f; // Scalar for matrix A (no scaling)
-    const T beta = 0.0f;  // Scalar for matrix B (no B matrix, so no scaling)
-
-    if constexpr (std::is_same<T, float>::value)
-    {
-        cublasSgeam(handle,
-        CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
-        numRowsOut, numColsOut,                     // Matrix dimensions
-        &alpha,                   // Scalar for A
-        matCudaOut.getDataC(), numColsOut,                 // Input matrix A and its leading dimension
-        &beta,                    // Scalar for B (not used)
-        nullptr, numColsOut,               // No B matrix (set to nullptr)
-        matCudaTran.getData(), numRowsOut);                  // Output matrix C and its leading dimension
-    }
-    else
-    {
-        cublasDgeam(handle,
-        CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
-        numRowsOut, numColsOut,                     // Matrix dimensions
-        &alpha,                   // Scalar for A
-        matCudaOut.getDataC(), numColsOut,                   // Input matrix A and its leading dimension
-        &beta,                    // Scalar for B (not used)
-        nullptr, numColsOut,               // No B matrix (set to nullptr)
-        matCudaTran.getData(), numRowsOut);                  // Output matrix C and its leading dimension
-    }
+    auto matCudaTran = changeLayoutFromRowToColumn(matCudaOut);
 
     int rank = min(numRowsOut, numColsOut);
-
-
     // Compute QR factorization
-    if constexpr (std::is_same<T, float>::value)
+    MatrixCudaCol<T> matRDummy{1, 1};
+    MatrixCudaCol<T> matQDummy{1, 1};
+    matCudaTran.computeQRDecomposition(matRDummy, matQDummy, false);
+    if (computeSVD)
     {
-        CUSOLVER_CALL(cusolverDnSgeqrf(cusolverH, numRowsOut, numColsOut, matCudaTran.getData(), numRowsOut, d_tau, d_work, workspace_size, devInfo));
-    }
-    else
-    {
-        CUSOLVER_CALL(cusolverDnDgeqrf (cusolverH, numRowsOut, numColsOut, matCudaTran.getData(), numRowsOut, d_tau, d_work, workspace_size, devInfo));
-        setZerosUpperTriangular<<<1, numColsOut>>>(matCudaTran.getData(), numRowsOut, numColsOut);
-    	if (computeSVD)
-	    {
-            std::cout << "WTF" << std::endl;
-            char jobu = 'N';  // No computation of U
-            char jobvt = 'N'; // No computation of V^T
-            // cuSOLVER handle
-            int *d_info;
-            double *d_work;
-            int lwork = 0;
-            int ldA = numRowsOut;
+        std::cout << "WTF" << std::endl;
+        char jobu = 'N';  // No computation of U
+        char jobvt = 'N'; // No computation of V^T
+        // cuSOLVER handle
+        int *d_info;
+        double *d_work;
+        int lwork = 0;
+        int ldA = numRowsOut;
 
-            cusolverDnHandle_t cusolverH1 = nullptr;
-            CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
-            CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
-            CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, rank, numColsOut, &lwork));
-            CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
-                CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * rank));
-            cusolverDnDgesvd(cusolverH1, jobu, jobvt, numColsOut, numColsOut, matCudaTran.getData(), ldA, d_S, nullptr, numColsOut, nullptr, numColsOut,
-                            d_work, lwork, nullptr, d_info);
-        }
+        cusolverDnHandle_t cusolverH1 = nullptr;
+        CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
+        CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
+        CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, rank, numColsOut, &lwork));
+        CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
+            CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * rank));
+        cusolverDnDgesvd(cusolverH1, jobu, jobvt, numColsOut, numColsOut, matCudaTran.getData(), ldA, d_S, nullptr, numColsOut, nullptr, numColsOut,
+                        d_work, lwork, nullptr, d_info);
     }
 
     // Stop measuring time
@@ -373,9 +282,6 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     }
 
 
-    CUDA_CALL(cudaFree(d_tau));
-    CUDA_CALL(cudaFree(d_work));
-    CUDA_CALL(cudaFree(devInfo));
     CUDA_CALL(cudaEventDestroy(start));
     CUDA_CALL(cudaEventDestroy(stop));
     CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
@@ -413,35 +319,7 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
 
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
-        cublasHandle_t handle;
-        cublasCreate(&handle);
-
-        const T alpha = 1.0f;
-        const T beta = 0.0f;
-
-        if constexpr (std::is_same<T, float>::value)
-        {
-            cublasSgeam(handle,
-            CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
-            numRows, numCols,                     // Matrix dimensions
-            &alpha,                   // Scalar for A
-            matACuda.getDataC(), numCols,                   // Input matrix A and its leading dimension
-            &beta,                    // Scalar for B (not used)
-            nullptr, numCols,               // No B matrix (set to nullptr)
-            matACudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
-        }
-        else
-        {
-            cublasDgeam(handle,
-            CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
-            numRows, numCols,                     // Matrix dimensions
-            &alpha,                   // Scalar for A
-            matACuda.getDataC(), numCols,                   // Input matrix A and its leading dimension
-            &beta,                    // Scalar for B (not used)
-            nullptr, numCols,               // No B matrix (set to nullptr)
-            matACudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
-        }
-        cublasDestroy(handle);
+        matACudaCol = changeLayoutFromRowToColumn(matACuda);
     }
     else
     {
@@ -470,40 +348,37 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
     CUDA_CALL(cudaEventCreate(&stop));
     CUDA_CALL(cudaEventRecord(start));
 
-    if constexpr (std::is_same<T, float>::value)
+
+    if (computeSVD)
     {
-        CUSOLVER_CALL(cusolverDnSgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
+        char jobu = 'N';  // No computation of U
+        char jobvt = 'N'; // No computation of V^T
+
+        int *d_info;
+        double *d_work;
+        int lwork = 0;
+        int ldA = numRows;
+
+        cusolverDnHandle_t cusolverH1 = nullptr;
+        CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
+        CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
+        CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numRows, numCols, &lwork));
+        CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
+        CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numCols));
+
+        cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRows, numCols, matACudaCol.getData(), ldA, d_S, nullptr, numRows, nullptr, numCols,
+                                d_work, lwork, nullptr, d_info);
     }
     else
     {
-        if (computeSVD)
-        {
-            char jobu = 'N';  // No computation of U
-            char jobvt = 'N'; // No computation of V^T
-
-            int *d_info;
-            double *d_work;
-            int lwork = 0;
-            int ldA = numRows;
-
-            cusolverDnHandle_t cusolverH1 = nullptr;
-            CUSOLVER_CALL(cusolverDnCreate(&cusolverH1));
-            CUDA_CALL(cudaMalloc((void**)&d_info, sizeof(int)));
-            CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numRows, numCols, &lwork));
-            CUDA_CALL(cudaMalloc((void**)&d_work, sizeof(double) * lwork));
-            CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * numCols));
-
-            cusolverDnDgesvd(cusolverH1, jobu, jobvt, numRows, numCols, matACudaCol.getData(), ldA, d_S, nullptr, numRows, nullptr, numCols,
-                                    d_work, lwork, nullptr, d_info);
-        }
-        else
-        {
-            CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
-            // computeQ
-            // compute the inverse of the R
-            // compute the multiplication of the inverse by both matrices (excluding join columns)
-            // join values
-        }
+        MatrixCudaCol<T> matRDummy{1, 1};
+        MatrixCudaCol<T> matQDummy{1, 1};
+        matACudaCol.computeQRDecomposition(matRDummy, matQDummy);
+        // CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
+        // computeQ
+        // compute the inverse of the R
+        // compute the multiplication of the inverse by both matrices (excluding join columns)
+        // join values
     }
 
     CUDA_CALL(cudaEventRecord(stop));

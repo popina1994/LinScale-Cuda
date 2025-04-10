@@ -2,6 +2,7 @@
 #define _LINSCALE_MATRIX_CUDA_H_
 
 #include "matrix.h"
+#include "cuda_util.h"
 #include <string>
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
@@ -134,6 +135,20 @@ public:
 
         return out;
     }
+
+    Matrix<T, majorOrder> computeInverse(void)
+    {
+        //
+    }
+
+    Matrix<T, majorOrder> multiply(const Matrix<T, majorOrder>& mat2)
+    {
+        auto& mat1 = *this;
+        // dgmem
+    }
+
+    int computeQRDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matR,
+        MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ = false);
 };
 
 
@@ -142,6 +157,99 @@ using MatrixCudaCol = MatrixCuda<T, MajorOrder::COL_MAJOR>;
 template <typename T>
 using MatrixCudaRow = MatrixCuda<T, MajorOrder::ROW_MAJOR>;
 
+// Outside of the class (not a member function)
+template <typename T>
+__global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols) {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    if (idx < numRows * numCols) {
+        int row = idx / numCols;
+        int col = idx % numCols;
+        if (row < col) {
+            d_A[idx] = 0;  // Set the upper triangular part to zero
+        }
+    }
+}
+
+template <typename T, MajorOrder majorOrder>
+int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
+        MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ)
+{
+    if (majorOrder == MajorOrder::COL_MAJOR)
+    {
+        auto& matA = *this;
+        cusolverDnHandle_t cuSolverHandle;
+        CUSOLVER_CALL(cusolverDnCreate(&cuSolverHandle));
+        int workspace_size = 0;
+        if constexpr (std::is_same<T, float>::value)
+        {
+            CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), &workspace_size));
+        }
+        else
+        {
+            CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), &workspace_size));
+        }
+        // Allocate workspace
+        T *d_work, *d_tau;
+        CUDA_CALL(cudaMalloc((void**)&d_work, workspace_size * sizeof(T)));
+
+        // Allocate device status variable
+        int *devInfo;
+        CUDA_CALL(cudaMalloc((void**)&devInfo, sizeof(int)));
+        CUDA_CALL(cudaMalloc((void**)&d_tau, std::min(getNumRows(), getNumCols()) * sizeof(T)));
+        if constexpr (std::is_same<T, float>::value)
+        {
+            CUSOLVER_CALL(cusolverDnSgeqrf(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), d_tau, d_work, workspace_size, devInfo));
+        }
+        else
+        {
+            CUSOLVER_CALL(cusolverDnDgeqrf (cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), d_tau, d_work, workspace_size, devInfo));
+        }
+        setZerosUpperTriangular<<<1, getNumCols()>>>(getData(), getNumRows(), getNumCols());
+
+        CUDA_CALL(cudaFree(d_tau));
+        CUDA_CALL(cudaFree(d_work));
+        CUDA_CALL(cudaFree(devInfo));
+    }
+    return 0;
+}
+
+template<typename T>
+MatrixCudaCol<T> changeLayoutFromRowToColumn(const MatrixCudaRow<T>& matA)
+{
+    MatrixCudaCol<T> matCudaCol(matA.getNumRows(), matA.getNumCols());
+    int numRows = matA.getNumRows();
+    int numCols = matA.getNumCols();
+
+    cublasHandle_t handle;
+    cublasCreate(&handle);
+
+    const T alpha = 1.0f; // Scalar for matrix A (no scaling)
+    const T beta = 0.0f;  // Scalar for matrix B (no B matrix, so no scaling)
+
+    if constexpr (std::is_same<T, float>::value)
+    {
+        cublasSgeam(handle,
+        CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
+        numRows, numCols,                     // Matrix dimensions
+        &alpha,                   // Scalar for A
+        matA.getDataC(), numCols,                 // Input matrix A and its leading dimension
+        &beta,                    // Scalar for B (not used)
+        nullptr, numCols,               // No B matrix (set to nullptr)
+        matCudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
+    }
+    else
+    {
+        cublasDgeam(handle,
+        CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
+        numRows, numCols,                     // Matrix dimensions
+        &alpha,                   // Scalar for A
+        matA.getDataC(), numCols,                   // Input matrix A and its leading dimension
+        &beta,                    // Scalar for B (not used)
+        nullptr, numCols,               // No B matrix (set to nullptr)
+        matCudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
+    }
+    return matCudaCol;
+}
 template <typename T>
 void printDeviceVector(const thrust::device_vector<T>& dVector)
 {
