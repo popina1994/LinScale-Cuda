@@ -188,28 +188,28 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     MatrixCudaRow<T> matCuda1(mat1), matCuda2(mat2);
     thrust::device_vector<int> dOffsets1, dOffsets2;
 
-    std::cout << "C1" << matCuda1;
+    // std::cout << "C1" << matCuda1;
     computeOffsets(matCuda1, dOffsets1);
-    std::cout << "Offsets 1" << std::endl;
-    printDeviceVector(dOffsets1);
-    std::cout << "C2" << matCuda2;
+    // std::cout << "Offsets 1" << std::endl;
+    // printDeviceVector(dOffsets1);
+    // std::cout << "C2" << matCuda2;
     computeOffsets(matCuda2, dOffsets2);
-    std::cout << "Offsets 2" << std::endl;
-    printDeviceVector(dOffsets2);
+    // std::cout << "Offsets 2" << std::endl;
+    // printDeviceVector(dOffsets2);
 
     thrust::device_vector<int> dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets;
     computeJoinSizes(dOffsets1, dJoinSizes1);
     computeJoinSizes(dOffsets2, dJoinSizes2);
     computeFigaroOutputOffsetsTwoTables(dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets);
 
-    std::cout << "JOIN SIZES 1" << std::endl;
-    printDeviceVector(dJoinSizes1);
-    std::cout << "JOIN SIZES 2" << std::endl;
-    printDeviceVector(dJoinSizes2);
-    std::cout << "JOIN SIZES" << std::endl;
-    printDeviceVector(dJoinSizes);
-    std::cout << "JOIN OFFSETS" << std::endl;
-    printDeviceVector(dJoinOffsets);
+    // std::cout << "JOIN SIZES 1" << std::endl;
+    // printDeviceVector(dJoinSizes1);
+    // std::cout << "JOIN SIZES 2" << std::endl;
+    // printDeviceVector(dJoinSizes2);
+    // std::cout << "JOIN SIZES" << std::endl;
+    // printDeviceVector(dJoinSizes);
+    // std::cout << "JOIN OFFSETS" << std::endl;
+    // printDeviceVector(dJoinOffsets);
 
     T *d_S;
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
@@ -233,9 +233,10 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 
     int rank = min(numRowsOut, numColsOut);
     // Compute QR factorization
-    MatrixCudaCol<T> matRDummy{1, 1};
-    MatrixCudaCol<T> matQDummy{1, 1};
-    matCudaTran.computeQRDecomposition(matRDummy, matQDummy, false);
+    MatrixCudaCol<T> matRCuda{1, 1};
+    MatrixCudaCol<T> matQCuda{1, 1};
+    matCudaTran.computeQRDecomposition(matRCuda, matQCuda, false);
+    // std::cout << matRCuda << std::endl;
     if (computeSVD)
     {
         std::cout << "WTF" << std::endl;
@@ -255,6 +256,11 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
             CUDA_CALL(cudaMalloc((void**)&d_S, sizeof(double) * rank));
         cusolverDnDgesvd(cusolverH1, jobu, jobvt, numColsOut, numColsOut, matCudaTran.getData(), ldA, d_S, nullptr, numColsOut, nullptr, numColsOut,
                         d_work, lwork, nullptr, d_info);
+        // CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
+        // computeQ
+        // compute the inverse of the R
+        // compute the multiplication of the inverse by both matrices (excluding join columns)
+        // join values
     }
 
     // Stop measuring time
@@ -274,11 +280,7 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     }
     else
     {
-    	thrust::host_vector<T> h_matOutH(numRowsOut * numColsOut);
-    	T *h_matOut = thrust::raw_pointer_cast(h_matOutH.data());
-    	CUDA_CALL(cudaMemcpy(h_matOut, matCudaTran.getDataC(), numRowsOut * numColsOut * sizeof(T), cudaMemcpyDeviceToHost));
-        matR = Matrix<T, MajorOrder::COL_MAJOR>{numColsOut, numColsOut};
-        copyMatrix<T, MajorOrder::COL_MAJOR>(h_matOut, matR.getData(), numRowsOut, numColsOut, numColsOut, numColsOut, false);
+        matR = matRCuda.getHostCopy();
     }
 
 
@@ -347,7 +349,8 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
     CUDA_CALL(cudaEventCreate(&start));
     CUDA_CALL(cudaEventCreate(&stop));
     CUDA_CALL(cudaEventRecord(start));
-
+    MatrixCudaCol<T> matRCuda{1, 1};
+    MatrixCudaCol<T> matQCuda{1, 1};
 
     if (computeSVD)
     {
@@ -371,9 +374,8 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
     }
     else
     {
-        MatrixCudaCol<T> matRDummy{1, 1};
-        MatrixCudaCol<T> matQDummy{1, 1};
-        matACudaCol.computeQRDecomposition(matRDummy, matQDummy);
+
+        matACudaCol.computeQRDecomposition(matRCuda, matQCuda);
         // CUSOLVER_CALL(cusolverDnDgeqrf(cusolverH, numRows, numCols, matACudaCol.getData(), numRows, d_tau, d_work, workspace_size, devInfo));
         // computeQ
         // compute the inverse of the R
@@ -394,9 +396,7 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
     }
     else
     {
-        CUDA_CALL(cudaMemcpy(matOut.getData(), matACudaCol.getDataC(), matACudaCol.getSize(), cudaMemcpyDeviceToHost));
-        matR = Matrix<T, MajorOrder::COL_MAJOR>{numCols, numCols};
-        copyMatrix<T, MajorOrder::COL_MAJOR>(matOut.getDataC(), matR.getData(), numRows, numCols, numCols, numCols, true);
+        matR = matRCuda.getHostCopy();
     }
 
     // Print execution time

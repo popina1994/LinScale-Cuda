@@ -136,12 +136,14 @@ public:
         return out;
     }
 
-    Matrix<T, majorOrder> computeInverse(void)
+    MatrixCuda<T, majorOrder> copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx);
+
+    MatrixCuda<T, majorOrder> computeInverse(void)
     {
         //
     }
 
-    Matrix<T, majorOrder> multiply(const Matrix<T, majorOrder>& mat2)
+    MatrixCuda<T, majorOrder> multiply(const MatrixCuda<T, majorOrder>& mat2)
     {
         auto& mat1 = *this;
         // dgmem
@@ -158,16 +160,52 @@ template <typename T>
 using MatrixCudaRow = MatrixCuda<T, MajorOrder::ROW_MAJOR>;
 
 // Outside of the class (not a member function)
-template <typename T>
-__global__ void setZerosUpperTriangular(T* d_A, int numRows, int numCols) {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    if (idx < numRows * numCols) {
-        int row = idx / numCols;
-        int col = idx % numCols;
-        if (row < col) {
-            d_A[idx] = 0;  // Set the upper triangular part to zero
+template <typename T, MajorOrder majorOrder>
+__global__ void copyMatrixCuda(const T* d_ASrc, T* d_Bdst, int numRowsSrc, int numColsSrc, int startRowIdx, int endRowIdx, int startColIdx, int endColIdx) {
+    int colIdxDst  = threadIdx.x;
+    int rowIdxDst = blockIdx.x;
+    int colIdxSrc = threadIdx.x + startColIdx;
+    int rowIdxSrc = blockIdx.x + startRowIdx;
+    int numRowsDst = endRowIdx - startRowIdx + 1;
+    int numColsDst = endColIdx - startColIdx + 1;
+
+    if (rowIdxSrc < numRowsSrc and rowIdxSrc < numColsSrc)
+    {
+        int posIdxSrc;
+        int posIdxDst;
+        if (majorOrder == MajorOrder::COL_MAJOR)
+        {
+            posIdxSrc = IDX_C(rowIdxSrc, colIdxSrc, numRowsSrc, numColsSrc);
+            posIdxDst = IDX_C(rowIdxDst, colIdxDst, numRowsDst, numColsDst);
         }
+        else
+        {
+            posIdxSrc = IDX_R(rowIdxSrc, colIdxSrc, numRowsSrc, numColsSrc);
+            posIdxDst = IDX_R(rowIdxDst, colIdxDst, numRowsDst, numColsDst);
+        }
+        d_Bdst[posIdxDst] = d_ASrc[posIdxSrc];
     }
+}
+
+template <typename T>
+__global__ void setZerosUpperTriangularCol(T* d_A, int numRows, int numColsSrc) {
+    int colIdx = threadIdx.x;
+    int rowIdx = blockIdx.x;
+    if (rowIdx > colIdx and rowIdx < numRows and colIdx < numColsSrc)
+    {
+        int posIdx = IDX_C(rowIdx, colIdx, numRows, numColsSrc);
+        d_A[posIdx] = 0;
+    }
+}
+
+template <typename T, MajorOrder majorOrder>
+MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::
+copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx)
+{
+    MatrixCuda<T, majorOrder> matOut{endRowIdx - startRowIdx + 1, endColIdx - startColIdx + 1};
+    copyMatrixCuda<T, majorOrder><<<matOut.getNumRows(), matOut.getNumCols()>>>
+        (getDataC(), matOut.getData(), getNumRows(), getNumCols(), startRowIdx, endRowIdx, startColIdx, endColIdx);
+    return matOut;
 }
 
 template <typename T, MajorOrder majorOrder>
@@ -204,7 +242,8 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
         {
             CUSOLVER_CALL(cusolverDnDgeqrf (cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), d_tau, d_work, workspace_size, devInfo));
         }
-        setZerosUpperTriangular<<<1, getNumCols()>>>(getData(), getNumRows(), getNumCols());
+        matR = copyMatrix(0, getNumCols() - 1, 0, getNumCols() - 1);
+        setZerosUpperTriangularCol<<<matR.getNumRows(), matR.getNumCols()>>>(matR.getData(), matR.getNumRows(), matR.getNumCols());
 
         CUDA_CALL(cudaFree(d_tau));
         CUDA_CALL(cudaFree(d_work));
@@ -212,6 +251,7 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
     }
     return 0;
 }
+
 
 template<typename T>
 MatrixCudaCol<T> changeLayoutFromRowToColumn(const MatrixCudaRow<T>& matA)
