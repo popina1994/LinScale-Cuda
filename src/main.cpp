@@ -7,17 +7,15 @@
 
 namespace po = boost::program_options;
 
-void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, std::string& fileName, ComputeDecomp decompType)
+void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinValsDomainSize,
+    ComputeDecomp decompType, std::string& fileName)
 {
-    auto mat1 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows1, numCols1, 1, 10, 0);
-    auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, 10, 10);
+    auto mat1 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows1, numCols1, 1, joinValsDomainSize, 0);
+    auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, joinValsDomainSize, 10);
     mat1 = sortTable(mat1, 1);
     mat2 = sortTable(mat2, 1);
-    // printMatrix(mat1, mat1.getNumRows(), "mat1.csv", false);
-    // printMatrix(mat2, mat2.getNumRows(), "mat2.csv", false);
     auto matJoin = computeJoin(mat1, mat2, 1);
     auto matJoinCol = changeLayout(matJoin);
-    // printMatrix(matJoinCol, matJoinCol.getNumRows(), "matJoinCol.csv", false);
 
     auto vectX = generateRandom<double, MajorOrder::ROW_MAJOR>(1, matJoin.getNumCols(), 15);
     auto outVectBTrain = computeMatrixVector(matJoinCol, vectX,
@@ -38,6 +36,7 @@ int main(int argc, char* argv[])
     int numRows1 = 1000, numCols1 = 4;
     int numRows2 = 2, numCols2 = 4;
     int compute = 1;
+    int joinValsDomainSize = 1;
 
     try
     {
@@ -51,6 +50,7 @@ int main(int argc, char* argv[])
             ("n1", po::value<int>(), "Number of columns 1")
             ("n2", po::value<int>(), "Number of columns 2")
             ("compute", po::value<int>(), "Compute mode")
+            ("join_vals_domain_size", po::value<int>(), "Compute mode")
             ("verbose,v", "Enable verbose mode");
 
         // Parse the command-line arguments
@@ -83,6 +83,10 @@ int main(int argc, char* argv[])
         {
             compute = vm["compute"].as<int>();
         }
+        if (vm.count("join_vals_domain_size"))
+        {
+            joinValsDomainSize = vm["join_vals_domain_size"].as<int>();
+        }
         std::string fileName = "results/" + std::to_string(numRows1) + "x" + std::to_string(numCols1) + "," + std::to_string(numRows2) + "x" + std::to_string(numCols2);
         ComputeDecomp decompType;
         switch (compute) {
@@ -99,7 +103,7 @@ int main(int argc, char* argv[])
             decompType = ComputeDecomp::U_AND_S_AND_V;
             break;
         }
-        evaluate(numRows1, numCols1, numRows2, numCols2, fileName, decompType);
+        evaluate(numRows1, numCols1, numRows2, numCols2, joinValsDomainSize, decompType, fileName);
     } catch (const std::exception& e)
     {
         std::cerr << "Error: " << e.what() << std::endl;

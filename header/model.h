@@ -8,12 +8,12 @@ void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     MatrixDCol& matFigQ, const std::string& fileName, ComputeDecomp decompType)
 {
     /*********** TRAINING ***********************/
-     printMatrix<double, MajorOrder::COL_MAJOR>(matJoin, matJoin.getNumRows(), fileName + "Join.csv", false);
+    //  printMatrix<double, MajorOrder::COL_MAJOR>(matJoin, matJoin.getNumRows(), fileName + "Join.csv", false);
     computeGeneral<double, MajorOrder::COL_MAJOR>(matJoin, matCUDAR, fileName, decompType);
-    printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR, matCUDAR.getNumCols(), fileName + "CUDA.csv", false);
+    // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR, matCUDAR.getNumCols(), fileName + "CUDA.csv", false);
 
     computeFigaro<double>(mat1, mat2, matFigR, matFigQ, fileName, decompType);
-    printMatrix<double, MajorOrder::COL_MAJOR>(matFigR, matFigR.getNumCols(), fileName + "LinScale.csv", false);
+    // printMatrix<double, MajorOrder::COL_MAJOR>(matFigR, matFigR.getNumCols(), fileName + "LinScale.csv", false);
 }
 
 void computeVectors(const MatrixDCol& matJoin, const MatrixDCol& matCUDAR,
