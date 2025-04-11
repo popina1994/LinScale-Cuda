@@ -300,9 +300,7 @@ T Matrix<T, majorOrder>::computeOrthogonality(void) const
     T frobNorm = 0.0;
     auto eyeComp = selfTransposeMatrixMultiplication();
     auto diff = eye.subtract(eyeComp);
-    std::cout << "DIFFERENCE" << diff << std::endl;
-    auto diffNorm = 1; //diff.computeFrobeniusNorm();
-    auto relError = 0; //diff.computeFrobeniusNorm() / eye.computeFrobeniusNorm();
+    auto relError = diff.computeFrobeniusNorm() / eye.computeFrobeniusNorm();
 
     return relError;
 }

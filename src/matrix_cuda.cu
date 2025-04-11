@@ -212,6 +212,7 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     // printDeviceVector(dJoinOffsets);
 
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
+    bool computeQ = decompType == ComputeDecomp::Q_AND_R;
 
     int numRowsOut{dJoinOffsets.back()}, numColsOut{mat1.getNumCols() + mat2.getNumCols() - 1};
     MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
@@ -236,10 +237,18 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     if (computeSVD)
     {
         matRCuda.computeSVDDecomposition(matUCuda, matSigmaCuda, matVCuda);
-        // computeQ
-        // compute the inverse of the R
-        // compute the multiplication of the inverse by both matrices (excluding join columns)
-        // join values
+
+    }
+    else
+    {
+        if (computeQ)
+        {
+            // Invert the matrix R
+            MatrixCudaCol<T> matRInvCuda{1, 1};
+            matRCuda.computeInverse(matRInvCuda);
+            // auto hostInverse = matRInvCuda.getHostCopy();
+            // Multiply each of the original tables by the inverse of a matrix
+        }
     }
 
     // Stop measuring time
@@ -258,6 +267,10 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     else
     {
         matR = matRCuda.getHostCopy();
+        if (computeQ)
+        {
+            matQ = matQCuda.getHostCopy();
+        }
     }
 
     CUDA_CALL(cudaEventDestroy(start));
@@ -283,7 +296,6 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
 {
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
     bool computeQ = decompType == ComputeDecomp::Q_AND_R;
-    std::cout << "COMPUTE Q" << computeQ << std::endl;
 
     MatrixCudaCol<T> matACuda(matA);
     MatrixCudaCol<T> matACudaCol{1, 1};

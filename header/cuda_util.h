@@ -12,6 +12,44 @@ do { \
     } \
 } while (0)
 
+
+
+const char* cublasGetErrorString(cublasStatus_t status) {
+    switch (status) {
+        case CUBLAS_STATUS_SUCCESS:
+            return "Success";
+        case CUBLAS_STATUS_NOT_INITIALIZED:
+            return "Library not initialized";
+        case CUBLAS_STATUS_ALLOC_FAILED:
+            return "Resource allocation failed";
+        case CUBLAS_STATUS_INVALID_VALUE:
+            return "Invalid value";
+        case CUBLAS_STATUS_ARCH_MISMATCH:
+            return "Architecture mismatch";
+        case CUBLAS_STATUS_MAPPING_ERROR:
+            return "Memory mapping error";
+        case CUBLAS_STATUS_EXECUTION_FAILED:
+            return "Execution failed";
+        case CUBLAS_STATUS_INTERNAL_ERROR:
+            return "Internal error";
+        default:
+            return "Unknown error";
+    }
+}
+
+#define CUBLASS_CALL(call) \
+{ \
+    auto status = (call); \
+    if (status != CUBLAS_STATUS_SUCCESS && status != cudaSuccess) { \
+        if (status != CUBLAS_STATUS_SUCCESS) { \
+            std::cerr << "cuBLAS error: " << status << " at line " << __LINE__ << std::endl; \
+        } else { \
+            std::cerr << "CUDA error: " << cublasGetErrorString(status) << " at line " << __LINE__ << std::endl; \
+        } \
+        exit(EXIT_FAILURE); \
+    } \
+}
+
 const char* cusolverGetErrorString(cusolverStatus_t status) {
     switch (status) {
         case CUSOLVER_STATUS_SUCCESS: return "CUSOLVER_STATUS_SUCCESS";

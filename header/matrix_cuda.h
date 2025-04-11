@@ -7,6 +7,8 @@
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
 #include <thrust/iterator/counting_iterator.h>
+#include <cusolverDn.h>
+#include <cuda_runtime.h>
 
 template <typename T, MajorOrder majorOrder>
 class MatrixCuda
@@ -17,28 +19,24 @@ class MatrixCuda
     thrust::device_vector<T> dVector;
 
     MatrixCuda(int _numRows, int _numCols, const thrust::device_vector<T>& mdVector): numRows(_numRows), numCols(_numCols), dVector(mdVector)
-    {
-        // std::cout << "CREATE" << pArr << std::endl;
-    }
+    {}
+
+    MatrixCuda(int _numRows, int _numCols, thrust::device_vector<T>&& mdVector): numRows(_numRows), numCols(_numCols), dVector(std::move(mdVector))
+    {}
 public:
     MatrixCuda(const MatrixCuda& matIn) = delete;
     MatrixCuda& operator=(const MatrixCuda& matIn) = delete;
     MatrixCuda(int _numRows, int _numCols): numRows(_numRows), numCols(_numCols), dVector(int64_t(numRows) * int64_t(numCols))
-    {
-        // std::cout << "CREATE" << pArr << std::endl;
-    }
+    {}
 
     MatrixCuda(const Matrix<T, majorOrder>& matHost): numRows(matHost.getNumRows()), numCols(matHost.getNumCols()),
         dVector(matHost.getDataC(), matHost.getDataC() + matHost.getNumElements())
-    {
-        // std::cout << "CREATE" << pArr << std::endl;
-    }
+    {}
 
 
     MatrixCuda(MatrixCuda&& matIn)
     {
         dVector = std::move(matIn.dVector);
-        // std::cout << "MOVE " << pArr << std::endl;
         numRows = matIn.numRows;
         numCols = matIn.numCols;
     }
@@ -46,7 +44,6 @@ public:
     MatrixCuda& operator=(MatrixCuda&& matIn)
     {
         dVector = std::move(matIn.dVector);
-        // std::cout << "ASSIGN " << pArr << std::endl;
         numRows = matIn.numRows;
         numCols = matIn.numCols;
         return *this;
@@ -150,16 +147,16 @@ public:
 
     MatrixCuda<T, majorOrder> copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx);
 
-    MatrixCuda<T, majorOrder> computeInverse(void)
-    {
-        //
-    }
+    static MatrixCuda<T, majorOrder> zero(int numRows, int numCols);
+    static MatrixCuda<T, majorOrder> identity(int numRows);
+
+    int computeInverse(MatrixCuda<T, majorOrder>& matInv);
 
     MatrixCuda<T, majorOrder> multiply(const MatrixCuda<T, majorOrder>& mat2)
     {
         auto& mat1 = *this;
         // dgmem
-}
+    }
 
     int computeQRDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matR,
         MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ = false);
@@ -185,7 +182,7 @@ __global__ void copyMatrixCuda(const T* d_ASrc, T* d_Bdst, int numRowsSrc, int n
     int numRowsDst = endRowIdx - startRowIdx + 1;
     int numColsDst = endColIdx - startColIdx + 1;
 
-if (rowIdxSrc < numRowsSrc and colIdxSrc < numColsSrc)
+    if (rowIdxSrc < numRowsSrc and colIdxSrc < numColsSrc)
     {
         int posIdxSrc;
         int posIdxDst;
@@ -203,6 +200,7 @@ if (rowIdxSrc < numRowsSrc and colIdxSrc < numColsSrc)
     }
 }
 
+// @note Number of columns should be smaller than 1024
 template <typename T>
 __global__ void setZerosUpperTriangularCol(T* d_A, int numRows, int numColsSrc) {
     int colIdx = threadIdx.x;
@@ -214,6 +212,36 @@ __global__ void setZerosUpperTriangularCol(T* d_A, int numRows, int numColsSrc) 
     }
 }
 
+// @note Number of columns should be smaller than 1024
+template <typename T>
+__global__ void setEyes(T* d_A, int numRows) {
+    int colIdx = threadIdx.x;
+    if (colIdx < numRows)
+    {
+        int posIdx = IDX_C(colIdx, colIdx, numRows, numRows);
+        d_A[posIdx] = 1.0;
+    }
+}
+
+
+template <typename T, MajorOrder majorOrder>
+MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::zero(int numRows, int numCols)
+{
+    MatrixCuda<T, majorOrder> outZeros {numRows, numCols,
+        thrust::device_vector<double>(numRows * numCols, 0.0)};
+
+    return outZeros;
+}
+
+template <typename T, MajorOrder majorOrder>
+MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::identity(int numRows)
+{
+    MatrixCuda<T, majorOrder> outZeros{MatrixCuda<T, majorOrder>::zero(numRows, numRows)};
+    setEyes<<<1, numRows>>>(outZeros.getData(), outZeros.getNumRows());
+
+    return outZeros;
+}
+
 template <typename T, MajorOrder majorOrder>
 MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::
 copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx)
@@ -222,6 +250,44 @@ copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx)
     copyMatrixCuda<T, majorOrder><<<matOut.getNumRows(), matOut.getNumCols()>>>
         (getDataC(), matOut.getData(), getNumRows(), getNumCols(), startRowIdx, endRowIdx, startColIdx, endColIdx);
     return matOut;
+}
+
+template <typename T, MajorOrder majorOrder>
+int MatrixCuda<T, majorOrder>::computeInverse(MatrixCuda<T, majorOrder>& matInv)
+{
+    matInv = copyMatrix(0, getNumRows() - 1, 0, getNumCols() -1);
+
+    int *dPivots = nullptr;
+    int *dInfo = nullptr;
+    T *dWork = nullptr;
+    int lwork = 0;
+
+    cusolverDnHandle_t cusolverH;
+    CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
+
+    CUDA_CALL(cudaMalloc((void**)&dPivots, sizeof(int) * getNumRows()));
+    CUDA_CALL(cudaMalloc((void**)&dInfo, sizeof(int)));
+    CUSOLVER_CALL(cusolverDnDgetrf_bufferSize(cusolverH, getNumRows(), getNumRows(),
+        matInv.getData(), matInv.getLeadingDimension(), &lwork));
+    CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * lwork));
+
+    // LU Decomposition
+    CUSOLVER_CALL(cusolverDnDgetrf(cusolverH, matInv.getNumRows(), matInv.getNumRows(),
+        matInv.getData(), matInv.getLeadingDimension(), dWork, dPivots, dInfo));
+
+    auto matIdentity = MatrixCuda<T, majorOrder>::identity(matInv.getNumRows());
+
+    // Matrix inversion using LU factorization
+    CUSOLVER_CALL(cusolverDnDgetrs(cusolverH, CUBLAS_OP_N, matInv.getNumRows(),
+        matInv.getNumRows(), matInv.getData(), matInv.getLeadingDimension(),
+        dPivots, matIdentity.getData(), matIdentity.getNumRows(), dInfo));
+    matInv = std::move(matIdentity);
+    CUDA_CALL(cudaFree(dPivots));
+    CUDA_CALL(cudaFree(dInfo));
+    CUDA_CALL(cudaFree(dWork));
+    CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
+
+    return 0;
 }
 
 template <typename T, MajorOrder majorOrder>
@@ -358,7 +424,12 @@ MatrixCudaCol<T> changeLayoutFromRowToColumn(const MatrixCudaRow<T>& matA)
         matCudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
     }
     return matCudaCol;
+
+    // TODO: Add support for the inverse
+    // TODO: add support for the matrix multiplication.
+    // TODO: add support for the join
 }
+
 template <typename T>
 void printDeviceVector(const thrust::device_vector<T>& dVector)
 {

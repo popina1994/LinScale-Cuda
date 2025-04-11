@@ -189,7 +189,7 @@ public:
 
     // TODO: compute condition number
 
-    T computeFrobeniusNorm(void);
+    T computeFrobeniusNorm(void) const;
 
     static Matrix<T, majorOrder>
     generateRandom(int numRows, int numCols, int seed,
@@ -226,8 +226,6 @@ public:
         const Matrix<T, majorOrder>& matR, const Matrix<T, majorOrder>& vectB) const;
 
     Matrix<T, majorOrder> solveLLSQRDecomp(const Matrix<T, majorOrder>& vectB) const;
-
-    T computeFrobeniusNorm(void) const;
 
     T computeOrthogonality(void) const;
 };
