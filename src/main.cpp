@@ -27,7 +27,7 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinVa
     evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matFigR, matFigQ, matCUDAQ, fileName, decompType);
     MatrixDCol matVectXMKL{1, 1};
     MatrixDCol matVectXFig{1, 1};
-    computeVectors(matJoinCol, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig, -1);
+    computeVectors(matJoinCol, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig);
     evaluateTest(matJoinCol.getNumRows(), matJoinCol.getNumCols(), vectX, matVectXMKL, matVectXFig, -1);
 }
 

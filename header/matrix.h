@@ -188,12 +188,6 @@ public:
         int startColIdx, int endColIdx) const;
 
     // TODO: compute condition number
-    // TODO: Migrate MatrixVector
-    // TODO: Migrate MatrixMatrix
-    // TODO: Migrate SMTT
-    // TODO: Migrate computeInverse
-    // TODO: Migrate LLS classical
-    // TODO: Migrate LLS normal
 
     T computeFrobeniusNorm(void);
 
@@ -218,14 +212,24 @@ public:
     Matrix<T, majorOrder> computeMatrixVector(const Matrix<T, majorOrder>& vectV,
         bool transpose = false) const;
 
+    Matrix<T, majorOrder> computeMatrixMatrix(const Matrix<T, majorOrder>& matrixB) const;
+
     Matrix<T, majorOrder> selfMatrixTransposeMultiplication(void) const;
+
+    Matrix<T, majorOrder> selfTransposeMatrixMultiplication(void) const;
 
     Matrix<T, majorOrder> computeInverse(bool isUpperTriangular) const;
 
+    Matrix<T, majorOrder> solveLLSNormalEquations(const Matrix<T, majorOrder>& vectB) const;
+
+    Matrix<T, majorOrder> solveLLSNormalEquationUsingR(
+        const Matrix<T, majorOrder>& matR, const Matrix<T, majorOrder>& vectB) const;
+
+    Matrix<T, majorOrder> solveLLSQRDecomp(const Matrix<T, majorOrder>& vectB) const;
+
     T computeFrobeniusNorm(void) const;
 
-    T orthogonality(void);
-
+    T computeOrthogonality(void) const;
 };
 
 
@@ -238,6 +242,10 @@ using MatrixRow = Matrix<T, MajorOrder::ROW_MAJOR>;
 
 template <typename T>
 MatrixCol<T> changeLayout(const MatrixRow<T>& mat);
+
+template <typename T>
+double computeMeanSquaredError(const T* pA, const T* pB, int numRows);
+
 template <typename T, MajorOrder majorOrder>
 void printMatrix(const Matrix<T, majorOrder>& matA, int numRowsCut, const std::string& fileName, bool upperTriangular = false);
 
@@ -309,6 +317,8 @@ MatrixCol<T> changeLayout(const MatrixRow<T>& mat)
     }
     return matOut;
 }
+
+
 
 
 template <typename T, MajorOrder majorOrder>

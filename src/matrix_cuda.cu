@@ -283,6 +283,7 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
 {
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
     bool computeQ = decompType == ComputeDecomp::Q_AND_R;
+    std::cout << "COMPUTE Q" << computeQ << std::endl;
 
     MatrixCudaCol<T> matACuda(matA);
     MatrixCudaCol<T> matACudaCol{1, 1};

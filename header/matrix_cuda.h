@@ -185,7 +185,7 @@ __global__ void copyMatrixCuda(const T* d_ASrc, T* d_Bdst, int numRowsSrc, int n
     int numRowsDst = endRowIdx - startRowIdx + 1;
     int numColsDst = endColIdx - startColIdx + 1;
 
-    if (rowIdxSrc < numRowsSrc and rowIdxSrc < numColsSrc)
+if (rowIdxSrc < numRowsSrc and colIdxSrc < numColsSrc)
     {
         int posIdxSrc;
         int posIdxDst;
@@ -262,6 +262,7 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
         setZerosUpperTriangularCol<<<matR.getNumRows(), matR.getNumCols()>>>(matR.getData(), matR.getNumRows(), matR.getNumCols());
         if (computeQ)
         {
+            matQ = copyMatrix(0, getNumRows() - 1, 0, getNumCols() - 1);
             cusolverDnHandle_t cusolverHQ = nullptr;
             CUSOLVER_CALL(cusolverDnCreate(&cusolverHQ));
             CUSOLVER_CALL(cusolverDnDorgqr_bufferSize(cusolverHQ, getNumRows(), getNumCols(),
@@ -270,8 +271,8 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
 
             CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * workspace_size));
 
-            CUSOLVER_CALL(cusolverDnDorgqr(cusolverHQ, getNumRows(), getNumCols(),
-                getNumCols(), getData(), getLeadingDimension(), dTau, dWork,
+            CUSOLVER_CALL(cusolverDnDorgqr(cusolverHQ, matQ.getNumRows(), matQ.getNumCols(),
+                matQ.getNumCols(), matQ.getData(), matQ.getLeadingDimension(), dTau, dWork,
                     workspace_size, devInfo));
             CUSOLVER_CALL(cusolverDnDestroy(cusolverHQ));
         }

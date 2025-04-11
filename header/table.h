@@ -1,9 +1,10 @@
 #ifndef LINSCALE_TABLE_H_
 #define LINSCALE_TABLE_H_
 
-#include "matrix_mkl.h"
 #include <map>
 #include <vector>
+#include <random>
+#include "matrix.h"
 
 template <typename T, MajorOrder majorOrder>
 Matrix<T, majorOrder>

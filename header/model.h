@@ -12,6 +12,7 @@ void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     //  printMatrix<double, MajorOrder::COL_MAJOR>(matJoin, matJoin.getNumRows(), fileName + "Join.csv", false);
     computeGeneral<double, MajorOrder::COL_MAJOR>(matJoin, matCUDAR, matCUDAQ,
         fileName, decompType);
+    std::cout << "ORTHOGONALITY " << matCUDAQ.computeOrthogonality() << std::endl;
     // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR, matCUDAR.getNumCols(), fileName + "CUDA.csv", false);
 
     computeFigaro<double>(mat1, mat2, matFigR, matFigQ, fileName, decompType);
@@ -20,21 +21,23 @@ void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
 
 void computeVectors(const MatrixDCol& matJoin, const MatrixDCol& matCUDAR,
     const MatrixDCol& matFigR, const MatrixDCol& vectBTrain,
-    MatrixDCol& vectXCompMKL, MatrixDCol& vectXCompFig, int seed)
+    MatrixDCol& vectXCompMKL, MatrixDCol& vectXCompFig)
 {
-    vectXCompMKL = solveLLSNormalEquation(matJoin, matCUDAR, vectBTrain, matJoin.getNumRows(), matJoin.getNumCols(),  "results/Cuda"+ std::to_string(seed));
-    vectXCompFig = solveLLSNormalEquation(matJoin, matFigR, vectBTrain, matJoin.getNumRows(), matJoin.getNumCols(), "results/LinScale" + std::to_string(seed) );
+    // vectXCompMKL = matJoin.solveLLSNormalEquationUsingR(matCUDAR, vectBTrain);
+    vectXCompMKL = matJoin.solveLLSNormalEquations(vectBTrain);
+    // vectXCompMKL = matJoin.solveLLSQRDecomp(vectBTrain);
+    vectXCompFig = matJoin.solveLLSNormalEquationUsingR(matFigR, vectBTrain);
 }
 
 void evaluateTest(int numRows, int numCols,
     const MatrixDCol& vectX, MatrixDCol& vectXCompMKL,
     MatrixDCol& vectXCompFig, int seed)
 {
-    auto matRandTest = MatrixDCol::generateRandom(numRows, numCols, 22);
+    auto matRandTest = MatrixDCol::generateRandom(numRows, numCols, seed + 22);
 
     auto outVectBTest = matRandTest.computeMatrixVector(vectX, false);
     auto matUniformAdd = MatrixDCol::generateRandom(
-        matRandTest.getNumRows(), matRandTest.getNumCols(), 37);
+        matRandTest.getNumRows(), matRandTest.getNumCols(), seed + 37);
     auto matUniformCopy = matUniformAdd.divValue(1e10);
     auto outVectBTestVariance = outVectBTest.add(matUniformCopy);
     // outVectBTestVariance = std::move(outVectBTest);
