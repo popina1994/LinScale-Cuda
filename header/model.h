@@ -5,11 +5,13 @@
 
 void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     const MatrixDCol& matJoin, MatrixDCol& matCUDAR, MatrixDCol& matFigR,
-    MatrixDCol& matFigQ, const std::string& fileName, ComputeDecomp decompType)
+    MatrixDCol& matFigQ, MatrixDCol& matCUDAQ,
+    const std::string& fileName, ComputeDecomp decompType)
 {
     /*********** TRAINING ***********************/
     //  printMatrix<double, MajorOrder::COL_MAJOR>(matJoin, matJoin.getNumRows(), fileName + "Join.csv", false);
-    computeGeneral<double, MajorOrder::COL_MAJOR>(matJoin, matCUDAR, fileName, decompType);
+    computeGeneral<double, MajorOrder::COL_MAJOR>(matJoin, matCUDAR, matCUDAQ,
+        fileName, decompType);
     // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR, matCUDAR.getNumCols(), fileName + "CUDA.csv", false);
 
     computeFigaro<double>(mat1, mat2, matFigR, matFigQ, fileName, decompType);
@@ -28,16 +30,14 @@ void evaluateTest(int numRows, int numCols,
     const MatrixDRow& vectX, MatrixDCol& vectXCompMKL,
     MatrixDCol& vectXCompFig, int seed)
 {
-    auto matRandTest = generateRandom<double, MajorOrder::COL_MAJOR>(numRows, numCols, 22);
+    auto matRandTest = MatrixDCol::generateRandom(numRows, numCols, 22);
 
     auto outVectBTest = computeMatrixVector<double, MajorOrder::COL_MAJOR>(matRandTest, vectX, numRows, numCols, false);
-    auto matUniformAdd = generateRandom<double, MajorOrder::COL_MAJOR>(
+    auto matUniformAdd = MatrixDCol::generateRandom(
         matRandTest.getNumRows(), matRandTest.getNumCols(), 37);
-    decltype(matUniformAdd) matUniformCopy {matUniformAdd.getNumRows(), matUniformAdd.getNumCols()};
-    divValue(matUniformAdd, 1e10, matUniformCopy);
-    MatrixDCol outVectBTestVariance{1, 1};
-    addVectors(outVectBTest, matUniformCopy, outVectBTestVariance);
-    outVectBTestVariance = std::move(outVectBTest);
+    auto matUniformCopy = matUniformAdd.divValue(1e10);
+    auto outVectBTestVariance = outVectBTest.add(matUniformCopy);
+    // outVectBTestVariance = std::move(outVectBTest);
 
     auto outVectBTestCompMKL = computeMatrixVector(matRandTest, vectXCompMKL, numRows, numCols, false);
     auto outVectBTestCompFig = computeMatrixVector(matRandTest, vectXCompFig, numRows, numCols, false);

@@ -17,14 +17,15 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinVa
     auto matJoin = computeJoin(mat1, mat2, 1);
     auto matJoinCol = changeLayout(matJoin);
 
-    auto vectX = generateRandom<double, MajorOrder::ROW_MAJOR>(1, matJoin.getNumCols(), 15);
+    auto vectX = MatrixDRow::generateRandom(1, matJoin.getNumCols(), 15);
     auto outVectBTrain = computeMatrixVector(matJoinCol, vectX,
         matJoinCol.getNumRows(), matJoinCol.getNumCols(), false);
 
     MatrixDCol matCUDAR{1, 1};
     MatrixDCol matFigR{1, 1};
     MatrixDCol matFigQ{1, 1};
-    evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matFigR, matFigQ, fileName, decompType);
+    MatrixDCol matCUDAQ{1, 1};
+    evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matFigR, matFigQ, matCUDAQ, fileName, decompType);
     MatrixDCol matVectXMKL{1, 1};
     MatrixDCol matVectXFig{1, 1};
     computeVectors(matJoinCol, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig, -1);

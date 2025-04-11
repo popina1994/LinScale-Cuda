@@ -6,8 +6,8 @@ cmake ..
 make -j
 m1_a=(100 200 400 800 1600)
 n_a=(4 8 16 32 64)
-# ./LinScale-Cuda --m1 1000 --n1 64 --m2 1000 --n2 64 --compute 0
-# exit
+./LinScale-Cuda --m1 30 --n1 5 --m2 30 --n2 5 --compute 0 --join_vals_domain_size 5
+exit
 for m1 in "${m1_a[@]}"; do
     m2=$m1
         for n1 in "${n_a[@]}"; do

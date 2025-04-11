@@ -36,101 +36,6 @@ void concatenateMatrices(const Matrix<T, order>& mat1, const Matrix<T, order>& m
     }
 }
 
-
-template <typename T>
-MatrixCol<T> changeLayout(const MatrixRow<T>& mat)
-{
-    T alpha = 1.0;
-    MatrixCol<T> matOut{mat.getNumRows(), mat.getNumCols()};
-    // mkl_domatcopy('R', 'T', mat.getNumRows(), mat.getNumCols(),
-    //     alpha, mat.getDataC(), mat.getNumCols(), matOut.getData(), matOut.getNumRows());
-    for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
-    {
-        for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
-        {
-            matOut(rowIdx, colIdx) = mat(rowIdx, colIdx);
-        }
-    }
-    return matOut;
-}
-
-template <typename T, MajorOrder majorOrder>
-Matrix<T, majorOrder> generateRandom(int numRows, int numCols, int seed, double start = 0.0, double end = 1.0)
-{
-    std::mt19937 gen(seed); // Fixed seed
-    std::uniform_real_distribution<T> dist(start, end);
-    auto matA = std::move(Matrix<T, majorOrder>{numRows, numCols});
-    if constexpr (MajorOrder::COL_MAJOR == majorOrder)
-    {
-        for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
-        {
-            for (int colIdx = 0; colIdx < numCols; colIdx++)
-            {
-                matA(rowIdx, colIdx) = dist(gen);
-            }
-        }
-    }
-    else
-    {
-        for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
-        {
-            for (int colIdx = 0; colIdx < numCols; colIdx++)
-            {
-                matA(rowIdx, colIdx) = dist(gen);
-            }
-        }
-    }
-    return std::move(matA);
-}
-
-template<typename T, MajorOrder orderInput, MajorOrder orderOutput>
-void generateCartesianProduct(const Matrix<T, orderInput>& mat1,  const Matrix<T, orderInput>& mat2,
-    Matrix<T, orderOutput>& matOut)
-{
-    int numRows = mat1.getNumRows() * mat2.getNumRows();
-    int numCols =  mat1.getNumCols() + mat2.getNumCols();
-    matOut = std::move(Matrix<T, orderOutput>{numRows, numCols});
-    for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
-    {
-        int rowIdx1 = rowIdx / mat2.getNumRows();
-        int rowIdx2 = rowIdx % mat2.getNumRows();
-        for (int colIdx = 0; colIdx < mat1.getNumCols(); colIdx++)
-        {
-            // int64_t pos = getPosId<orderOutput>(rowIdx, colIdx, numRows,  numCols);
-            matOut(rowIdx, colIdx) =  mat1(rowIdx1, colIdx);
-        }
-        for (int colIdx = mat1.getNumCols(); colIdx < numCols; colIdx++)
-        {
-            // int64_t pos = getPosId<orderOutput>(rowIdx, colIdx, numRows, numCols);
-            matOut(rowIdx, colIdx) =  mat2(rowIdx2, colIdx - mat1.getNumCols());
-        }
-    }
-}
-
-
-
-template<typename T, MajorOrder majorOrder>
-void computeMatrixVector(const T* pMat, const T* pVect, T*& pOutVect, int numRows, int numCols,
-    bool transpose = false)
-{
-    T alpha = 1.0;
-    T beta = 0.0;
-    CBLAS_TRANSPOSE aTran = (transpose ?  CblasTrans : CblasNoTrans);
-
-    int cntOut = (transpose ? numCols : numRows);
-    pOutVect = new T[cntOut];
-
-    if constexpr (MajorOrder::ROW_MAJOR == majorOrder)
-    {
-        cblas_dgemv(CblasRowMajor, aTran, numRows, numCols, alpha, pMat, numCols, pVect, 1, beta, pOutVect, 1);
-    }
-    else
-    {
-        cblas_dgemv(CblasColMajor, aTran, numRows, numCols, alpha, pMat, numRows, pVect, 1, beta, pOutVect, 1);
-    }
-}
-
-
 template<typename T, MajorOrder majorOrderA, MajorOrder majorOrderV>
 Matrix<T, majorOrderA> computeMatrixVector(const Matrix<T, majorOrderA>& matA,
     const Matrix<T, majorOrderV>& vect, int numRows, int numCols,
@@ -196,36 +101,41 @@ void selfTransposeMatrixMultiplication(const T* pMat, T*& pOutMat, int numRows, 
 }
 
 template<typename T, MajorOrder majorOrder>
-void selfMatrixTransposeMultiplication(const T* pMat, T*& pOutMat, int numRows, int numCols)
+void selfMatrixTransposeMultiplication(const Matrix<T, majorOrder>& matA,
+    Matrix<T, majorOrder>& matOut)
 {
-    pOutMat = new T[numCols * numCols];
     double alpha = 1.0, beta = 0.0;
+    int numRows = matA.getNumRows();
+    int numCols = matA.getNumCols();
+
+    matOut = std::move(Matrix<T, majorOrder>(numCols, numCols));
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
-                    numCols, numCols, numRows, alpha, pMat, numCols, pMat, numCols, beta,
-                     pOutMat, numCols);
+                    numCols, numCols, numRows, alpha, matA.getDataC(),
+                        numCols, matA.getDataC(), numCols, beta,
+                     matOut.getData(), numCols);
     }
     else
     {
         cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans,
-            numCols, numCols, numRows, alpha, pMat, numRows, pMat, numRows, beta,
-                     pOutMat, numCols);
+            numCols, numCols, numRows, alpha, matA.getDataC(), numRows, matA.getDataC(), numRows, beta,
+                     matOut.getData(), numCols);
     }
 }
 
 template<typename T, MajorOrder majorOrder>
-void computeInverse(T* pMat, int numRows, int numCols, bool upperTriangular = true)
+void computeInverse(Matrix<T, majorOrder>& matA, int numRows, int numCols, bool upperTriangular = true)
 {
     if (upperTriangular)
     {
         if constexpr (MajorOrder::COL_MAJOR == majorOrder)
         {
-            LAPACKE_dtrtri(LAPACK_COL_MAJOR, 'U', 'N', numRows, pMat, numRows);
+            LAPACKE_dtrtri(LAPACK_COL_MAJOR, 'U', 'N', numRows, matA.getData(), numRows);
         }
         else
         {
-            LAPACKE_dtrtri(LAPACK_ROW_MAJOR, 'U', 'N', numRows, pMat, numCols);
+            LAPACKE_dtrtri(LAPACK_ROW_MAJOR, 'U', 'N', numRows, matA.getData(), numCols);
         }
     }
     else
@@ -236,18 +146,18 @@ void computeInverse(T* pMat, int numRows, int numCols, bool upperTriangular = tr
         if constexpr (MajorOrder::ROW_MAJOR == majorOrder)
         {
             // Step 1: Perform LU decomposition
-            LAPACKE_dgetrf(LAPACK_ROW_MAJOR, numRows, numRows, pMat, numCols, ipiv);
+            LAPACKE_dgetrf(LAPACK_ROW_MAJOR, numRows, numRows, matA.getData(), numCols, ipiv);
 
             // Step 2: Compute inverse using LU factorization
-            LAPACKE_dgetri(LAPACK_ROW_MAJOR, numRows, pMat, numCols, ipiv);
+            LAPACKE_dgetri(LAPACK_ROW_MAJOR, numRows, matA.getData(), numCols, ipiv);
         }
         else
         {
             // Step 1: Perform LU decomposition
-            LAPACKE_dgetrf(LAPACK_COL_MAJOR, numRows, numRows, pMat, numCols, ipiv);
+            LAPACKE_dgetrf(LAPACK_COL_MAJOR, numRows, numRows, matA.getData(), numCols, ipiv);
 
             // Step 2: Compute inverse using LU factorization
-            LAPACKE_dgetri(LAPACK_COL_MAJOR, numRows, pMat, numCols, ipiv);
+            LAPACKE_dgetri(LAPACK_COL_MAJOR, numRows, matA.getData(), numCols, ipiv);
         }
         delete [] ipiv;
     }
@@ -266,8 +176,8 @@ Matrix<T, majorOrder> solveLLSNormalEquation(const Matrix<T, majorOrder>& matA,
     Matrix<T, majorOrder> matRCopy{numCols, numCols};
     Matrix<T, majorOrder> outMat{numCols, numCols};
     copyMatrix<T, majorOrder>(matR.getDataC(), matRCopy.getData(), numCols, numCols, numCols, numCols, true);
-    computeInverse<double, majorOrder>(matRCopy.getData(), numCols, numCols, true);
-    selfMatrixTransposeMultiplication<double, majorOrder>(matRCopy.getDataC(), outMat.getData(), numCols, numCols);
+    computeInverse<double, majorOrder>(matRCopy, numCols, numCols, true);
+    selfMatrixTransposeMultiplication(matRCopy, outMat);
 
     auto tempVect = computeMatrixVector(matA, vectB, numRows, numCols, true);
     auto vectXOut = computeMatrixVector(outMat, tempVect, numCols, numCols, false);
@@ -299,31 +209,6 @@ Matrix<T, majorOrder> solveLLSMKL(const Matrix<T, majorOrder>& matA,
     return vectXOut;
 }
 
-template<typename T, MajorOrder order1, MajorOrder order2>
-void addVectors(const Matrix<T, order1>& mat1, const Matrix<T, order2>& mat2,
-Matrix<T, order1>& matOut)
-{
-    matOut = Matrix<T, order1>{mat1.getNumRows(), mat1.getNumCols()};
-    vdAdd(mat1.getNumElements(), mat1.getDataC(), mat2.getDataC(), matOut.getData());
-}
-
-
-template<typename T, MajorOrder order>
-void subVectors(const Matrix<T, order>& mat1, const Matrix<T, order>& mat2,
-    Matrix<T, order>& matOut)
-{
-    matOut = Matrix<T, order>{mat1.getNumRows(), mat1.getNumCols()};
-    vdSub(mat1.getNumElements(), mat1.getDataC(), mat2.getDataC(), matOut.getData());
-}
-
-template<typename T, MajorOrder order>
-void divVectors(const Matrix<T, order>& mat1, const Matrix<T, order>& mat2,
-    Matrix<T, order>& matOut)
-{
-    matOut = Matrix<T, order>{mat1.getNumRows(), mat1.getNumCols()};
-    vdDiv(mat1.getNumElements(), mat1.getDataC(), mat2.getDataC(), matOut.getData());
-}
-
 template<typename T, MajorOrder order>
 void fillValues(Matrix<T, order>& mat, T elem)
 {
@@ -349,30 +234,5 @@ void fillValues(Matrix<T, order>& mat, T elem)
     }
 }
 
-template<typename T, MajorOrder order>
-void divValue(const Matrix<T, order>& mat, T val, Matrix<T, order>& matOut)
-{
-    matOut = Matrix<T, order>{mat.getNumRows(), mat.getNumCols()};
-    if constexpr (order == MajorOrder::ROW_MAJOR)
-    {
-        for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
-        {
-            for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
-            {
-                matOut(rowIdx, colIdx) = mat(rowIdx, colIdx)/ val;
-            }
-        }
-    }
-    else
-    {
-        for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
-        {
-            for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
-            {
-                matOut(rowIdx, colIdx) = mat(rowIdx, colIdx) / val;
-            }
-        }
-    }
-}
 
 #endif

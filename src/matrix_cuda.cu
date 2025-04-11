@@ -278,9 +278,11 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const std::string& fileName, ComputeDecomp decompType)
+int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
+    MatrixCol<T>& matQ, const std::string& fileName, ComputeDecomp decompType)
 {
     bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
+    bool computeQ = decompType == ComputeDecomp::Q_AND_R;
 
     MatrixCudaCol<T> matACuda(matA);
     MatrixCudaCol<T> matACudaCol{1, 1};
@@ -306,7 +308,7 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
     }
     else
     {
-        matACudaCol.computeQRDecomposition(matRCuda, matQCuda);
+        matACudaCol.computeQRDecomposition(matRCuda, matQCuda, computeQ);
         // computeQ
         // compute the inverse of the R
         // compute the multiplication of the inverse by both matrices (excluding join columns)
@@ -327,6 +329,10 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
     else
     {
         matR = matRCuda.getHostCopy();
+        if (computeQ)
+        {
+            matQ = matQCuda.getHostCopy();
+        }
     }
 
     // Print execution time
@@ -343,7 +349,7 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR, const 
 //     MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
 
 template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& matA,
-        MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
+        MatrixDCol& matR, MatrixDCol& matQ, const std::string& fileName, ComputeDecomp decompType);
 
 template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
-    Matrix<double, MajorOrder::COL_MAJOR>& matR, Matrix<double, MajorOrder::COL_MAJOR>& matQ, const std::string& fileName, ComputeDecomp decompType);
+    MatrixDCol& matR, MatrixDCol& matQ, const std::string& fileName, ComputeDecomp decompType);

@@ -2,6 +2,8 @@
 #define _LIN_SCALE_MATRIX_H_
 
 #include <iostream>
+#include <fstream>
+#include <cstring>
 
 enum class MajorOrder
 {
@@ -36,7 +38,7 @@ int64_t getPosId(int64_t rowIdx, int64_t colIdx, int64_t numRows, int64_t numCol
 }
 
 
-template <typename T, MajorOrder order>
+template <typename T, MajorOrder majorOrder>
 void copyMatrix(const T* pArr, T*& pArrOut, int numRows, int numCols, int numRowsCopy, int numColsCopy, bool upperTriangular = false)
 {
     // pArrOut = new T[numRowsCopy * numColsCopy];
@@ -46,11 +48,11 @@ void copyMatrix(const T* pArr, T*& pArrOut, int numRows, int numCols, int numRow
         {
             if (upperTriangular and (rowIdx > colIdx))
             {
-                pArrOut[getPosId<order>(rowIdx, colIdx, numRowsCopy,  numColsCopy)]  = 0;
+                pArrOut[getPosId<majorOrder>(rowIdx, colIdx, numRowsCopy,  numColsCopy)]  = 0;
             }
             else
             {
-                pArrOut[getPosId<order>(rowIdx, colIdx, numRowsCopy,  numColsCopy)]  = pArr[getPosId<order>(rowIdx, colIdx, numRows,  numCols)];
+                pArrOut[getPosId<majorOrder>(rowIdx, colIdx, numRowsCopy,  numColsCopy)]  = pArr[getPosId<majorOrder>(rowIdx, colIdx, numRows,  numCols)];
             }
         }
     }
@@ -155,6 +157,20 @@ public:
         return getNumElements() * sizeof(T);
     }
 
+    int getCBlasMajorOrder(void) const;
+
+    int getLeadingDimension(void) const
+    {
+        if constexpr (majorOrder == MajorOrder::COL_MAJOR)
+        {
+            return getNumRows();
+        }
+        else
+        {
+            return getNumCols();
+        }
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const Matrix<T, majorOrder>& mat)
     {
         out << " Matrix: (" << mat.getNumRows() << "x" << mat.getNumCols() << ")" << std::endl;
@@ -168,11 +184,41 @@ public:
         }
         out << std::endl;
 
-
         return out;
     }
 
+    // TODO: compute condition number
+    // TODO: Migrate MatrixVector
+    // TODO: Migrate MatrixMatrix
+    // TODO: Migrate SMTT
+    // TODO: Migrate computeInverse
+    // TODO: Migrate LLS classical
+    // TODO: Migrate LLS normal
+
+    T computeFrobeniusNorm(void);
+
+    static Matrix<T, majorOrder>
+    generateRandom(int numRows, int numCols, int seed,
+        double start = 0.0, double end = 1.0);
+
+    static Matrix<T, majorOrder> zero(int numRows, int numCols);
+
+    static Matrix<T, majorOrder> identity(int numRows);
+
+    Matrix<T, majorOrder> add(const Matrix<T, majorOrder>& mat);
+
+    Matrix<T, majorOrder> subtract(const Matrix<T, majorOrder>& mat);
+
+    Matrix<T, majorOrder> divide(const Matrix<T, majorOrder>& mat);
+
+    Matrix<T, majorOrder> elementWiseMultiply(const Matrix<T, majorOrder>& mat);
+
+    Matrix<T, majorOrder> divValue(T val);
+
+    T orthogonality(void);
+
 };
+
 
 using MatrixDCol = Matrix<double, MajorOrder::COL_MAJOR>;
 using MatrixDRow = Matrix<double, MajorOrder::ROW_MAJOR>;
@@ -181,45 +227,60 @@ using MatrixCol = Matrix<T, MajorOrder::COL_MAJOR>;
 template <typename T>
 using MatrixRow = Matrix<T, MajorOrder::ROW_MAJOR>;
 
-template <typename T, MajorOrder order>
-void printMatrix(const T* pArr, int numRows, int numCols, int numRowsCut, const std::string& fileName, bool upperTriangular = false)
-{
-    std::ofstream outFile(fileName);
-    if (!outFile.is_open())
-    {
-        std::cerr << "WTF?" << fileName << std::endl;
-    }
-    for (int rowIdx = 0; rowIdx < std::min(numRows, numRowsCut); rowIdx++)
-    {
-        for (int colIdx = 0; colIdx < numCols; colIdx++)
-        {
-            if (colIdx > 0)
-            {
-                outFile << ",";
-            }
-            if (upperTriangular and (rowIdx > colIdx))
-            {
-                outFile << "0";
-            }
-            else
-            {
-                if constexpr (order == MajorOrder::ROW_MAJOR)
-                {
-                    outFile << pArr[IDX_R(rowIdx, colIdx, numRows, numCols)];
-                }
-                else
-                {
-                    outFile << pArr[IDX_C(rowIdx, colIdx, numRows, numCols)];
-                }
-            }
+template <typename T>
+MatrixCol<T> changeLayout(const MatrixRow<T>& mat);
+template <typename T, MajorOrder majorOrder>
+void printMatrix(const Matrix<T, majorOrder>& matA, int numRowsCut, const std::string& fileName, bool upperTriangular = false);
 
+/*************************** DEFINITIONS ******************/
+template<typename T, MajorOrder majorOrder>
+Matrix<T, majorOrder> Matrix<T, majorOrder>::divValue(T val)
+{
+    auto& mat = *this;
+    auto matOut = Matrix<T, majorOrder>{mat.getNumRows(), mat.getNumCols()};
+    if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
+    {
+        for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+        {
+            for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+            {
+                matOut(rowIdx, colIdx) = mat(rowIdx, colIdx)/ val;
+            }
         }
-        outFile << std::endl;
     }
+    else
+    {
+        for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+        {
+            for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+            {
+                matOut(rowIdx, colIdx) = mat(rowIdx, colIdx) / val;
+            }
+        }
+    }
+    return matOut;
 }
 
-template <typename T, MajorOrder order>
-void printMatrix(const Matrix<T, order>& matA, int numRowsCut, const std::string& fileName, bool upperTriangular = false)
+template <typename T>
+MatrixCol<T> changeLayout(const MatrixRow<T>& mat)
+{
+    T alpha = 1.0;
+    MatrixCol<T> matOut{mat.getNumRows(), mat.getNumCols()};
+    // mkl_domatcopy('R', 'T', mat.getNumRows(), mat.getNumCols(),
+    //     alpha, mat.getDataC(), mat.getNumCols(), matOut.getData(), matOut.getNumRows());
+    for (int rowIdx = 0; rowIdx < mat.getNumRows(); rowIdx++)
+    {
+        for (int colIdx = 0; colIdx < mat.getNumCols(); colIdx++)
+        {
+            matOut(rowIdx, colIdx) = mat(rowIdx, colIdx);
+        }
+    }
+    return matOut;
+}
+
+
+template <typename T, MajorOrder majorOrder>
+void printMatrix(const Matrix<T, majorOrder>& matA, int numRowsCut, const std::string& fileName, bool upperTriangular)
 {
     std::ofstream outFile(fileName);
     if (!outFile.is_open())
@@ -247,4 +308,5 @@ void printMatrix(const Matrix<T, order>& matA, int numRowsCut, const std::string
         outFile << std::endl;
     }
 }
+
 #endif

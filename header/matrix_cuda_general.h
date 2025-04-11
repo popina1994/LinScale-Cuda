@@ -9,6 +9,7 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     MatrixCol<T>& matR, MatrixCol<T>& matQ, const std::string& fileName, ComputeDecomp decompType);
 template <typename T, MajorOrder majorOrder>
 int computeGeneral(const Matrix<T, majorOrder>& matA,
-    MatrixCol<T>& matR, const std::string& fileName, ComputeDecomp decompType);
+    MatrixCol<T>& matR, MatrixCol<T>& matQ,
+    const std::string& fileName, ComputeDecomp decompType);
 
 #endif

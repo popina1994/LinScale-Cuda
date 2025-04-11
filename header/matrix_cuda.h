@@ -260,6 +260,21 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
         }
         matR = copyMatrix(0, getNumCols() - 1, 0, getNumCols() - 1);
         setZerosUpperTriangularCol<<<matR.getNumRows(), matR.getNumCols()>>>(matR.getData(), matR.getNumRows(), matR.getNumCols());
+        if (computeQ)
+        {
+            cusolverDnHandle_t cusolverHQ = nullptr;
+            CUSOLVER_CALL(cusolverDnCreate(&cusolverHQ));
+            CUSOLVER_CALL(cusolverDnDorgqr_bufferSize(cusolverHQ, getNumRows(), getNumCols(),
+             getNumCols(), getData(), getLeadingDimension(), dTau, &workspace_size));
+            CUDA_CALL(cudaFree(dWork));
+
+            CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * workspace_size));
+
+            CUSOLVER_CALL(cusolverDnDorgqr(cusolverHQ, getNumRows(), getNumCols(),
+                getNumCols(), getData(), getLeadingDimension(), dTau, dWork,
+                    workspace_size, devInfo));
+            CUSOLVER_CALL(cusolverDnDestroy(cusolverHQ));
+        }
 
         CUDA_CALL(cudaFree(dTau));
         CUDA_CALL(cudaFree(dWork));
