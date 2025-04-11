@@ -40,14 +40,12 @@ const char* cublasGetErrorString(cublasStatus_t status) {
 #define CUBLASS_CALL(call) \
 { \
     auto status = (call); \
-    if (status != CUBLAS_STATUS_SUCCESS && status != cudaSuccess) { \
-        if (status != CUBLAS_STATUS_SUCCESS) { \
-            std::cerr << "cuBLAS error: " << status << " at line " << __LINE__ << std::endl; \
-        } else { \
-            std::cerr << "CUDA error: " << cublasGetErrorString(status) << " at line " << __LINE__ << std::endl; \
-        } \
-        exit(EXIT_FAILURE); \
+    if (status != CUBLAS_STATUS_SUCCESS) { \
+        std::cerr << "cuBLAS error: " << status << " at line " << __LINE__ << std::endl; \
+    } else { \
+        std::cerr << "CUDA error: " << cublasGetErrorString(status) << " at line " << __LINE__ << std::endl; \
     } \
+    exit(EXIT_FAILURE); \
 }
 
 const char* cusolverGetErrorString(cusolverStatus_t status) {

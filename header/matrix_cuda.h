@@ -149,14 +149,9 @@ public:
 
     static MatrixCuda<T, majorOrder> zero(int numRows, int numCols);
     static MatrixCuda<T, majorOrder> identity(int numRows);
-
     int computeInverse(MatrixCuda<T, majorOrder>& matInv);
 
-    MatrixCuda<T, majorOrder> multiply(const MatrixCuda<T, majorOrder>& mat2)
-    {
-        auto& mat1 = *this;
-        // dgmem
-    }
+    MatrixCuda<T, majorOrder> multiply(const MatrixCuda<T, majorOrder>& mat2);
 
     int computeQRDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matR,
         MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ = false);
@@ -277,7 +272,6 @@ int MatrixCuda<T, majorOrder>::computeInverse(MatrixCuda<T, majorOrder>& matInv)
 
     auto matIdentity = MatrixCuda<T, majorOrder>::identity(matInv.getNumRows());
 
-    // Matrix inversion using LU factorization
     CUSOLVER_CALL(cusolverDnDgetrs(cusolverH, CUBLAS_OP_N, matInv.getNumRows(),
         matInv.getNumRows(), matInv.getData(), matInv.getLeadingDimension(),
         dPivots, matIdentity.getData(), matIdentity.getNumRows(), dInfo));
@@ -288,6 +282,25 @@ int MatrixCuda<T, majorOrder>::computeInverse(MatrixCuda<T, majorOrder>& matInv)
     CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
 
     return 0;
+}
+
+template <typename T, MajorOrder majorOrder>
+MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::multiply(const MatrixCuda<T, majorOrder>& mat2)
+{
+    cublasHandle_t handle;
+    CUBLASS_CALL(cublasCreate(&handle));
+
+    double alpha = 1.0;
+    double beta = 0.0;
+    MatrixCuda<T, majorOrder> matOut{getNumRows(), mat2.getNumCols()};
+
+    CUBLASS_CALL(cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, getNumRows(), mat2.getNumCols(),
+        getNumCols(), &alpha, getDataC(), getLeadingDimension(),
+        mat2.getDataC(), mat2.getLeadingDimension(), &beta,
+        matOut.getData(), matOut.getLeadingDimension()));
+
+    CUBLASS_CALL(cublasDestroy(handle));
+    return matOut;
 }
 
 template <typename T, MajorOrder majorOrder>
