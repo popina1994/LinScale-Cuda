@@ -17,9 +17,8 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinVa
     auto matJoin = computeJoin(mat1, mat2, 1);
     auto matJoinCol = changeLayout(matJoin);
 
-    auto vectX = MatrixDRow::generateRandom(1, matJoin.getNumCols(), 15);
-    auto outVectBTrain = computeMatrixVector(matJoinCol, vectX,
-        matJoinCol.getNumRows(), matJoinCol.getNumCols(), false);
+    auto vectX = MatrixDCol::generateRandom(1, matJoin.getNumCols(), 15);
+    auto outVectBTrain = matJoinCol.computeMatrixVector(vectX, false);
 
     MatrixDCol matCUDAR{1, 1};
     MatrixDCol matFigR{1, 1};

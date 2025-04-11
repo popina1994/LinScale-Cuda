@@ -41,7 +41,6 @@ int64_t getPosId(int64_t rowIdx, int64_t colIdx, int64_t numRows, int64_t numCol
 template <typename T, MajorOrder majorOrder>
 void copyMatrix(const T* pArr, T*& pArrOut, int numRows, int numCols, int numRowsCopy, int numColsCopy, bool upperTriangular = false)
 {
-    // pArrOut = new T[numRowsCopy * numColsCopy];
     for (int rowIdx = 0; rowIdx < numRowsCopy; rowIdx++)
     {
         for (int colIdx = 0; colIdx < numColsCopy; colIdx++)
@@ -71,7 +70,7 @@ public:
         // std::cout << "CREATE" << pArr << std::endl;
     }
 
-    Matrix(T* pArrCopy, int _numRows, int _numCols): numRows(_numRows), numCols(_numCols)
+    Matrix(const T* pArrCopy, int _numRows, int _numCols): numRows(_numRows), numCols(_numCols)
     {
         pArr = new T[int64_t(numRows) * int64_t(numCols)];
         memcpy(pArr, pArrCopy, getSize());
@@ -157,8 +156,6 @@ public:
         return getNumElements() * sizeof(T);
     }
 
-    int getCBlasMajorOrder(void) const;
-
     int getLeadingDimension(void) const
     {
         if constexpr (majorOrder == MajorOrder::COL_MAJOR)
@@ -187,6 +184,9 @@ public:
         return out;
     }
 
+    Matrix<T, majorOrder> subMatrix(int startRowIdx, int endRowIdx,
+        int startColIdx, int endColIdx) const;
+
     // TODO: compute condition number
     // TODO: Migrate MatrixVector
     // TODO: Migrate MatrixMatrix
@@ -205,15 +205,24 @@ public:
 
     static Matrix<T, majorOrder> identity(int numRows);
 
-    Matrix<T, majorOrder> add(const Matrix<T, majorOrder>& mat);
+    Matrix<T, majorOrder> add(const Matrix<T, majorOrder>& mat) const;
 
-    Matrix<T, majorOrder> subtract(const Matrix<T, majorOrder>& mat);
+    Matrix<T, majorOrder> subtract(const Matrix<T, majorOrder>& mat) const;
 
-    Matrix<T, majorOrder> divide(const Matrix<T, majorOrder>& mat);
+    Matrix<T, majorOrder> divide(const Matrix<T, majorOrder>& mat) const;
 
-    Matrix<T, majorOrder> elementWiseMultiply(const Matrix<T, majorOrder>& mat);
+    Matrix<T, majorOrder> elementWiseMultiply(const Matrix<T, majorOrder>& mat) const;
 
-    Matrix<T, majorOrder> divValue(T val);
+    Matrix<T, majorOrder> divValue(T val) const;
+
+    Matrix<T, majorOrder> computeMatrixVector(const Matrix<T, majorOrder>& vectV,
+        bool transpose = false) const;
+
+    Matrix<T, majorOrder> selfMatrixTransposeMultiplication(void) const;
+
+    Matrix<T, majorOrder> computeInverse(bool isUpperTriangular) const;
+
+    T computeFrobeniusNorm(void) const;
 
     T orthogonality(void);
 
@@ -234,9 +243,32 @@ void printMatrix(const Matrix<T, majorOrder>& matA, int numRowsCut, const std::s
 
 /*************************** DEFINITIONS ******************/
 template<typename T, MajorOrder majorOrder>
-Matrix<T, majorOrder> Matrix<T, majorOrder>::divValue(T val)
+Matrix<T, majorOrder>
+Matrix<T, majorOrder>::subMatrix(int startRowIdx, int endRowIdx,
+        int startColIdx, int endColIdx) const
 {
-    auto& mat = *this;
+        // pArrOut = new T[numRowsCopy * numColsCopy];
+    Matrix<T, majorOrder> matOut{endRowIdx - startRowIdx + 1,
+        endColIdx - startColIdx + 1};
+    const auto& matA = *this;
+    for (int srcRowIdx = startRowIdx; srcRowIdx <= endRowIdx; srcRowIdx++)
+    {
+        for (int srcColIdx = startColIdx; srcColIdx <= endColIdx; srcColIdx++)
+        {
+            int outRowIdx = srcRowIdx - startRowIdx;
+            int outColIdx = srcColIdx - startColIdx;
+            matOut(outRowIdx, outColIdx) = matA(srcRowIdx, srcColIdx);
+        }
+    }
+
+    return matOut;
+}
+
+
+template<typename T, MajorOrder majorOrder>
+Matrix<T, majorOrder> Matrix<T, majorOrder>::divValue(T val) const
+{
+    const auto& mat = *this;
     auto matOut = Matrix<T, majorOrder>{mat.getNumRows(), mat.getNumCols()};
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {

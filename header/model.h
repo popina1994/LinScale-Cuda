@@ -27,20 +27,20 @@ void computeVectors(const MatrixDCol& matJoin, const MatrixDCol& matCUDAR,
 }
 
 void evaluateTest(int numRows, int numCols,
-    const MatrixDRow& vectX, MatrixDCol& vectXCompMKL,
+    const MatrixDCol& vectX, MatrixDCol& vectXCompMKL,
     MatrixDCol& vectXCompFig, int seed)
 {
     auto matRandTest = MatrixDCol::generateRandom(numRows, numCols, 22);
 
-    auto outVectBTest = computeMatrixVector<double, MajorOrder::COL_MAJOR>(matRandTest, vectX, numRows, numCols, false);
+    auto outVectBTest = matRandTest.computeMatrixVector(vectX, false);
     auto matUniformAdd = MatrixDCol::generateRandom(
         matRandTest.getNumRows(), matRandTest.getNumCols(), 37);
     auto matUniformCopy = matUniformAdd.divValue(1e10);
     auto outVectBTestVariance = outVectBTest.add(matUniformCopy);
     // outVectBTestVariance = std::move(outVectBTest);
 
-    auto outVectBTestCompMKL = computeMatrixVector(matRandTest, vectXCompMKL, numRows, numCols, false);
-    auto outVectBTestCompFig = computeMatrixVector(matRandTest, vectXCompFig, numRows, numCols, false);
+    auto outVectBTestCompMKL = matRandTest.computeMatrixVector(vectXCompMKL, false);
+    auto outVectBTestCompFig = matRandTest.computeMatrixVector(vectXCompFig, false);
     double cudaError = computeMeanSquaredError(outVectBTestCompMKL.getDataC(), outVectBTestVariance.getDataC(), numRows);
     double figError = computeMeanSquaredError(outVectBTestCompFig.getDataC(), outVectBTestVariance.getDataC(), numRows);
 

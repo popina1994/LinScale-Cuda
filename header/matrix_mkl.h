@@ -36,30 +36,6 @@ void concatenateMatrices(const Matrix<T, order>& mat1, const Matrix<T, order>& m
     }
 }
 
-template<typename T, MajorOrder majorOrderA, MajorOrder majorOrderV>
-Matrix<T, majorOrderA> computeMatrixVector(const Matrix<T, majorOrderA>& matA,
-    const Matrix<T, majorOrderV>& vect, int numRows, int numCols,
-    bool transpose = false)
-{
-    T alpha = 1.0;
-    T beta = 0.0;
-    CBLAS_TRANSPOSE aTran = (transpose ?  CblasTrans : CblasNoTrans);
-
-    int rowsOut = (transpose ? numCols : numRows);
-    Matrix<T, majorOrderA> matOut{rowsOut, 1};
-
-    if constexpr (MajorOrder::ROW_MAJOR == majorOrderA)
-    {
-        cblas_dgemv(CblasRowMajor, aTran, numRows, numCols, alpha, matA.getDataC(), numCols, vect.getDataC(), 1, beta, matOut.getData(), 1);
-    }
-    else
-    {
-        cblas_dgemv(CblasColMajor, aTran, numRows, numCols, alpha, matA.getDataC(), numRows, vect.getDataC(), 1, beta, matOut.getData(), 1);
-    }
-    return matOut;
-}
-
-
 template<typename T, MajorOrder majorOrder>
 void computeMatrixMatrix(T* pMat1, T* pMat2, T*& pOutMat, int numRows1, int numCols1,
     int numCols2, bool transpose = false)
@@ -100,69 +76,6 @@ void selfTransposeMatrixMultiplication(const T* pMat, T*& pOutMat, int numRows, 
     }
 }
 
-template<typename T, MajorOrder majorOrder>
-void selfMatrixTransposeMultiplication(const Matrix<T, majorOrder>& matA,
-    Matrix<T, majorOrder>& matOut)
-{
-    double alpha = 1.0, beta = 0.0;
-    int numRows = matA.getNumRows();
-    int numCols = matA.getNumCols();
-
-    matOut = std::move(Matrix<T, majorOrder>(numCols, numCols));
-    if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
-    {
-        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
-                    numCols, numCols, numRows, alpha, matA.getDataC(),
-                        numCols, matA.getDataC(), numCols, beta,
-                     matOut.getData(), numCols);
-    }
-    else
-    {
-        cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans,
-            numCols, numCols, numRows, alpha, matA.getDataC(), numRows, matA.getDataC(), numRows, beta,
-                     matOut.getData(), numCols);
-    }
-}
-
-template<typename T, MajorOrder majorOrder>
-void computeInverse(Matrix<T, majorOrder>& matA, int numRows, int numCols, bool upperTriangular = true)
-{
-    if (upperTriangular)
-    {
-        if constexpr (MajorOrder::COL_MAJOR == majorOrder)
-        {
-            LAPACKE_dtrtri(LAPACK_COL_MAJOR, 'U', 'N', numRows, matA.getData(), numRows);
-        }
-        else
-        {
-            LAPACKE_dtrtri(LAPACK_ROW_MAJOR, 'U', 'N', numRows, matA.getData(), numCols);
-        }
-    }
-    else
-    {
-        int N = 3;  // Matrix size
-        int LDA = 3, info;
-        int *ipiv = new int [numCols];  // Pivot indices
-        if constexpr (MajorOrder::ROW_MAJOR == majorOrder)
-        {
-            // Step 1: Perform LU decomposition
-            LAPACKE_dgetrf(LAPACK_ROW_MAJOR, numRows, numRows, matA.getData(), numCols, ipiv);
-
-            // Step 2: Compute inverse using LU factorization
-            LAPACKE_dgetri(LAPACK_ROW_MAJOR, numRows, matA.getData(), numCols, ipiv);
-        }
-        else
-        {
-            // Step 1: Perform LU decomposition
-            LAPACKE_dgetrf(LAPACK_COL_MAJOR, numRows, numRows, matA.getData(), numCols, ipiv);
-
-            // Step 2: Compute inverse using LU factorization
-            LAPACKE_dgetri(LAPACK_COL_MAJOR, numRows, matA.getData(), numCols, ipiv);
-        }
-        delete [] ipiv;
-    }
-
-}
 
 // Ax = b --- pMatA * pOutVect = pVectB,
 // = A^T * A * x = A^T * b
@@ -173,14 +86,11 @@ Matrix<T, majorOrder> solveLLSNormalEquation(const Matrix<T, majorOrder>& matA,
     const Matrix<T, majorOrder>& matR, const Matrix<T, majorOrder>& vectB,
     int numRows, int numCols, const std::string& fileName)
 {
-    Matrix<T, majorOrder> matRCopy{numCols, numCols};
-    Matrix<T, majorOrder> outMat{numCols, numCols};
-    copyMatrix<T, majorOrder>(matR.getDataC(), matRCopy.getData(), numCols, numCols, numCols, numCols, true);
-    computeInverse<double, majorOrder>(matRCopy, numCols, numCols, true);
-    selfMatrixTransposeMultiplication(matRCopy, outMat);
+    auto matRInv = matR.computeInverse(true);
+    auto outMat = matRInv.selfMatrixTransposeMultiplication();
 
-    auto tempVect = computeMatrixVector(matA, vectB, numRows, numCols, true);
-    auto vectXOut = computeMatrixVector(outMat, tempVect, numCols, numCols, false);
+    auto tempVect = matA.computeMatrixVector(vectB, true);
+    auto vectXOut = outMat.computeMatrixVector(tempVect, false);
 
     return vectXOut;
 }
