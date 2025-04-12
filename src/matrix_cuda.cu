@@ -189,7 +189,7 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     thrust::device_vector<int> dOffsets1, dOffsets2;
 
     auto matCuda2NonJoin = matCuda2.copyMatrix(0, matCuda2.getNumRows() - 1,
-        0, matCuda2.getNumCols() - 2);
+        1, matCuda2.getNumCols() - 1);
     // std::cout << "C1" << matCuda1;
     computeOffsets(matCuda1, dOffsets1);
     // std::cout << "Offsets 1" << std::endl;
@@ -248,8 +248,18 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
             // Invert the matrix R
             MatrixCudaCol<T> matRInvCuda{1, 1};
             matRCuda.computeInverse(matRInvCuda);
-            // auto hostInverse = matRInvCuda.getHostCopy();
+            auto matCuda1Col = matCuda1.changeLayout();
+            auto matCuda2Col = matCuda2NonJoin.changeLayout();
             // Multiply each of the original tables by the inverse of a matrix
+            std::cout << matCuda1Col << std::endl;
+            std::cout << matCuda2Col << std::endl;
+            std::cout << matRInvCuda << std::endl;
+            auto matCuda1MulRInv =  matCuda1Col.multiply(matRInvCuda, 0);
+            auto matCuda2MulRInv =  matCuda2Col.multiply(matRInvCuda, matCuda1Col.getNumCols());
+            std::cout << matCuda1MulRInv << std::endl;
+            std::cout << matCuda2MulRInv << std::endl;
+            // Compute join.
+            // auto hostInverse = matRInvCuda.getHostCopy();
         }
     }
 
@@ -272,10 +282,8 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
         if (computeQ)
         {
             matQ = matQCuda.getHostCopy();
+
         }
-        auto matCuda1Col = matCuda1.changeLayout();
-        auto matCuda2Col = matCuda2NonJoin.changeLayout();
-        // Block matrix multiplication
     }
 
     CUDA_CALL(cudaEventDestroy(start));
@@ -307,7 +315,7 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
 
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
-        matACudaCol = changeLayoutFromRowToColumn(matACuda);
+        matACudaCol = matACuda.changeLayout();
     }
     else
     {
