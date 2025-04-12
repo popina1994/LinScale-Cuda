@@ -6,7 +6,7 @@
 #include <mkl_vml.h>
 
 template <typename T, MajorOrder majorOrder>
-static CBLAS_LAYOUT getCBlasMajorOrder(const Matrix<T, majorOrder>& mat)
+constexpr static CBLAS_LAYOUT getCBlasMajorOrder(const Matrix<T, majorOrder>& mat)
 {
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {
@@ -19,7 +19,7 @@ static CBLAS_LAYOUT getCBlasMajorOrder(const Matrix<T, majorOrder>& mat)
 }
 
 template <typename T, MajorOrder majorOrder>
-static int getLaPackMajorOrder(const Matrix<T, majorOrder>& mat)
+constexpr static int getLaPackMajorOrder(const Matrix<T, majorOrder>& mat)
 {
     if constexpr (majorOrder == MajorOrder::ROW_MAJOR)
     {

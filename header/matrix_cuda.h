@@ -147,7 +147,7 @@ public:
 
     MatrixCuda<T, majorOrder> copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx);
 
-    auto cudblasXgeam(void) const
+    constexpr auto cudblasXgeam(void) const
     {
         if constexpr (std::is_same_v<T, float>)
         {
@@ -159,6 +159,7 @@ public:
         }
     }
 
+
     auto changeLayout(void) const;
 
     static MatrixCuda<T, majorOrder> zero(int numRows, int numCols);
@@ -167,8 +168,80 @@ public:
 
     MatrixCuda<T, majorOrder> multiply(const MatrixCuda<T, majorOrder>& mat2);
 
+    constexpr auto cusolverDnXgeqrf_bufferSize(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cusolverDnSgeqrf_bufferSize;
+        }
+        else
+        {
+            return &cusolverDnDgeqrf_bufferSize;
+        }
+    }
+
+    constexpr auto cusolverDnXgeqrf(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cusolverDnSgeqrf;
+        }
+        else
+        {
+            return &cusolverDnDgeqrf;
+        }
+    }
+
+    constexpr auto cusolverDnXorgqr_bufferSize(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cusolverDnSorgqr_bufferSize;
+        }
+        else
+        {
+            return &cusolverDnDorgqr_bufferSize;
+        }
+    }
+
+    constexpr auto cusolverDnXorgqr(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cusolverDnSorgqr;
+        }
+        else
+        {
+            return &cusolverDnDorgqr;
+        }
+    }
+
     int computeQRDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matR,
         MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ = false);
+
+    constexpr auto cusolverDnXgesvd_bufferSize(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cusolverDnSgesvd_bufferSize;
+        }
+        else
+        {
+            return &cusolverDnDgesvd_bufferSize;
+        }
+    }
+
+    constexpr auto cusolverDnXgesvd(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cusolverDnSgesvd;
+        }
+        else
+        {
+            return &cusolverDnDgesvd;
+        }
+    }
 
     int computeSVDDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matU,
         MatrixCuda<T, MajorOrder::COL_MAJOR>& matSigma, MatrixCuda<T, MajorOrder::COL_MAJOR>& matV,
@@ -326,14 +399,9 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
         cusolverDnHandle_t cuSolverHandle;
         CUSOLVER_CALL(cusolverDnCreate(&cuSolverHandle));
         int workspace_size = 0;
-        if constexpr (std::is_same_v<T, float>)
-        {
-            CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), &workspace_size));
-        }
-        else
-        {
-            CUSOLVER_CALL(cusolverDnDgeqrf_bufferSize(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), &workspace_size));
-        }
+
+        CUSOLVER_CALL(cusolverDnXgeqrf_bufferSize()(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), &workspace_size));
+
         // Allocate workspace
         T *dWork, *dTau;
         CUDA_CALL(cudaMalloc((void**)&dWork, workspace_size * sizeof(T)));
@@ -342,14 +410,9 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
         int *devInfo;
         CUDA_CALL(cudaMalloc((void**)&devInfo, sizeof(int)));
         CUDA_CALL(cudaMalloc((void**)&dTau, std::min(getNumRows(), getNumCols()) * sizeof(T)));
-        if constexpr (std::is_same_v<T, float>)
-        {
-            CUSOLVER_CALL(cusolverDnSgeqrf(cuSolverHandle, getNumRows(), getNumCols(), getData(), getLeadingDimension(), dTau, dWork, workspace_size, devInfo));
-        }
-        else
-        {
-            CUSOLVER_CALL(cusolverDnDgeqrf (cuSolverHandle, getNumRows(), getNumCols(), getData(), getLeadingDimension(), dTau, dWork, workspace_size, devInfo));
-        }
+
+        CUSOLVER_CALL(cusolverDnXgeqrf()(cuSolverHandle, getNumRows(), getNumCols(), getData(), getLeadingDimension(), dTau, dWork, workspace_size, devInfo));
+
         matR = copyMatrix(0, getNumCols() - 1, 0, getNumCols() - 1);
         setZerosUpperTriangularCol<<<matR.getNumRows(), matR.getNumCols()>>>(matR.getData(), matR.getNumRows(), matR.getNumCols());
         if (computeQ)
@@ -357,13 +420,13 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
             matQ = copyMatrix(0, getNumRows() - 1, 0, getNumCols() - 1);
             cusolverDnHandle_t cusolverHQ = nullptr;
             CUSOLVER_CALL(cusolverDnCreate(&cusolverHQ));
-            CUSOLVER_CALL(cusolverDnDorgqr_bufferSize(cusolverHQ, getNumRows(), getNumCols(),
+            CUSOLVER_CALL(cusolverDnXorgqr_bufferSize()(cusolverHQ, getNumRows(), getNumCols(),
              getNumCols(), getData(), getLeadingDimension(), dTau, &workspace_size));
             CUDA_CALL(cudaFree(dWork));
 
             CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * workspace_size));
 
-            CUSOLVER_CALL(cusolverDnDorgqr(cusolverHQ, matQ.getNumRows(), matQ.getNumCols(),
+            CUSOLVER_CALL(cusolverDnXorgqr()(cusolverHQ, matQ.getNumRows(), matQ.getNumCols(),
                 matQ.getNumCols(), matQ.getData(), matQ.getLeadingDimension(), dTau, dWork,
                     workspace_size, devInfo));
             CUSOLVER_CALL(cusolverDnDestroy(cusolverHQ));
@@ -393,27 +456,17 @@ int MatrixCuda<T, majorOrder>::computeSVDDecomposition(MatrixCuda<T, MajorOrder:
     cusolverDnHandle_t cusolverH = nullptr;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
     CUDA_CALL(cudaMalloc((void**)&dInfo, sizeof(int)));
-    CUSOLVER_CALL(cusolverDnDgesvd_bufferSize(cusolverH, numRows, numCols, &lwork));
+    CUSOLVER_CALL(cusolverDnXgesvd_bufferSize()(cusolverH, numRows, numCols, &lwork));
     CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * lwork));
 
-    if constexpr (std::is_same<T, double>::value)
-    {
-        CUSOLVER_CALL(cusolverDnDgesvd(cusolverH, jobu, jobvt, getNumRows(), getNumCols(), getData(), ldA, matSigma.getData(), nullptr, ldA, nullptr, getNumCols(),
-                                dWork, lwork, nullptr, dInfo));
-    }
-    else
-    {
-        CUSOLVER_CALL(cusolverDnSgesvd(cusolverH, jobu, jobvt, getNumRows(), getNumCols(), getData(), ldA, matSigma.getData(), nullptr, ldA, nullptr, getNumCols(),
-                                dWork, lwork, nullptr, dInfo));
-    }
+    CUSOLVER_CALL(cusolverDnXgesvd()(cusolverH, jobu, jobvt, getNumRows(), getNumCols(), getData(), ldA, matSigma.getData(), nullptr, ldA, nullptr, getNumCols(),
+                            dWork, lwork, nullptr, dInfo));
     CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
     CUDA_CALL(cudaFree(dInfo));
     CUDA_CALL(cudaFree(dWork));
 
     return 0;
 }
-
-
 
 template<typename T, MajorOrder majorOrder>
 auto MatrixCuda<T, majorOrder>::changeLayout(void) const
