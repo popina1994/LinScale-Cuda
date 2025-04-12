@@ -16,8 +16,6 @@ do { \
 
 const char* cublasGetErrorString(cublasStatus_t status) {
     switch (status) {
-        case CUBLAS_STATUS_SUCCESS:
-            return "Success";
         case CUBLAS_STATUS_NOT_INITIALIZED:
             return "Library not initialized";
         case CUBLAS_STATUS_ALLOC_FAILED:
@@ -41,11 +39,9 @@ const char* cublasGetErrorString(cublasStatus_t status) {
 { \
     auto status = (call); \
     if (status != CUBLAS_STATUS_SUCCESS) { \
-        std::cerr << "cuBLAS error: " << status << " at line " << __LINE__ << std::endl; \
-    } else { \
-        std::cerr << "CUDA error: " << cublasGetErrorString(status) << " at line " << __LINE__ << std::endl; \
-    } \
-    exit(EXIT_FAILURE); \
+        std::cerr << "cuBLAS error: " << cublasGetErrorString(status) << " at line " << __LINE__ << std::endl; \
+        exit(EXIT_FAILURE);\
+    }\
 }
 
 const char* cusolverGetErrorString(cusolverStatus_t status) {

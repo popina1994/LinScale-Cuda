@@ -188,6 +188,8 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     MatrixCudaRow<T> matCuda1(mat1), matCuda2(mat2);
     thrust::device_vector<int> dOffsets1, dOffsets2;
 
+    auto matCuda2NonJoin = matCuda2.copyMatrix(0, matCuda2.getNumRows() - 1,
+        0, matCuda2.getNumCols() - 2);
     // std::cout << "C1" << matCuda1;
     computeOffsets(matCuda1, dOffsets1);
     // std::cout << "Offsets 1" << std::endl;
@@ -227,7 +229,7 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     computeHeadsAndTails(matCuda2, dOffsets2, dJoinSizes2);
     // std::cout << "C2 Modified" << matCuda2;
     concatenateHeadsAndTails(matCuda1, matCuda2, matCudaOut, dJoinSizes1, dJoinSizes2, dOffsets1, dOffsets2, dJoinOffsets);
-    auto matCudaTran = changeLayoutFromRowToColumn(matCudaOut);
+    auto matCudaTran = matCudaOut.changeLayout();
 
     int rank = min(numRowsOut, numColsOut);
     // Compute QR factorization
@@ -271,6 +273,9 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
         {
             matQ = matQCuda.getHostCopy();
         }
+        auto matCuda1Col = matCuda1.changeLayout();
+        auto matCuda2Col = matCuda2NonJoin.changeLayout();
+        // Block matrix multiplication
     }
 
     CUDA_CALL(cudaEventDestroy(start));

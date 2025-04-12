@@ -147,6 +147,20 @@ public:
 
     MatrixCuda<T, majorOrder> copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx);
 
+    auto cudblasXgeam(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cublasSgeam;
+        }
+        else
+        {
+            return &cublasDgeam;
+        }
+    }
+
+    auto changeLayout(void) const;
+
     static MatrixCuda<T, majorOrder> zero(int numRows, int numCols);
     static MatrixCuda<T, majorOrder> identity(int numRows);
     int computeInverse(MatrixCuda<T, majorOrder>& matInv);
@@ -167,7 +181,6 @@ using MatrixCudaCol = MatrixCuda<T, MajorOrder::COL_MAJOR>;
 template <typename T>
 using MatrixCudaRow = MatrixCuda<T, MajorOrder::ROW_MAJOR>;
 
-// Outside of the class (not a member function)
 template <typename T, MajorOrder majorOrder>
 __global__ void copyMatrixCuda(const T* d_ASrc, T* d_Bdst, int numRowsSrc, int numColsSrc, int startRowIdx, int endRowIdx, int startColIdx, int endColIdx) {
     int colIdxDst  = threadIdx.x;
@@ -313,7 +326,7 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
         cusolverDnHandle_t cuSolverHandle;
         CUSOLVER_CALL(cusolverDnCreate(&cuSolverHandle));
         int workspace_size = 0;
-        if constexpr (std::is_same<T, float>::value)
+        if constexpr (std::is_same_v<T, float>)
         {
             CUSOLVER_CALL(cusolverDnSgeqrf_bufferSize(cuSolverHandle, getNumRows(), getNumCols(), getData(), getNumRows(), &workspace_size));
         }
@@ -329,7 +342,7 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
         int *devInfo;
         CUDA_CALL(cudaMalloc((void**)&devInfo, sizeof(int)));
         CUDA_CALL(cudaMalloc((void**)&dTau, std::min(getNumRows(), getNumCols()) * sizeof(T)));
-        if constexpr (std::is_same<T, float>::value)
+        if constexpr (std::is_same_v<T, float>)
         {
             CUSOLVER_CALL(cusolverDnSgeqrf(cuSolverHandle, getNumRows(), getNumCols(), getData(), getLeadingDimension(), dTau, dWork, workspace_size, devInfo));
         }
@@ -401,46 +414,35 @@ int MatrixCuda<T, majorOrder>::computeSVDDecomposition(MatrixCuda<T, MajorOrder:
 }
 
 
-template<typename T>
-MatrixCudaCol<T> changeLayoutFromRowToColumn(const MatrixCudaRow<T>& matA)
+
+template<typename T, MajorOrder majorOrder>
+auto MatrixCuda<T, majorOrder>::changeLayout(void) const
 {
-    MatrixCudaCol<T> matCudaCol(matA.getNumRows(), matA.getNumCols());
-    int numRows = matA.getNumRows();
-    int numCols = matA.getNumCols();
+    using MatrixOpositeLayoutType = typename std::conditional<
+        majorOrder == MajorOrder::ROW_MAJOR,
+        MatrixCudaCol<T>, MatrixCudaRow<T>>::type;
+
+    MatrixOpositeLayoutType matCudaChgLayout(getNumRows(), getNumCols());
 
     cublasHandle_t handle;
-    cublasCreate(&handle);
+    CUBLASS_CALL(cublasCreate(&handle));
 
-    const T alpha = 1.0f; // Scalar for matrix A (no scaling)
-    const T beta = 0.0f;  // Scalar for matrix B (no B matrix, so no scaling)
+    const T alpha = 1.0f;
+    const T beta = 0.0f;
 
-    if constexpr (std::is_same<T, float>::value)
-    {
-        cublasSgeam(handle,
-        CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
-        numRows, numCols,                     // Matrix dimensions
-        &alpha,                   // Scalar for A
-        matA.getDataC(), numCols,                 // Input matrix A and its leading dimension
-        &beta,                    // Scalar for B (not used)
-        nullptr, numCols,               // No B matrix (set to nullptr)
-        matCudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
-    }
-    else
-    {
-        cublasDgeam(handle,
-        CUBLAS_OP_T, CUBLAS_OP_T, // Transpose A (CUBLAS_OP_T), no transpose for B (CUBLAS_OP_N)
-        numRows, numCols,                     // Matrix dimensions
-        &alpha,                   // Scalar for A
-        matA.getDataC(), numCols,                   // Input matrix A and its leading dimension
-        &beta,                    // Scalar for B (not used)
-        nullptr, numCols,               // No B matrix (set to nullptr)
-        matCudaCol.getData(), numRows);                  // Output matrix C and its leading dimension
-    }
-    return matCudaCol;
+    auto cudblasXgeamFun = cudblasXgeam();
 
-    // TODO: Add support for the inverse
-    // TODO: add support for the matrix multiplication.
-    // TODO: add support for the join
+    CUBLASS_CALL(cudblasXgeamFun(handle,
+        CUBLAS_OP_T, CUBLAS_OP_T,
+        getNumRows(), getNumCols(),
+        &alpha,
+        getDataC(), getNumCols(),
+        &beta,
+        nullptr, getNumCols(),
+        matCudaChgLayout.getData(), matCudaChgLayout.getNumRows()));
+    CUBLASS_CALL(cublasDestroy(handle));
+
+    return matCudaChgLayout;
 }
 
 template <typename T>
