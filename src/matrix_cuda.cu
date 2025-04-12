@@ -109,6 +109,38 @@ __global__ void findUniqueOffsets(const T* d_arr, int* dDiffPrevRow, int n) {
 }
 
 template <typename T>
+__global__ void joinAdd(const T* dMat1, const T* dMat2, T* dOutMat,
+    int numCols, const int* dOffsets1, const int* dOffsets2, const int* dOffsets,
+    const int* dJoinSizes1, const int* dJoinSizes2, const int* dJoinSizes)
+{
+    int colIdx = threadIdx.x;
+    int idxDist = blockIdx.x;
+    int startRowIdx1 = dOffsets1[idxDist];
+    int startRowIdx2 = dOffsets2[idxDist];
+    int endRowIdx1 = dOffsets1[idxDist+1];
+    int endRowIdx2 = dOffsets2[idxDist+1];
+    int outRowIdx = dOffsets[idxDist];
+
+    int joinSize1 = dJoinSizes1[idxDist];
+    int joinSize2 = dJoinSizes2[idxDist];
+    int joinSize = dJoinSizes[idxDist];
+    if (colIdx >= numCols)
+    {
+        return;
+    }
+    for (int rowIdx1 = startRowIdx1; rowIdx1 < endRowIdx1; rowIdx1++)
+    {
+        for (int rowIdx2 = startRowIdx2; rowIdx2 < endRowIdx2; rowIdx2++)
+        {
+            int posIdx = IDX_R(outRowIdx, colIdx, joinSize, numCols);
+            int posIdx1 = IDX_R(rowIdx1, colIdx, joinSize1, numCols);
+            int posIdx2 = IDX_R(rowIdx2, colIdx, joinSize2, numCols);
+            dOutMat[posIdx] = dMat1[posIdx1] + dMat2[posIdx2];
+            outRowIdx++;
+        }
+    }
+}
+template <typename T>
 void computeOffsets(const MatrixCudaRow<T>& matA, thrust::device_vector<int>& dOffsets)
 {
     int numRows = matA.getNumRows();
@@ -182,6 +214,24 @@ void concatenateHeadsAndTails(const MatrixCudaRow<T>& matCuda1, const MatrixCuda
 }
 
 template <typename T>
+void joinAdd(const MatrixCudaRow<T>& matCuda1, const MatrixCudaRow<T>& matCuda2,
+    MatrixCudaRow<T>& matCudaOut,
+    const thrust::device_vector<int>& dOffsets1,
+    const thrust::device_vector<int>& dOffsets2,
+    const thrust::device_vector<int>& dOffsets,
+    const thrust::device_vector<int>& dJoinSizes1,
+    const thrust::device_vector<int>& dJoinSizes2,
+    const thrust::device_vector<int>& dJoinSizes)
+{
+    joinAdd<<<dJoinSizes1.size(), matCudaOut.getNumCols()>>>(
+        matCuda1.getDataC(), matCuda2.getDataC(), matCudaOut.getData(),
+        matCudaOut.getNumCols(),
+        dOffsets1.data().get(), dOffsets2.data().get(),
+        dOffsets.data().get(),  dJoinSizes1.data().get(),
+        dJoinSizes2.data().get(), dJoinSizes.data().get());
+}
+
+template <typename T>
 int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     MatrixCol<T>& matR, MatrixCol<T>& matQ, const std::string& fileName, ComputeDecomp decompType)
 {
@@ -239,7 +289,6 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     if (computeSVD)
     {
         matRCuda.computeSVDDecomposition(matUCuda, matSigmaCuda, matVCuda);
-
     }
     else
     {
@@ -248,18 +297,38 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
             // Invert the matrix R
             MatrixCudaCol<T> matRInvCuda{1, 1};
             matRCuda.computeInverse(matRInvCuda);
-            auto matCuda1Col = matCuda1.changeLayout();
-            auto matCuda2Col = matCuda2NonJoin.changeLayout();
+            auto matRInvRowCuda = matRInvCuda.changeLayout();
+            // std::cout << matRInvCuda << std::endl;
+            // std::cout << matRInvRowCuda << std::endl;
+            // auto matCuda1Col = matCuda1.changeLayout();
+            // auto matCuda2Col = matCuda2NonJoin.changeLayout();
             // Multiply each of the original tables by the inverse of a matrix
-            std::cout << matCuda1Col << std::endl;
-            std::cout << matCuda2Col << std::endl;
-            std::cout << matRInvCuda << std::endl;
-            auto matCuda1MulRInv =  matCuda1Col.multiply(matRInvCuda, 0);
-            auto matCuda2MulRInv =  matCuda2Col.multiply(matRInvCuda, matCuda1Col.getNumCols());
-            std::cout << matCuda1MulRInv << std::endl;
-            std::cout << matCuda2MulRInv << std::endl;
-            // Compute join.
-            // auto hostInverse = matRInvCuda.getHostCopy();
+            // std::cout << matCuda1Col << std::endl;
+            // std::cout << matCuda2Col << std::endl;
+            // auto matCuda1MulRInv =  matCuda1Col.multiply(matRInvCuda, 0);
+            // auto matCuda2MulRInv =  matCuda2Col.multiply(matRInvCuda, matCuda1Col.getNumCols());
+            // std::cout << "PROBLEM?" << std::endl;
+            auto matCudaRow1MulRInv =  matCuda1.multiply(matRInvRowCuda, 0);
+            // std::cout << "PROBLEM 2?" << std::endl;
+            auto matCudaRow2MulRInv =  matCuda2NonJoin.multiply(matRInvRowCuda, matCuda1.getNumCols());
+            thrust::transform(dJoinSizes1.begin(), dJoinSizes1.end(), dJoinSizes2.begin(), dJoinSizes.begin(), thrust::multiplies<float>());
+            dJoinOffsets.front() = 0;
+            thrust::inclusive_scan(dJoinSizes.begin(), dJoinSizes.end(), dJoinOffsets.begin() + 1);
+
+            // std::cout << "PROBLEM 3?" << std::endl;
+            // std::cout << "FIRST" << matCuda1MulRInv << std::endl;
+            // std::cout << "SECOND" << matCudaRow1MulRInv << std::endl;
+            // std::cout << "THIRD" << matCuda2MulRInv << std::endl;
+            // std::cout << "FIFTH" << matCudaRow2MulRInv << std::endl;
+            // std::cout << "OUT DIMENSIONS";
+            // printDeviceVector(dJoinSizes1);
+            // printDeviceVector(dJoinSizes2);
+            // printDeviceVector(dJoinSizes);
+            // printDeviceVector(dJoinOffsets);
+            MatrixCudaRow<T> matQRowCuda{dJoinOffsets.back(), matRInvRowCuda.getNumCols()};
+            joinAdd(matCudaRow1MulRInv, matCudaRow2MulRInv, matQRowCuda, dOffsets1, dOffsets2,
+                dJoinOffsets, dJoinSizes1, dJoinSizes2, dJoinSizes);
+            matQCuda = matQRowCuda.changeLayout();
         }
     }
 
@@ -282,7 +351,6 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
         if (computeQ)
         {
             matQ = matQCuda.getHostCopy();
-
         }
     }
 

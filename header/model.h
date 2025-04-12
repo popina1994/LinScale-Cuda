@@ -12,10 +12,16 @@ void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     //  printMatrix<double, MajorOrder::COL_MAJOR>(matJoin, matJoin.getNumRows(), fileName + "Join.csv", false);
     computeGeneral<double, MajorOrder::COL_MAJOR>(matJoin, matCUDAR, matCUDAQ,
         fileName, decompType);
-    std::cout << "ORTHOGONALITY " << matCUDAQ.computeOrthogonality() << std::endl;
+    double cudaQOrt = matCUDAQ.computeOrthogonality();
+    std::cout << "ORTHOGONALITY Cuda " << matCUDAQ.computeOrthogonality() << std::endl;
+    // std::cout << "MATRIX" << matCUDAQ << std::endl;
     // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR, matCUDAR.getNumCols(), fileName + "CUDA.csv", false);
 
     computeFigaro<double>(mat1, mat2, matFigR, matFigQ, fileName, decompType);
+    // std::cout << "MATRIX FIGQ" << matFigQ << std::endl;
+    double figQOrt = matFigQ.computeOrthogonality();
+    std::cout << "ORTHOGONALITY LinScale " << matFigQ.computeOrthogonality() << std::endl;
+    std::cout << "LinScale is more accurate" <<  std::scientific << std::setprecision(15) << (double)cudaQOrt / figQOrt << std::endl;
     // printMatrix<double, MajorOrder::COL_MAJOR>(matFigR, matFigR.getNumCols(), fileName + "LinScale.csv", false);
 }
 
@@ -48,7 +54,7 @@ void evaluateTest(int numRows, int numCols,
     double figError = computeMeanSquaredError(outVectBTestCompFig.getDataC(), outVectBTestVariance.getDataC(), numRows);
 
     std::cout << "CUDA MSE " << cudaError << std::endl;
-    std::cout << "Figaro MSE " << figError << std::endl;
+    std::cout << "LinScale MSE " << figError << std::endl;
     std::cout << "MKL is " << figError / cudaError  << " more accurate" << std::endl;
  }
 

@@ -166,6 +166,18 @@ public:
     static MatrixCuda<T, majorOrder> identity(int numRows);
     int computeInverse(MatrixCuda<T, majorOrder>& matInv);
 
+     constexpr auto cublasXgemm(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cublasSgemm;
+        }
+        else
+        {
+            return &cublasDgemm;
+        }
+    }
+
     MatrixCuda<T, majorOrder> multiply(const MatrixCuda<T, majorOrder>& mat2, int startRowIdx);
 
     constexpr auto cusolverDnXgeqrf_bufferSize(void) const
@@ -371,7 +383,8 @@ int MatrixCuda<T, majorOrder>::computeInverse(MatrixCuda<T, majorOrder>& matInv)
 }
 
 template <typename T, MajorOrder majorOrder>
-MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::multiply(const MatrixCuda<T, majorOrder>& mat2, int startRowIdx = 0)
+MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::multiply(
+    const MatrixCuda<T, majorOrder>& mat2, int startRowIdx = 0)
 {
     cublasHandle_t handle;
     CUBLASS_CALL(cublasCreate(&handle));
@@ -380,10 +393,25 @@ MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::multiply(const MatrixCuda<T
     double beta = 0.0;
     MatrixCuda<T, majorOrder> matOut{getNumRows(), mat2.getNumCols()};
 
-    CUBLASS_CALL(cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, getNumRows(), mat2.getNumCols(),
-        getNumCols(), &alpha, getDataC(), getLeadingDimension(),
-        startRowIdx + mat2.getDataC(), mat2.getLeadingDimension(), &beta,
-        matOut.getData(), matOut.getLeadingDimension()));
+    if constexpr (majorOrder == MajorOrder::COL_MAJOR)
+    {
+        CUBLASS_CALL(cublasXgemm()(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+            getNumRows(), mat2.getNumCols(),
+            getNumCols(), &alpha, getDataC(), getLeadingDimension(),
+            startRowIdx + mat2.getDataC(), mat2.getLeadingDimension(), &beta,
+            matOut.getData(), matOut.getLeadingDimension()));
+    }
+    else
+    {
+        CUBLASS_CALL(cublasXgemm()(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+            mat2.getNumCols(), getNumRows(),
+            getNumCols(), &alpha,
+            mat2.getDataC() + startRowIdx * mat2.getNumCols(),
+            mat2.getLeadingDimension(),
+            getDataC(), getLeadingDimension(),
+            &beta,
+            matOut.getData(), matOut.getLeadingDimension()));
+    }
 
     CUBLASS_CALL(cublasDestroy(handle));
     return matOut;
