@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <functional>
 
 enum class MajorOrder
 {
@@ -17,6 +18,12 @@ enum class ComputeDecomp
     Q_AND_R = 1,
     SIGMA_ONLY = 2,
     U_AND_S_AND_V = 3
+};
+
+enum class RandomDistribution
+{
+    UNIFORM = 0,
+    NORMAL = 1
 };
 
 #define IDX(rowIdx, colIdx, width) ((rowIdx) * (width) + (colIdx))
@@ -191,9 +198,12 @@ public:
 
     T computeFrobeniusNorm(void) const;
 
-    static Matrix<T, majorOrder>
-    generateRandom(int numRows, int numCols, int seed,
-        double start = 0.0, double end = 1.0);
+    template <RandomDistribution distrType>
+    static auto drawDistribution(T first, T second);
+
+    template <RandomDistribution distrType>
+    static Matrix<T, majorOrder> generateRandom(int numRows, int numCols,
+        int seed, T start = 0.0, T end = 1.0);
 
     static Matrix<T, majorOrder> zero(int numRows, int numCols);
 

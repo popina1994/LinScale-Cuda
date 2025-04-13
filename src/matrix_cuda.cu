@@ -298,33 +298,12 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
             MatrixCudaCol<T> matRInvCuda{1, 1};
             matRCuda.computeInverse(matRInvCuda);
             auto matRInvRowCuda = matRInvCuda.changeLayout();
-            // std::cout << matRInvCuda << std::endl;
-            // std::cout << matRInvRowCuda << std::endl;
-            // auto matCuda1Col = matCuda1.changeLayout();
-            // auto matCuda2Col = matCuda2NonJoin.changeLayout();
-            // Multiply each of the original tables by the inverse of a matrix
-            // std::cout << matCuda1Col << std::endl;
-            // std::cout << matCuda2Col << std::endl;
-            // auto matCuda1MulRInv =  matCuda1Col.multiply(matRInvCuda, 0);
-            // auto matCuda2MulRInv =  matCuda2Col.multiply(matRInvCuda, matCuda1Col.getNumCols());
-            // std::cout << "PROBLEM?" << std::endl;
             auto matCudaRow1MulRInv =  matCuda1.multiply(matRInvRowCuda, 0);
-            // std::cout << "PROBLEM 2?" << std::endl;
             auto matCudaRow2MulRInv =  matCuda2NonJoin.multiply(matRInvRowCuda, matCuda1.getNumCols());
             thrust::transform(dJoinSizes1.begin(), dJoinSizes1.end(), dJoinSizes2.begin(), dJoinSizes.begin(), thrust::multiplies<float>());
             dJoinOffsets.front() = 0;
             thrust::inclusive_scan(dJoinSizes.begin(), dJoinSizes.end(), dJoinOffsets.begin() + 1);
 
-            // std::cout << "PROBLEM 3?" << std::endl;
-            // std::cout << "FIRST" << matCuda1MulRInv << std::endl;
-            // std::cout << "SECOND" << matCudaRow1MulRInv << std::endl;
-            // std::cout << "THIRD" << matCuda2MulRInv << std::endl;
-            // std::cout << "FIFTH" << matCudaRow2MulRInv << std::endl;
-            // std::cout << "OUT DIMENSIONS";
-            // printDeviceVector(dJoinSizes1);
-            // printDeviceVector(dJoinSizes2);
-            // printDeviceVector(dJoinSizes);
-            // printDeviceVector(dJoinOffsets);
             MatrixCudaRow<T> matQRowCuda{dJoinOffsets.back(), matRInvRowCuda.getNumCols()};
             joinAdd(matCudaRow1MulRInv, matCudaRow2MulRInv, matQRowCuda, dOffsets1, dOffsets2,
                 dJoinOffsets, dJoinSizes1, dJoinSizes2, dJoinSizes);

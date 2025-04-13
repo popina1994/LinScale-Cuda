@@ -9,28 +9,26 @@ void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     const std::string& fileName, ComputeDecomp decompType)
 {
     /*********** TRAINING ***********************/
-    //  printMatrix<double, MajorOrder::COL_MAJOR>(matJoin, matJoin.getNumRows(), fileName + "Join.csv", false);
     computeGeneral<double, MajorOrder::COL_MAJOR>(matJoin, matCUDAR, matCUDAQ,
         fileName, decompType);
-    double cudaQOrt = matCUDAQ.computeOrthogonality();
-    std::cout << "ORTHOGONALITY Cuda " << matCUDAQ.computeOrthogonality() << std::endl;
-    // std::cout << "MATRIX" << matCUDAQ << std::endl;
-    // printMatrix<double, MajorOrder::COL_MAJOR>(matCUDAR, matCUDAR.getNumCols(), fileName + "CUDA.csv", false);
 
     computeFigaro<double>(mat1, mat2, matFigR, matFigQ, fileName, decompType);
-    // std::cout << "MATRIX FIGQ" << matFigQ << std::endl;
-    double figQOrt = matFigQ.computeOrthogonality();
-    std::cout << "ORTHOGONALITY LinScale " << matFigQ.computeOrthogonality() << std::endl;
-    std::cout << "LinScale is more accurate" <<  std::scientific << std::setprecision(15) << (double)cudaQOrt / figQOrt << std::endl;
-    // printMatrix<double, MajorOrder::COL_MAJOR>(matFigR, matFigR.getNumCols(), fileName + "LinScale.csv", false);
+    if (decompType == ComputeDecomp::Q_AND_R)
+    {
+        double cudaQOrt = matCUDAQ.computeOrthogonality();
+        std::cout << "ORTHOGONALITY Cuda " << matCUDAQ.computeOrthogonality() << std::endl;
+        double figQOrt = matFigQ.computeOrthogonality();
+        std::cout << "ORTHOGONALITY LinScale " << matFigQ.computeOrthogonality() << std::endl;
+        std::cout << "LinScale is"  << (double)cudaQOrt / figQOrt << " times more orthogonal" << std::endl;
+    }
 }
 
 void computeVectors(const MatrixDCol& matJoin, const MatrixDCol& matCUDAR,
     const MatrixDCol& matFigR, const MatrixDCol& vectBTrain,
     MatrixDCol& vectXCompMKL, MatrixDCol& vectXCompFig)
 {
-    // vectXCompMKL = matJoin.solveLLSNormalEquationUsingR(matCUDAR, vectBTrain);
-    vectXCompMKL = matJoin.solveLLSNormalEquations(vectBTrain);
+    vectXCompMKL = matJoin.solveLLSNormalEquationUsingR(matCUDAR, vectBTrain);
+    // vectXCompMKL = matJoin.solveLLSNormalEquations(vectBTrain);
     // vectXCompMKL = matJoin.solveLLSQRDecomp(vectBTrain);
     vectXCompFig = matJoin.solveLLSNormalEquationUsingR(matFigR, vectBTrain);
 }
@@ -39,14 +37,16 @@ void evaluateTest(int numRows, int numCols,
     const MatrixDCol& vectX, MatrixDCol& vectXCompMKL,
     MatrixDCol& vectXCompFig, int seed)
 {
-    auto matRandTest = MatrixDCol::generateRandom(numRows, numCols, seed + 22);
+    auto matRandTest = MatrixDCol::generateRandom<RandomDistribution::UNIFORM>(numRows, numCols,
+     seed + 22);
 
     auto outVectBTest = matRandTest.computeMatrixVector(vectX, false);
-    auto matUniformAdd = MatrixDCol::generateRandom(
-        matRandTest.getNumRows(), matRandTest.getNumCols(), seed + 37);
+    auto matUniformAdd = MatrixDCol::generateRandom<RandomDistribution::UNIFORM>(
+        matRandTest.getNumRows(), matRandTest.getNumCols(),
+        seed + 37);
     auto matUniformCopy = matUniformAdd.divValue(1e10);
-    auto outVectBTestVariance = outVectBTest.add(matUniformCopy);
-    // outVectBTestVariance = std::move(outVectBTest);
+    // auto outVectBTestVariance = outVectBTest.add(matUniformCopy);
+    auto outVectBTestVariance = std::move(outVectBTest);
 
     auto outVectBTestCompMKL = matRandTest.computeMatrixVector(vectXCompMKL, false);
     auto outVectBTestCompFig = matRandTest.computeMatrixVector(vectXCompFig, false);
@@ -55,7 +55,7 @@ void evaluateTest(int numRows, int numCols,
 
     std::cout << "CUDA MSE " << cudaError << std::endl;
     std::cout << "LinScale MSE " << figError << std::endl;
-    std::cout << "MKL is " << figError / cudaError  << " more accurate" << std::endl;
+    std::cout << "LinSCale is " << cudaError / figError   << " times more accurate" << std::endl;
  }
 
 #endif

@@ -208,6 +208,7 @@ Matrix<T, majorOrder> Matrix<T, majorOrder>::solveLLSQRDecomp(
 }
 
 
+
 template <typename T, MajorOrder majorOrder>
 T Matrix<T, majorOrder>::computeFrobeniusNorm(void) const
 {
@@ -228,12 +229,28 @@ T Matrix<T, majorOrder>::computeFrobeniusNorm(void) const
 }
 
 template <typename T, MajorOrder majorOrder>
+template <RandomDistribution distrType>
+auto Matrix<T, majorOrder>::drawDistribution(
+        T first, T second)
+{
+    if constexpr (distrType == RandomDistribution::UNIFORM)
+    {
+        return std::uniform_real_distribution<T>(first, second);
+    }
+    else if constexpr (distrType == RandomDistribution::NORMAL)
+    {
+        return std::normal_distribution<T>(first, second);
+    }
+}
+
+template <typename T, MajorOrder majorOrder>
+template <RandomDistribution distrType>
 Matrix<T, majorOrder>
-Matrix<T, majorOrder>::generateRandom(int numRows, int numCols, int seed,
-        double start, double end)
+Matrix<T, majorOrder>::generateRandom(int numRows, int numCols,
+        int seed, T start, T end)
 {
     std::mt19937 gen(seed);
-    std::uniform_real_distribution<T> dist(start, end);
+    auto dist = drawDistribution<distrType>(start, end);
     auto matA = std::move(Matrix<T, majorOrder>{numRows, numCols});
     if constexpr (MajorOrder::COL_MAJOR == majorOrder)
     {
@@ -257,15 +274,6 @@ Matrix<T, majorOrder>::generateRandom(int numRows, int numCols, int seed,
     }
     return std::move(matA);
 }
-
-
-// template <>
-// Matrix<double, MajorOrder::ROW_MAJOR>
-// Matrix<double, MajorOrder::ROW_MAJOR>::generateRandom(int, int, int, double, double);
-
-// template <>
-// Matrix<double, MajorOrder::COL_MAJOR>
-// Matrix<double, MajorOrder::COL_MAJOR>::generateRandom(int, int, int, double, double);
 
 template <typename T, MajorOrder majorOrder>
 Matrix<T, majorOrder> Matrix<T, majorOrder>::zero(int numRows, int numCols)
@@ -331,4 +339,10 @@ template class Matrix<double, MajorOrder::ROW_MAJOR>;
 template class Matrix<double, MajorOrder::COL_MAJOR>;
 template
 double computeMeanSquaredError<double>(const double* pA, const double* pB, int numRows);
+
+template auto MatrixDCol::drawDistribution<RandomDistribution::UNIFORM>(double, double);
+template auto MatrixDCol::drawDistribution<RandomDistribution::NORMAL>(double, double);
+
+template MatrixDCol MatrixDCol::generateRandom<RandomDistribution::UNIFORM>(int, int, int, double, double);
+template MatrixDCol MatrixDCol::generateRandom<RandomDistribution::NORMAL>(int, int, int, double, double);
 

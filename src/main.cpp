@@ -17,8 +17,16 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinVa
     auto matJoin = computeJoin(mat1, mat2, 1);
     auto matJoinCol = changeLayout(matJoin);
 
-    auto vectX = MatrixDCol::generateRandom(1, matJoin.getNumCols(), 15);
+    auto vectX = MatrixDCol::generateRandom<RandomDistribution::UNIFORM>(matJoin.getNumCols(), 1, 15);
+    // std::cout << vectX << std::endl;
     auto outVectBTrain = matJoinCol.computeMatrixVector(vectX, false);
+    // std::cout << "HERE" << std::endl;
+    auto vectNoise = MatrixDCol::generateRandom<RandomDistribution::NORMAL>(outVectBTrain.getNumRows(), 1, 22, 0.0, 1e-10);
+    // std::cout << "HERE 2" << vectNoise << std::endl;
+    auto addVect = outVectBTrain.add(vectNoise);
+    // std::cout << "HERE 3" << std::endl;
+    // std:: cout << addVect << std::endl;
+    outVectBTrain = std::move(addVect);
 
     MatrixDCol matCUDAR{1, 1};
     MatrixDCol matFigR{1, 1};
