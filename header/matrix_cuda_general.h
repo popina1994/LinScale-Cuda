@@ -12,4 +12,10 @@ int computeGeneral(const Matrix<T, majorOrder>& matA,
     MatrixCol<T>& matR, MatrixCol<T>& matQ,
     const std::string& fileName, ComputeDecomp decompType);
 
+template <typename T, MajorOrder majorOrder>
+int solveLLSNormalEquationUsingR(const Matrix<T, majorOrder>& matA,
+    const Matrix<T, majorOrder>& matR,
+    const Matrix<T, majorOrder>& vectB,
+    Matrix<T, majorOrder>& vectX);
+
 #endif

@@ -27,10 +27,12 @@ void computeVectors(const MatrixDCol& matJoin, const MatrixDCol& matCUDAR,
     const MatrixDCol& matFigR, const MatrixDCol& vectBTrain,
     MatrixDCol& vectXCompMKL, MatrixDCol& vectXCompFig)
 {
-    vectXCompMKL = matJoin.solveLLSNormalEquationUsingR(matCUDAR, vectBTrain);
+    // vectXCompMKL = matJoin.solveLLSNormalEquationUsingR(matCUDAR, vectBTrain);
+    solveLLSNormalEquationUsingR(matJoin, matCUDAR, vectBTrain, vectXCompMKL);
     // vectXCompMKL = matJoin.solveLLSNormalEquations(vectBTrain);
     // vectXCompMKL = matJoin.solveLLSQRDecomp(vectBTrain);
-    vectXCompFig = matJoin.solveLLSNormalEquationUsingR(matFigR, vectBTrain);
+    solveLLSNormalEquationUsingR(matJoin, matFigR, vectBTrain, vectXCompFig);
+    // vectXCompFig = matJoin.solveLLSNormalEquationUsingR(matFigR, vectBTrain);
 }
 
 void evaluateTest(int numRows, int numCols,

@@ -418,6 +418,22 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
     return 0;
 }
 
+template <typename T, MajorOrder majorOrder>
+int solveLLSNormalEquationUsingR(const Matrix<T, majorOrder>& matA,
+    const Matrix<T, majorOrder>& matR,
+    const Matrix<T, majorOrder>& vectB,
+    Matrix<T, majorOrder>& vectX)
+{
+    MatrixCuda<T, majorOrder> matACuda(matA);
+    MatrixCuda<T, majorOrder> matRCuda(matR);
+    MatrixCuda<T, majorOrder> vectBCuda(vectB);
+
+    auto matXCuda = matACuda.solveLLSNormalEquationUsingR(matR, vectB);
+    vectX = matXCuda.getHostCopy();
+
+    return 0;
+}
+
 // template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const MatrixDRow& matA,
 //     MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
 
@@ -426,3 +442,8 @@ template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& mat
 
 template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
     MatrixDCol& matR, MatrixDCol& matQ, const std::string& fileName, ComputeDecomp decompType);
+
+
+template int solveLLSNormalEquationUsingR<double, MajorOrder::COL_MAJOR>(
+    const MatrixDCol& matA, const MatrixDCol& matR,
+    const MatrixDCol& vectB, MatrixDCol& vectX);

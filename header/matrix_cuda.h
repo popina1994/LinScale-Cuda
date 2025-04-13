@@ -145,7 +145,7 @@ public:
         return out;
     }
 
-    MatrixCuda<T, majorOrder> copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx);
+    MatrixCuda<T, majorOrder> copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx) const;
 
     constexpr auto cudblasXgeam(void) const
     {
@@ -164,9 +164,21 @@ public:
 
     static MatrixCuda<T, majorOrder> zero(int numRows, int numCols);
     static MatrixCuda<T, majorOrder> identity(int numRows);
-    int computeInverse(MatrixCuda<T, majorOrder>& matInv);
+    int computeInverse(MatrixCuda<T, majorOrder>& matInv) const;
 
-     constexpr auto cublasXgemm(void) const
+    constexpr auto cublasXgemv(void) const
+    {
+        if constexpr (std::is_same_v<T, float>)
+        {
+            return &cublasSgemv;
+        }
+        else
+        {
+            return &cublasDgemv;
+        }
+    }
+
+    constexpr auto cublasXgemm(void) const
     {
         if constexpr (std::is_same_v<T, float>)
         {
@@ -178,7 +190,14 @@ public:
         }
     }
 
+    MatrixCuda<T, majorOrder> computeMatrixVector(const MatrixCuda<T, majorOrder>& vectV,
+        bool transpose) const;
+
     MatrixCuda<T, majorOrder> multiply(const MatrixCuda<T, majorOrder>& mat2, int startRowIdx);
+
+    MatrixCuda<T, majorOrder> selfMatrixTransposeMultiplication(void) const;
+
+
 
     constexpr auto cusolverDnXgeqrf_bufferSize(void) const
     {
@@ -230,6 +249,10 @@ public:
 
     int computeQRDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matR,
         MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ = false);
+
+    MatrixCuda<T, majorOrder> solveLLSNormalEquationUsingR(
+        const MatrixCuda<T, majorOrder>& matR,
+        const MatrixCuda<T, majorOrder>& vectB) const;
 
     constexpr auto cusolverDnXgesvd_bufferSize(void) const
     {
@@ -337,7 +360,7 @@ MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::identity(int numRows)
 
 template <typename T, MajorOrder majorOrder>
 MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::
-copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx)
+copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx) const
 {
     MatrixCuda<T, majorOrder> matOut{endRowIdx - startRowIdx + 1, endColIdx - startColIdx + 1};
     copyMatrixCuda<T, majorOrder><<<matOut.getNumRows(), matOut.getNumCols()>>>
@@ -346,7 +369,7 @@ copyMatrix(int startRowIdx, int endRowIdx, int startColIdx, int endColIdx)
 }
 
 template <typename T, MajorOrder majorOrder>
-int MatrixCuda<T, majorOrder>::computeInverse(MatrixCuda<T, majorOrder>& matInv)
+int MatrixCuda<T, majorOrder>::computeInverse(MatrixCuda<T, majorOrder>& matInv) const
 {
     matInv = copyMatrix(0, getNumRows() - 1, 0, getNumCols() -1);
 
@@ -383,6 +406,37 @@ int MatrixCuda<T, majorOrder>::computeInverse(MatrixCuda<T, majorOrder>& matInv)
 }
 
 template <typename T, MajorOrder majorOrder>
+MatrixCuda<T, majorOrder>
+MatrixCuda<T, majorOrder>::computeMatrixVector(const MatrixCuda<T, majorOrder>& vectV,
+        bool transpose) const
+{
+    cublasHandle_t handle;
+    CUBLASS_CALL(cublasCreate(&handle));
+
+    T alpha = 1.0;
+    T beta = 0.0;
+    auto transposeLay = transpose ? CUBLAS_OP_T : CUBLAS_OP_N;
+    auto rowsOut = (transpose ? getNumCols() : getNumRows());
+    MatrixCuda<T, majorOrder> matOut{rowsOut, 1};
+
+    CUBLASS_CALL(cublasXgemv()(
+        handle,
+        transposeLay,
+        getNumRows(),
+        getNumCols(),
+        &alpha,
+        getDataC(), getLeadingDimension(),
+        vectV.getDataC(), 1,
+        &beta,
+        matOut.getData(), 1
+    ));
+
+    CUBLASS_CALL(cublasDestroy(handle));
+
+    return matOut;
+}
+
+template <typename T, MajorOrder majorOrder>
 MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::multiply(
     const MatrixCuda<T, majorOrder>& mat2, int startRowIdx = 0)
 {
@@ -416,6 +470,43 @@ MatrixCuda<T, majorOrder> MatrixCuda<T, majorOrder>::multiply(
     CUBLASS_CALL(cublasDestroy(handle));
     return matOut;
 }
+
+template <typename T, MajorOrder majorOrder>
+MatrixCuda<T, majorOrder>
+MatrixCuda<T, majorOrder>::selfMatrixTransposeMultiplication(void) const
+{
+    T alpha = 1.0;
+    T beta = 0.0;
+
+    cublasHandle_t handle;
+    CUBLASS_CALL(cublasCreate(&handle));
+    MatrixCuda<T, majorOrder> matOut{getNumRows(), getNumRows()};
+
+    // C = A * Aᵀ
+    // A is m x n, Aᵀ is n x m ⇒ C is m x m
+    // Use: C = alpha * A * Aᵀ + beta * C
+    // Note: cuBLAS is column-major by default, so interpret as:
+    // C = A * Aᵀ ⇒ C = op(A) * op(B) with op(A) = N, op(B) = T
+    CUBLASS_CALL(cublasXgemm()(
+        handle,
+        CUBLAS_OP_N,
+        CUBLAS_OP_T,
+        getNumRows(),
+        getNumRows(),
+        getNumCols(),
+        &alpha,
+        getDataC(), getLeadingDimension(),
+        getDataC(), getLeadingDimension(),
+        &beta,
+        matOut.getData(), matOut.getLeadingDimension()
+    ));
+
+    CUBLASS_CALL(cublasDestroy(handle));
+
+    return matOut;
+}
+
+
 
 template <typename T, MajorOrder majorOrder>
 int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
@@ -466,6 +557,20 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
         CUSOLVER_CALL(cusolverDnDestroy(cuSolverHandle));
     }
     return 0;
+}
+
+template <typename T, MajorOrder majorOrder>
+MatrixCuda<T, majorOrder>
+MatrixCuda<T, majorOrder>::solveLLSNormalEquationUsingR(
+    const MatrixCuda<T, majorOrder>& matR, const MatrixCuda<T, majorOrder>& vectB) const
+{
+    MatrixCuda<T, majorOrder> matRInv{1, 1};
+    matR.computeInverse(matRInv);
+    auto outMat = matRInv.selfMatrixTransposeMultiplication();
+
+    auto tempVect = this->computeMatrixVector(vectB, true);
+    auto vectXOut = outMat.computeMatrixVector(tempVect, false);
+    return vectXOut;
 }
 
 template <typename T, MajorOrder majorOrder>
