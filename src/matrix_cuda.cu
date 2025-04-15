@@ -264,18 +264,15 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 
     computeHeadsAndTails(matCuda2, dOffsets2, dJoinSizes2);
     concatenateHeadsAndTails(matCuda1, matCuda2, matCudaOut, dJoinSizes1, dJoinSizes2, dOffsets1, dOffsets2, dJoinOffsets);
-    // matCuda1 = std::move(MatrixCudaRow<T>{1, 1});
-    // matCuda2 = std::move(MatrixCudaRow<T>{1, 1});
-    // matCuda2NonJoin = std::move(MatrixCudaRow<T>{1, 1});
     auto matCudaTran = matCudaOut.changeLayout();
-    // matCudaOut = std::move(MatrixCudaRow<T>{1, 1});
 
     int rank = min(numRowsOut, numColsOut);
 
     MatrixCudaCol<T> matRCuda{1, 1}, matQCuda{1, 1}, matUCuda{1, 1}, matSigmaCuda{1, 1}, matVCuda{1, 1};
+    MatrixCudaRow<T> matQRowCuda{1, 1};
     MEMORY_LOG("LinScale", "Memory at the end of LinScale")
     matCudaTran.computeQRDecomposition(matRCuda, matQCuda, false, "LinScale");
-    // std::cout << matRCuda << std::endl;
+
     if (computeSVD)
     {
         matRCuda.computeSVDDecomposition(matUCuda, matSigmaCuda, matVCuda);
@@ -293,10 +290,10 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
             dJoinOffsets.front() = 0;
             thrust::inclusive_scan(dJoinSizes.begin(), dJoinSizes.end(), dJoinOffsets.begin() + 1);
 
-            MatrixCudaRow<T> matQRowCuda{dJoinOffsets.back(), matRInvRowCuda.getNumCols()};
+            matQRowCuda = std::move(MatrixCudaRow<T>{dJoinOffsets.back(), matRInvRowCuda.getNumCols()});
+            MEMORY_LOG("LinScale", "After allocating all structures")
             joinAdd(matCudaRow1MulRInv, matCudaRow2MulRInv, matQRowCuda, dOffsets1, dOffsets2,
                 dJoinOffsets, dJoinSizes1, dJoinSizes2, dJoinSizes);
-            matQCuda = matQRowCuda.changeLayout();
 
         }
     }
@@ -316,6 +313,7 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
         matR = matRCuda.getHostCopy();
         if (computeQ)
         {
+            matQCuda = matQRowCuda.changeLayout();
             matQ = matQCuda.getHostCopy();
         }
     }
@@ -385,7 +383,9 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
         matR = matRCuda.getHostCopy();
         if (computeQ)
         {
+            MEMORY_LOG("CUDA", "Memory before host copy")
             matQ = matQCuda.getHostCopy();
+            MEMORY_LOG("CUDA", "Memory after host copy")
         }
     }
 

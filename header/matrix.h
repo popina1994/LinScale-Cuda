@@ -153,12 +153,12 @@ public:
         return numCols;
     }
 
-    int getNumElements(void) const
+    int64_t getNumElements(void) const
     {
         return numRows * numCols;
     }
 
-    int getSize() const
+    int64_t getSize() const
     {
         return getNumElements() * sizeof(T);
     }

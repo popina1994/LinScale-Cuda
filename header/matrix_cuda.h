@@ -79,15 +79,15 @@ public:
     }
     int getNumCols(void) const
     {
-        return numCols;
+    return numCols;
     }
 
-    int getNumElements(void) const
+    int64_t getNumElements(void) const
     {
         return numRows * numCols;
     }
 
-    int getSize(void) const
+    int64_t getSize(void) const
     {
         return numRows * numCols * sizeof(T);
     }
@@ -132,7 +132,7 @@ public:
     Matrix<T, majorOrder> getHostCopy(void) const
     {
         thrust::host_vector<T> hostVector = dVector;;
-        Matrix<T, majorOrder> matOut(thrust::raw_pointer_cast(hostVector.data()), getNumRows(), getNumCols());
+        Matrix<T, majorOrder> matOut(hostVector.data(), getNumRows(), getNumCols());
         return matOut;
     }
 
@@ -537,21 +537,20 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
 
         matR = copyMatrix(0, getNumCols() - 1, 0, getNumCols() - 1);
         setZerosUpperTriangularCol<<<matR.getNumRows(), matR.getNumCols()>>>(matR.getData(), matR.getNumRows(), matR.getNumCols());
+        MEMORY_LOG(memoryTag, "Memory after allocating R");
         if (computeQ)
         {
             matQ = copyMatrix(0, getNumRows() - 1, 0, getNumCols() - 1);
-            cusolverDnHandle_t cusolverHQ = nullptr;
-            CUSOLVER_CALL(cusolverDnCreate(&cusolverHQ));
-            CUSOLVER_CALL(cusolverDnXorgqr_bufferSize()(cusolverHQ, getNumRows(), getNumCols(),
+            MEMORY_LOG(memoryTag, "Memory after allocating Q");
+            CUSOLVER_CALL(cusolverDnXorgqr_bufferSize()(cuSolverHandle, getNumRows(), getNumCols(),
              getNumCols(), getData(), getLeadingDimension(), dTau, &workspace_size));
             CUDA_CALL(cudaFree(dWork));
 
             CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * workspace_size));
 
-            CUSOLVER_CALL(cusolverDnXorgqr()(cusolverHQ, matQ.getNumRows(), matQ.getNumCols(),
+            CUSOLVER_CALL(cusolverDnXorgqr()(cuSolverHandle, matQ.getNumRows(), matQ.getNumCols(),
                 matQ.getNumCols(), matQ.getData(), matQ.getLeadingDimension(), dTau, dWork,
                     workspace_size, devInfo));
-            CUSOLVER_CALL(cusolverDnDestroy(cusolverHQ));
         }
 
         CUDA_CALL(cudaFree(dTau));

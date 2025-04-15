@@ -67,10 +67,10 @@ do {                                     \
     }\
     maxMem = std::max(maxMem, memUsed - mapMemoryStart[TAG]);  \
     mapMemoryTrack[TAG] = maxMem;    \
+    std::cout << MESSAGE << " " << memUsed << "MB" << std::endl; \
 } while (0);
 #else
 #define MEMORY_LOG(TAG, MESSAGE)
 #endif
-    // std::cout << MESSAGE << " " << memUsed << "MB" << std::endl; \
 
 #endif
