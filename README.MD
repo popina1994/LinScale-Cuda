@@ -13,4 +13,4 @@ Instalation:
 1. Install MKL.
 2. Install Cuda.
 3. Update path to oneapi-vars.sh in build.sh
-4. Run experiments using bash build.sh
+4. Run experiments using bash reproduce.sh or bash build.sh
