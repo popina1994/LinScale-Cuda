@@ -23,7 +23,7 @@ file(GLOB_RECURSE CUDA_SOURCES
     ${PROJECT_SOURCE_DIR}/src/*.cu
 )
 if(DEFINED MEMORY_USAGE)
-    message("Value is: ${MEMORY_USAGE}")
+    message("")
 else()
     set(MEMORY_USAGE "1")
 endif()

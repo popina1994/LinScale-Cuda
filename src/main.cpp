@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
     }
     for (const auto&[key, val]: mapMemoryTrack)
     {
-        std::cout << "Maximal used Cuda memory for " << key << " " << val << " MB" << std::endl;
+        std::cout << key << " Maximally used Cuda memory "  << val << " MB" << std::endl;
     }
 
     return 0;
