@@ -6,14 +6,13 @@
 void evaluateTrain(const MatrixDRow& mat1, const MatrixDRow& mat2,
     const MatrixDCol& matJoin, MatrixDCol& matCUDAR, MatrixDCol& matFigR,
     MatrixDCol& matFigQ, MatrixDCol& matCUDAQ,
-    const std::string& fileName, ComputeDecomp decompType)
+    ComputeDecomp decompType, bool checkAccuracy)
 {
     /*********** TRAINING ***********************/
-    computeGeneral<double, MajorOrder::COL_MAJOR>(matJoin, matCUDAR, matCUDAQ,
-        fileName, decompType);
+    computeGeneral<double, MajorOrder::COL_MAJOR>(matJoin, matCUDAR, matCUDAQ, decompType);
 
-    computeFigaro<double>(mat1, mat2, matFigR, matFigQ, fileName, decompType);
-    if (decompType == ComputeDecomp::Q_AND_R)
+    computeFigaro<double>(mat1, mat2, matFigR, matFigQ, decompType);
+    if (decompType == ComputeDecomp::Q_AND_R and checkAccuracy)
     {
         double cudaQOrt = matCUDAQ.computeOrthogonality();
         std::cout << "ORTHOGONALITY Cuda " << matCUDAQ.computeOrthogonality() << std::endl;
@@ -29,9 +28,9 @@ void computeVectors(const MatrixDCol& matJoin, const MatrixDCol& matCUDAR,
 {
     // vectXCompMKL = matJoin.solveLLSNormalEquationUsingR(matCUDAR, vectBTrain);
     solveLLSNormalEquationUsingR(matJoin, matCUDAR, vectBTrain, vectXCompMKL);
+    solveLLSNormalEquationUsingR(matJoin, matFigR, vectBTrain, vectXCompFig);
     // vectXCompMKL = matJoin.solveLLSNormalEquations(vectBTrain);
     // vectXCompMKL = matJoin.solveLLSQRDecomp(vectBTrain);
-    solveLLSNormalEquationUsingR(matJoin, matFigR, vectBTrain, vectXCompFig);
     // vectXCompFig = matJoin.solveLLSNormalEquationUsingR(matFigR, vectBTrain);
 }
 

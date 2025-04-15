@@ -3,7 +3,7 @@ project(LinScale-Cuda LANGUAGES CXX CUDA)
 
 # Set C++ and CUDA standards
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD 20)
 
 find_package(BLAS REQUIRED)
 find_package(MKL REQUIRED)
@@ -22,12 +22,18 @@ file(GLOB_RECURSE CPP_SOURCES
 file(GLOB_RECURSE CUDA_SOURCES
     ${PROJECT_SOURCE_DIR}/src/*.cu
 )
+if(DEFINED MEMORY_USAGE)
+    message("Value is: ${MEMORY_USAGE}")
+else()
+    set(MEMORY_USAGE "1")
+endif()
 
 add_executable(${PROJECT_NAME} ${CPP_SOURCES})
 
 add_library(cuda_lib STATIC
     ${CUDA_SOURCES}
 )
+target_compile_definitions(cuda_lib PRIVATE MEMORY_USAGE=${MEMORY_USAGE})
 target_link_libraries(cuda_lib PRIVATE cudart cublas cusolver)
 
 target_include_directories(cuda_lib PRIVATE ${CUDA_INCLUDE_DIRS} header)

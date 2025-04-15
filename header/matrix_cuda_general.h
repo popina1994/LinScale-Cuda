@@ -4,13 +4,14 @@
 #include "matrix.h"
 #include <string>
 
+extern std::map<std::string, double> mapMemoryTrack;
+
 template <typename T>
 int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
-    MatrixCol<T>& matR, MatrixCol<T>& matQ, const std::string& fileName, ComputeDecomp decompType);
+    MatrixCol<T>& matR, MatrixCol<T>& matQ, ComputeDecomp decompType);
 template <typename T, MajorOrder majorOrder>
 int computeGeneral(const Matrix<T, majorOrder>& matA,
-    MatrixCol<T>& matR, MatrixCol<T>& matQ,
-    const std::string& fileName, ComputeDecomp decompType);
+    MatrixCol<T>& matR, MatrixCol<T>& matQ, ComputeDecomp decompType);
 
 template <typename T, MajorOrder majorOrder>
 int solveLLSNormalEquationUsingR(const Matrix<T, majorOrder>& matA,

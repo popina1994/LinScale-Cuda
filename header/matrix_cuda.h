@@ -248,7 +248,8 @@ public:
     }
 
     int computeQRDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matR,
-        MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ = false);
+        MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ = false,
+        const std::string& memoryTag = "");
 
     MatrixCuda<T, majorOrder> solveLLSNormalEquationUsingR(
         const MatrixCuda<T, majorOrder>& matR,
@@ -510,11 +511,12 @@ MatrixCuda<T, majorOrder>::selfMatrixTransposeMultiplication(void) const
 
 template <typename T, MajorOrder majorOrder>
 int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
-        MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ)
+        MatrixCuda<T, MajorOrder::COL_MAJOR>& matQ, bool computeQ,
+        const std::string& memoryTag)
 {
+    auto memUsed = getCudaMemoryUsage();
     if (majorOrder == MajorOrder::COL_MAJOR)
     {
-        auto& matA = *this;
         cusolverDnHandle_t cuSolverHandle;
         CUSOLVER_CALL(cusolverDnCreate(&cuSolverHandle));
         int workspace_size = 0;
@@ -523,13 +525,14 @@ int MatrixCuda<T, majorOrder>::computeQRDecomposition(MatrixCudaCol<T>& matR,
 
         // Allocate workspace
         T *dWork, *dTau;
+        MEMORY_LOG(memoryTag, "Memory after allocating all QR cuSolver");
         CUDA_CALL(cudaMalloc((void**)&dWork, workspace_size * sizeof(T)));
 
         // Allocate device status variable
         int *devInfo;
         CUDA_CALL(cudaMalloc((void**)&devInfo, sizeof(int)));
         CUDA_CALL(cudaMalloc((void**)&dTau, std::min(getNumRows(), getNumCols()) * sizeof(T)));
-
+        MEMORY_LOG(memoryTag, "Memory after allocating all QR cuSolver buffers");
         CUSOLVER_CALL(cusolverDnXgeqrf()(cuSolverHandle, getNumRows(), getNumCols(), getData(), getLeadingDimension(), dTau, dWork, workspace_size, devInfo));
 
         matR = copyMatrix(0, getNumCols() - 1, 0, getNumCols() - 1);

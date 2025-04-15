@@ -8,7 +8,7 @@
 namespace po = boost::program_options;
 
 void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinValsDomainSize,
-    ComputeDecomp decompType, std::string& fileName)
+    ComputeDecomp decompType, bool checkAccuracy)
 {
     auto mat1 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows1, numCols1, 1, joinValsDomainSize, 0);
     auto mat2 = generateRandomJoinTable<double, MajorOrder::ROW_MAJOR>(numRows2, numCols2, 1, joinValsDomainSize, 10);
@@ -18,25 +18,24 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinVa
     auto matJoinCol = changeLayout(matJoin);
 
     auto vectX = MatrixDCol::generateRandom<RandomDistribution::UNIFORM>(matJoin.getNumCols(), 1, 15);
-    // std::cout << vectX << std::endl;
     auto outVectBTrain = matJoinCol.computeMatrixVector(vectX, false);
-    // std::cout << "HERE" << std::endl;
     auto vectNoise = MatrixDCol::generateRandom<RandomDistribution::NORMAL>(outVectBTrain.getNumRows(), 1, 22, 0.0, 1e-10);
-    // std::cout << "HERE 2" << vectNoise << std::endl;
     auto addVect = outVectBTrain.add(vectNoise);
-    // std::cout << "HERE 3" << std::endl;
-    // std:: cout << addVect << std::endl;
     outVectBTrain = std::move(addVect);
 
     MatrixDCol matCUDAR{1, 1};
     MatrixDCol matFigR{1, 1};
     MatrixDCol matFigQ{1, 1};
     MatrixDCol matCUDAQ{1, 1};
-    evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matFigR, matFigQ, matCUDAQ, fileName, decompType);
+    evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matFigR, matFigQ, matCUDAQ,
+        decompType, checkAccuracy);
     MatrixDCol matVectXMKL{1, 1};
     MatrixDCol matVectXFig{1, 1};
-    computeVectors(matJoinCol, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig);
-    evaluateTest(matJoinCol.getNumRows(), matJoinCol.getNumCols(), vectX, matVectXMKL, matVectXFig, -1);
+    if (checkAccuracy)
+    {
+        computeVectors(matJoinCol, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig);
+        evaluateTest(matJoinCol.getNumRows(), matJoinCol.getNumCols(), vectX, matVectXMKL, matVectXFig, -1);
+    }
 }
 
 int main(int argc, char* argv[])
@@ -45,6 +44,7 @@ int main(int argc, char* argv[])
     int numRows2 = 2, numCols2 = 4;
     int compute = 1;
     int joinValsDomainSize = 1;
+    bool checkAccuracy = false;
 
     try
     {
@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
             ("n2", po::value<int>(), "Number of columns 2")
             ("compute", po::value<int>(), "Compute mode")
             ("join_vals_domain_size", po::value<int>(), "Compute mode")
+            ("check_accuracy", "Check accuracy")
             ("verbose,v", "Enable verbose mode");
 
         // Parse the command-line arguments
@@ -95,6 +96,9 @@ int main(int argc, char* argv[])
         {
             joinValsDomainSize = vm["join_vals_domain_size"].as<int>();
         }
+        if (vm.count("check_accuracy")) {
+            checkAccuracy = true;
+        }
         std::string fileName = "results/" + std::to_string(numRows1) + "x" + std::to_string(numCols1) + "," + std::to_string(numRows2) + "x" + std::to_string(numCols2);
         ComputeDecomp decompType;
         switch (compute) {
@@ -111,12 +115,15 @@ int main(int argc, char* argv[])
             decompType = ComputeDecomp::U_AND_S_AND_V;
             break;
         }
-        evaluate(numRows1, numCols1, numRows2, numCols2, joinValsDomainSize, decompType, fileName);
+        evaluate(numRows1, numCols1, numRows2, numCols2, joinValsDomainSize, decompType, checkAccuracy);
     } catch (const std::exception& e)
     {
         std::cerr << "Error: " << e.what() << std::endl;
     }
-    std::cout << "SUCCESSFULL" << std::endl;
+    for (const auto&[key, val]: mapMemoryTrack)
+    {
+        std::cout << "Maximal used Cuda memory for " << key << " " << val << " MB" << std::endl;
+    }
 
     return 0;
 }

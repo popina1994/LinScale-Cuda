@@ -1,6 +1,19 @@
 #ifndef _LINSCALE_CUDA_H_
 #define _LINSCALE_CUDA_H_
 
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+#include <cusolverDn.h>
+#include <string>
+#include <map>
+
+#ifndef MEMORY_USAGE
+#define MEMORY_USAGE 1
+#endif
+
+const char* cublasGetErrorString(cublasStatus_t status);
+const char* cusolverGetErrorString(cusolverStatus_t status);
+double getCudaMemoryUsage(void);
 
 // CUDA error check macro
 #define CUDA_CALL(call) \
@@ -14,26 +27,6 @@ do { \
 
 
 
-const char* cublasGetErrorString(cublasStatus_t status) {
-    switch (status) {
-        case CUBLAS_STATUS_NOT_INITIALIZED:
-            return "Library not initialized";
-        case CUBLAS_STATUS_ALLOC_FAILED:
-            return "Resource allocation failed";
-        case CUBLAS_STATUS_INVALID_VALUE:
-            return "Invalid value";
-        case CUBLAS_STATUS_ARCH_MISMATCH:
-            return "Architecture mismatch";
-        case CUBLAS_STATUS_MAPPING_ERROR:
-            return "Memory mapping error";
-        case CUBLAS_STATUS_EXECUTION_FAILED:
-            return "Execution failed";
-        case CUBLAS_STATUS_INTERNAL_ERROR:
-            return "Internal error";
-        default:
-            return "Unknown error";
-    }
-}
 
 #define CUBLASS_CALL(call) \
 { \
@@ -44,23 +37,7 @@ const char* cublasGetErrorString(cublasStatus_t status) {
     }\
 }
 
-const char* cusolverGetErrorString(cusolverStatus_t status) {
-    switch (status) {
-        case CUSOLVER_STATUS_SUCCESS: return "CUSOLVER_STATUS_SUCCESS";
-        case CUSOLVER_STATUS_NOT_INITIALIZED: return "CUSOLVER_STATUS_NOT_INITIALIZED";
-        case CUSOLVER_STATUS_ALLOC_FAILED: return "CUSOLVER_STATUS_ALLOC_FAILED";
-        case CUSOLVER_STATUS_INVALID_VALUE: return "CUSOLVER_STATUS_INVALID_VALUE";
-        case CUSOLVER_STATUS_ARCH_MISMATCH: return "CUSOLVER_STATUS_ARCH_MISMATCH";
-        case CUSOLVER_STATUS_MAPPING_ERROR: return "CUSOLVER_STATUS_MAPPING_ERROR";
-        case CUSOLVER_STATUS_EXECUTION_FAILED: return "CUSOLVER_STATUS_EXECUTION_FAILED";
-        case CUSOLVER_STATUS_INTERNAL_ERROR: return "CUSOLVER_STATUS_INTERNAL_ERROR";
-        case CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED: return "CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED";
-        case CUSOLVER_STATUS_NOT_SUPPORTED: return "CUSOLVER_STATUS_NOT_SUPPORTED";
-        case CUSOLVER_STATUS_ZERO_PIVOT: return "CUSOLVER_STATUS_ZERO_PIVOT";
-        case CUSOLVER_STATUS_INVALID_LICENSE: return "CUSOLVER_STATUS_INVALID_LICENSE";
-        default: return "Unknown cuSOLVER error";
-    }
-}
+
 
 // cuSOLVER error check macro
 #define CUSOLVER_CALL(call) \
@@ -72,5 +49,28 @@ do { \
     } \
 } while (0)
 
+extern std::map<std::string, double> mapMemoryTrack;
+extern std::map<std::string, double> mapMemoryStart;
+
+#if MEMORY_USAGE == 1
+#define MEMORY_LOG(TAG, MESSAGE)         \
+do {                                     \
+    auto memUsed = getCudaMemoryUsage(); \
+    double maxMem = 0.0;                 \
+    if (mapMemoryTrack.find(TAG) != mapMemoryTrack.end())    \
+    {                                    \
+        maxMem = mapMemoryTrack[TAG]; \
+    }                                    \
+    else \
+    { \
+        mapMemoryStart[TAG] = memUsed;    \
+    }\
+    maxMem = std::max(maxMem, memUsed - mapMemoryStart[TAG]);  \
+    mapMemoryTrack[TAG] = maxMem;    \
+} while (0);
+#else
+#define MEMORY_LOG(TAG, MESSAGE)
+#endif
+    // std::cout << MESSAGE << " " << memUsed << "MB" << std::endl; \
 
 #endif
