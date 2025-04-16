@@ -4,12 +4,8 @@ cd build
 cmake -DMEMORY_USAGE=1 ..
 
 make -j
-m1_a=(1000)
-n_a=(64)
-# m1_a=(100 200 400 800 1600 3200 6400)
-# n_a=(4 8 16)
-# ./LinScale-Cuda --m1 1000 --n1 64 --m2 1000 --n2 64 --compute 0 --join_vals_domain_size 1
-# exit
+m1_a=(100 200 400 800 1600 3200)
+n_a=(4 8 16)
 > log_run_times.txt
 for m1 in "${m1_a[@]}"; do
     m2=$m1

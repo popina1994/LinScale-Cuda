@@ -19,7 +19,6 @@ def clean_runtimes(log_path):
 
     with open(input_file, 'r') as file_input:
         text = file_input.read()
-        # print(text)
         time_matches = re.findall(r"\*+(.*?)\*+", text, re.DOTALL)
         for time_match in time_matches:
             table_dim_matches = re.findall(r"(\d+)\s*x\s*(\d+)", time_match)
@@ -27,8 +26,6 @@ def clean_runtimes(log_path):
             m1, n1 = table_dim_matches[0]
             m2, n2 = table_dim_matches[1]
             one_time_match = re.findall(r"took ([\d]+\.[\d]+) ms", time_match)
-            # print(m1, n1)
-            # print(m2, n2)
             time_cuda = []
             time_lin_scale = []
             for idx, one_time_m in enumerate(one_time_match):
@@ -47,7 +44,6 @@ def clean_runtimes(log_path):
             df = pd.concat([df, df1], ignore_index=True)
             # dic_results[(m1, n1, m2, n2)] = {"CUDA": time_cuda, "LIN_SCALE": time_lin_scale}
 
-    # print(dic_results)
     average_without_first = lambda lst: sum(lst[1:]) / len(lst[1:]) if len(lst) > 1 else 0
     df['cuda_average'] = df['cuda_times'].apply(average_without_first)
     df['lin_scale_average'] = df['lin_scale_times'].apply(average_without_first)
@@ -72,7 +68,6 @@ def clean_accuracy(log_path):
 
     with open(input_file, 'r') as file_input:
         text = file_input.read()
-        # print(text)
         accur_matches = re.findall(r"\*+(.*?)\*+", text, re.DOTALL)
         for accur_match in accur_matches:
             table_dim_matches = re.findall(r"(\d+)\s*x\s*(\d+)", accur_match)
@@ -101,7 +96,6 @@ def clean_accuracy(log_path):
     df['cuda_average'] = df['cuda_accuracy'].str[0]
     df['lin_scale_average'] = df['lin_scale_accuracy'].str[0]
     df['accuracy_improvement'] = df['cuda_average'] / df['lin_scale_average']
-    print(df)
 
     df.to_csv("data_accuracy.csv", index=False)
     df.to_excel("data_accuracy.xlsx", index=False)
@@ -119,22 +113,17 @@ def clean_memory(log_path):
     }
 
     df = pd.DataFrame(data)
-    print(df)
     input_file = os.path.join(log_path, "log_memory.txt")
 
     with open(input_file, 'r') as file_input:
         text = file_input.read()
-        # print(text)
         memory_matches = re.findall(r"\*+(.*?)\*+", text, re.DOTALL)
         for memory_match in memory_matches:
-            print("HERE", memory_match, "HERE")
             table_dim_matches = re.findall(r"(\d+)\s*x\s*(\d+)", memory_match)
 
             m1, n1 = table_dim_matches[0]
             m2, n2 = table_dim_matches[1]
             one_memory_match = re.findall(r"Maximally used Cuda memory ([\d]+) MB", memory_match)
-            # print(m1, n1)
-            # print(m2, n2)
             memory_cuda = []
             accur_linscale = []
             for idx, one_time_m in enumerate(one_memory_match):
@@ -156,7 +145,6 @@ def clean_memory(log_path):
     df['cuda_average'] = df['cuda_memory'].str[0]
     df['lin_scale_average'] = df['lin_scale_memory'].str[0]
     df['memory_improvement'] = df['cuda_average'] / df['lin_scale_average']
-    print(df)
 
     df.to_csv("data_memory.csv", index=False)
     df.to_excel("data_memory.xlsx", index=False)
