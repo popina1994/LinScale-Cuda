@@ -23,18 +23,29 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinVa
     auto addVect = outVectBTrain.add(vectNoise);
     outVectBTrain = std::move(addVect);
 
-    MatrixDCol matCUDAR{1, 1};
-    MatrixDCol matFigR{1, 1};
-    MatrixDCol matFigQ{1, 1};
-    MatrixDCol matCUDAQ{1, 1};
-    evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matFigR, matFigQ, matCUDAQ,
-        decompType, checkAccuracy);
-    MatrixDCol matVectXMKL{1, 1};
-    MatrixDCol matVectXFig{1, 1};
+    MatrixDCol matFigR{1, 1}, matFigQ{1, 1};
+    MatrixDCol matCUDAR{1, 1}, matCUDAQ{1, 1};
+    MatrixDCol matUCuda{1, 1}, matSigmaCuda{1, 1}, matVCuda{1, 1};
+    MatrixDCol matUFig{1, 1}, matSigmaFig{1, 1}, matVFig{1, 1};
+
+    evaluateTrain(mat1, mat2, matJoinCol, matCUDAR, matCUDAQ, matUCuda,
+        matSigmaCuda, matVCuda, false, decompType, checkAccuracy);
+    evaluateTrain(mat1, mat2, matJoinCol, matFigR, matFigQ, matUFig,
+        matSigmaFig, matVFig, true, decompType, checkAccuracy);
+
+    MatrixDCol matVectXMKL{1, 1}, matVectXFig{1, 1};
+
     if (checkAccuracy)
     {
-        computeVectors(matJoinCol, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig);
-        evaluateTest(matJoinCol.getNumRows(), matJoinCol.getNumCols(), vectX, matVectXMKL, matVectXFig, -1);
+        if (decompType == ComputeDecomp::R_ONLY or decompType == ComputeDecomp::Q_AND_R)
+        {
+            computeXVectorsLeastSquares(matJoinCol, matCUDAR, matFigR, outVectBTrain, matVectXMKL, matVectXFig);
+            evaluateTestLeastSquares(matJoinCol.getNumRows(), matJoinCol.getNumCols(), vectX, matVectXMKL, matVectXFig, -1);
+        }
+        else
+        {
+            // compare singular values
+        }
     }
 }
 

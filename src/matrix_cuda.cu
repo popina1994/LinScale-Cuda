@@ -233,7 +233,8 @@ void joinAdd(const MatrixCudaRow<T>& matCuda1, const MatrixCudaRow<T>& matCuda2,
 
 template <typename T>
 int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
-    MatrixCol<T>& matR, MatrixCol<T>& matQ, ComputeDecomp decompType)
+    MatrixCol<T>& matR, MatrixCol<T>& matQ,  MatrixCol<T>& matU,
+    MatrixCol<T>& matSigma, MatrixCol<T>& matV, ComputeDecomp decompType)
 {
     auto memUsed = getCudaMemoryUsage();
     MEMORY_LOG("LinScale", "Memory at beginning LinScale")
@@ -256,8 +257,11 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
     computeJoinSizes(dOffsets2, dJoinSizes2);
     computeFigaroOutputOffsetsTwoTables(dJoinSizes1, dJoinSizes2, dJoinSizes, dJoinOffsets);
 
-    bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
+    bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY or
+        decompType == ComputeDecomp::U_AND_S_AND_V;
     bool computeQ = decompType == ComputeDecomp::Q_AND_R;
+    bool computeU = decompType == ComputeDecomp::U_AND_S_AND_V;
+    bool computeV = decompType == ComputeDecomp::U_AND_S_AND_V;
 
     int numRowsOut{dJoinOffsets.back()}, numColsOut{mat1.getNumCols() + mat2.getNumCols() - 1};
     MatrixCudaRow<T> matCudaOut(numRowsOut, numColsOut);
@@ -275,7 +279,14 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 
     if (computeSVD)
     {
-        matRCuda.computeSVDDecomposition(matUCuda, matSigmaCuda, matVCuda);
+
+        matRCuda.computeSVDDecomposition(matUCuda, matSigmaCuda, matVCuda,
+                computeU, computeV, true);
+        if (computeU)
+        {
+            // inverse...
+            // TODO: Copy logic from Q
+        }
     }
     else
     {
@@ -306,7 +317,12 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 
     if (computeSVD)
     {
-        auto matSigma = matSigmaCuda.getHostCopy();
+        matSigma = matSigmaCuda.getHostCopy();
+        if (computeU)
+        {
+            matU = matUCuda.getHostCopy();
+            matV = matVCuda.getHostCopy();
+        }
     }
     else
     {
@@ -336,11 +352,14 @@ int computeFigaro(const MatrixRow<T>& mat1, const MatrixRow<T>& mat2,
 }
 
 template <typename T, MajorOrder majorOrder>
-int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
-    MatrixCol<T>& matQ, ComputeDecomp decompType)
+int computeGeneral(const Matrix<T, majorOrder>& matA,
+    MatrixCol<T>& matR, MatrixCol<T>& matQ, MatrixCol<T>& matU,
+    MatrixCol<T>& matSigma, MatrixCol<T>& matV, ComputeDecomp decompType)
 {
-    bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY;
+    bool computeSVD = decompType == ComputeDecomp::SIGMA_ONLY or decompType == ComputeDecomp::U_AND_S_AND_V;
     bool computeQ = decompType == ComputeDecomp::Q_AND_R;
+    bool computeU = decompType == ComputeDecomp::U_AND_S_AND_V;
+    bool computeV = decompType == ComputeDecomp::U_AND_S_AND_V;
     MEMORY_LOG("CUDA", "Memory at the beginning cuSolver")
     MatrixCudaCol<T> matACuda(matA);
     MatrixCudaCol<T> matACudaCol{1, 1};
@@ -358,10 +377,11 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
     CUDA_CALL(cudaEventCreate(&start));
     CUDA_CALL(cudaEventCreate(&stop));
     CUDA_CALL(cudaEventRecord(start));
-    MatrixCudaCol<T> matRCuda{1, 1}, matQCuda{1, 1}, matU{1, 1}, matSigmaCuda{1, 1}, matV{1, 1};
+    MatrixCudaCol<T> matRCuda{1, 1}, matQCuda{1, 1}, matUCuda{1, 1}, matSigmaCuda{1, 1}, matVCuda{1, 1};
     if (computeSVD)
     {
-        matACudaCol.computeSVDDecomposition(matU, matSigmaCuda, matV);
+        matACudaCol.computeSVDDecomposition(matUCuda, matSigmaCuda, matVCuda,
+            computeU, computeV, true);
     }
     else
     {
@@ -376,7 +396,12 @@ int computeGeneral(const Matrix<T, majorOrder>& matA, MatrixCol<T>& matR,
 
     if (computeSVD)
     {
-        auto matSigma = matSigmaCuda.getHostCopy();
+        matSigma = matSigmaCuda.getHostCopy();
+        if (computeU)
+        {
+            matU = matUCuda.getHostCopy();
+            matV = matVCuda.getHostCopy();
+        }
     }
     else
     {
@@ -427,11 +452,20 @@ int solveLLSNormalEquationUsingR(const Matrix<T, majorOrder>& matA,
 // template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const MatrixDRow& matA,
 //     MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
 
+// template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& matA,
+//         MatrixDCol& matR, MatrixDCol& matQ, ComputeDecomp decompType);
+
 template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& matA,
-        MatrixDCol& matR, MatrixDCol& matQ, ComputeDecomp decompType);
+    MatrixDCol& matR, MatrixDCol& matQ, MatrixDCol& matU,
+    MatrixDCol& matSigma, MatrixDCol& matV, ComputeDecomp decompType);
+
 
 template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
-    MatrixDCol& matR, MatrixDCol& matQ, ComputeDecomp decompType);
+            MatrixDCol& matR, MatrixDCol& matQ,  MatrixDCol& matU,
+            MatrixDCol& matSigma, MatrixDCol& matV, ComputeDecomp decompType);
+
+// template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
+//     MatrixDCol& matR, MatrixDCol& matQ, ComputeDecomp decompType);
 
 
 template int solveLLSNormalEquationUsingR<double, MajorOrder::COL_MAJOR>(

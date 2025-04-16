@@ -576,26 +576,41 @@ MatrixCuda<T, majorOrder>::solveLLSNormalEquationUsingR(
 }
 
 template <typename T, MajorOrder majorOrder>
-int MatrixCuda<T, majorOrder>::computeSVDDecomposition(MatrixCuda<T, MajorOrder::COL_MAJOR>& matU,
-        MatrixCuda<T, MajorOrder::COL_MAJOR>& matSigma, MatrixCuda<T, MajorOrder::COL_MAJOR>& matV,
-        bool computeU, bool computeV, bool computeSigma)
+int MatrixCuda<T, majorOrder>::computeSVDDecomposition(
+    MatrixCuda<T, MajorOrder::COL_MAJOR>& matU, MatrixCuda<T, MajorOrder::COL_MAJOR>& matSigma, MatrixCuda<T, MajorOrder::COL_MAJOR>& matVT,
+    bool computeU, bool computeV, bool computeSigma)
 {
-    char jobu = 'N';  // No computation of U
-    char jobvt = 'N'; // No computation of V^T
-    int ldA = getLeadingDimension();
+    char jobu;  // No computation of U
+    char jobvt; // No computation of V^T
+    if (not computeU and not computeV and computeSigma)
+    {
+        jobu = 'N';
+        jobvt = 'N';
+    }
+    else
+    {
+        jobu = 'S';
+        jobvt = 'S';
+    }
+
+    auto ldA = getLeadingDimension();
     int *dInfo;
-    double *dWork;
+    T *dWork;
     int lwork = 0;
+
     int rank = std::min(getNumRows(), getNumCols());
     matSigma = std::move(Matrix<T, majorOrder>(rank, 1));
+
     cusolverDnHandle_t cusolverH = nullptr;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
     CUDA_CALL(cudaMalloc((void**)&dInfo, sizeof(int)));
     CUSOLVER_CALL(cusolverDnXgesvd_bufferSize()(cusolverH, numRows, numCols, &lwork));
     CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * lwork));
 
-    CUSOLVER_CALL(cusolverDnXgesvd()(cusolverH, jobu, jobvt, getNumRows(), getNumCols(), getData(), ldA, matSigma.getData(), nullptr, ldA, nullptr, getNumCols(),
-                            dWork, lwork, nullptr, dInfo));
+    CUSOLVER_CALL(cusolverDnXgesvd()(cusolverH, jobu, jobvt,
+        getNumRows(), getNumCols(), getData(), ldA,
+        matSigma.getData(), matU.getData(), matU.getLeadingDimension(),
+            matVT.getData(), matVT.getLeadingDimension(), dWork, lwork, nullptr, dInfo));
     CUSOLVER_CALL(cusolverDnDestroy(cusolverH));
     CUDA_CALL(cudaFree(dInfo));
     CUDA_CALL(cudaFree(dWork));

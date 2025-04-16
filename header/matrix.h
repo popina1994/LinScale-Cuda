@@ -238,6 +238,8 @@ public:
     Matrix<T, majorOrder> solveLLSQRDecomp(const Matrix<T, majorOrder>& vectB) const;
 
     T computeOrthogonality(void) const;
+
+    double computeMeanSquaredError(const Matrix<T, majorOrder>& mat2) const;
 };
 
 
@@ -250,9 +252,6 @@ using MatrixRow = Matrix<T, MajorOrder::ROW_MAJOR>;
 
 template <typename T>
 MatrixCol<T> changeLayout(const MatrixRow<T>& mat);
-
-template <typename T>
-double computeMeanSquaredError(const T* pA, const T* pB, int numRows);
 
 template <typename T, MajorOrder majorOrder>
 void printMatrix(const Matrix<T, majorOrder>& matA, int numRowsCut, const std::string& fileName, bool upperTriangular = false);

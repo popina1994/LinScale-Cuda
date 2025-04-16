@@ -313,32 +313,30 @@ T Matrix<T, majorOrder>::computeOrthogonality(void) const
     return relError;
 }
 
-template <typename T>
-double computeMeanSquaredError(const T* pA, const T* pB, int numRows)
+template <typename T, MajorOrder majorOrder>
+double Matrix<T, majorOrder>::computeMeanSquaredError(const Matrix<T, majorOrder>& mat2) const
 {
-    double* diff = new double[numRows];
-    double* squared = new double[numRows];
+    auto& mat1 = *this;
+    std::vector<double> vDiff(mat1.getNumElements());
+    std::vector<double> vSquared(vDiff.size());
+
       // Compute element-wise difference: diff = a - b
-    vdSub(numRows, pA, pB, diff);
+    vdSub(mat1.getNumElements(), getDataC(), mat2.getDataC(), vDiff.data());
 
     // Square each element: squared = diff^2
-    vdMul(numRows, diff, diff, squared);
+    vdMul(vDiff.size(), vDiff.data(), vDiff.data(), vSquared.data());
 
     // Compute sum of squared differences
-    double sum_sq = cblas_dasum(numRows, squared, 1);
+    double sum_sq = cblas_dasum(vSquared.size(), vSquared.data(), 1);
 
     // Compute MSE
     double mse = sum_sq / numRows;
-    delete [] diff;
-    delete [] squared;
 
     return mse;
 }
 
 template class Matrix<double, MajorOrder::ROW_MAJOR>;
 template class Matrix<double, MajorOrder::COL_MAJOR>;
-template
-double computeMeanSquaredError<double>(const double* pA, const double* pB, int numRows);
 
 template auto MatrixDCol::drawDistribution<RandomDistribution::UNIFORM>(double, double);
 template auto MatrixDCol::drawDistribution<RandomDistribution::NORMAL>(double, double);
