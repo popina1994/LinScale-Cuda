@@ -601,10 +601,10 @@ int MatrixCuda<T, majorOrder>::computeSVDDecomposition(
     int rank = std::min(getNumRows(), getNumCols());
     matSigma = std::move(Matrix<T, majorOrder>(rank, 1));
 
-    cusolverDnHandle_t cusolverH = nullptr;
+    cusolverDnHandle_t cusolverH;
     CUSOLVER_CALL(cusolverDnCreate(&cusolverH));
     CUDA_CALL(cudaMalloc((void**)&dInfo, sizeof(int)));
-    CUSOLVER_CALL(cusolverDnXgesvd_bufferSize()(cusolverH, numRows, numCols, &lwork));
+    CUSOLVER_CALL(cusolverDnXgesvd_bufferSize()(cusolverH, getNumRows(), getNumCols(), &lwork));
     CUDA_CALL(cudaMalloc((void**)&dWork, sizeof(T) * lwork));
 
     CUSOLVER_CALL(cusolverDnXgesvd()(cusolverH, jobu, jobvt,

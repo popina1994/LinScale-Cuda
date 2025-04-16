@@ -44,7 +44,14 @@ void evaluate(int numRows1, int numCols1, int numRows2, int numCols2, int joinVa
         }
         else
         {
-            // compare singular values
+            if (checkAccuracy)
+            {
+                std::cout << "MSE Sigma difference" << matSigmaCuda.computeMeanSquaredError(matSigmaFig) << std::endl;
+                std::cout << matSigmaCuda << std::endl;
+                std::cout << matSigmaFig << std::endl;
+                // compare singular values
+
+            }
         }
     }
 }
@@ -138,3 +145,4 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
