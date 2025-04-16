@@ -438,22 +438,65 @@ int solveLLSNormalEquationUsingR(const Matrix<T, majorOrder>& matA,
     CUDA_CALL(cudaEventRecord(start));
 
     auto matXCuda = matACuda.solveLLSNormalEquationUsingR(matR, vectB);
-    vectX = matXCuda.getHostCopy();
 
     CUDA_CALL(cudaEventRecord(stop));
     CUDA_CALL(cudaEventSynchronize(stop));
     float milliseconds = 0;
     CUDA_CALL(cudaEventElapsedTime(&milliseconds, start, stop));
+    vectX = matXCuda.getHostCopy();
     // std::cout << "LLS using normal equations and R took " << milliseconds << " ms.\n";
 
     return 0;
 }
 
-// template int computeGeneral<double, MajorOrder::ROW_MAJOR>(const MatrixDRow& matA,
-//     MatrixDCol& matR, const std::string& fileName, ComputeDecomp decompType);
+template <typename T, MajorOrder majorOrder>
+int solveLLSQRDecomp(const Matrix<T, majorOrder>& matA,
+    const Matrix<T, majorOrder>& vectB,
+    Matrix<T, majorOrder>& vectX)
+{
+    cusolverDnHandle_t solver_handle;
+    CUSOLVER_CALL(cusolverDnCreate(&solver_handle));
+    MatrixCuda<T, majorOrder> matACuda(matA);
+    MatrixCuda<T, majorOrder> matBCuda(vectB);
+    MatrixCuda<T, majorOrder> vectXCuda(vectB);
 
-// template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& matA,
-//         MatrixDCol& matR, MatrixDCol& matQ, ComputeDecomp decompType);
+    cudaEvent_t start, stop;
+    CUDA_CALL(cudaEventCreate(&start));
+    CUDA_CALL(cudaEventCreate(&stop));
+    CUDA_CALL(cudaEventRecord(start));
+
+
+    size_t Lwork = 0;
+    T*d_work;
+    int *d_info;
+    int nIter = 0;
+    CUDA_CALL(cudaMalloc(&d_info, sizeof(int)));
+
+    CUSOLVER_CALL(cusolverDnDDgels_bufferSize(solver_handle, matACuda.getNumRows(), matACuda.getNumCols(),
+    1, matACuda.getData(), matACuda.getLeadingDimension(), matBCuda.getData(),
+        matBCuda.getLeadingDimension(), vectXCuda.getData(), vectXCuda.getLeadingDimension(),
+        nullptr, &Lwork));
+    CUDA_CALL(cudaMalloc(&d_work, Lwork));
+
+    CUSOLVER_CALL(cusolverDnDDgels(solver_handle, matACuda.getNumRows(), matACuda.getNumCols(),
+    1, matACuda.getData(), matACuda.getLeadingDimension(), matBCuda.getData(),
+        matBCuda.getLeadingDimension(), vectXCuda.getData(), vectXCuda.getLeadingDimension(),
+        d_work, Lwork, &nIter, d_info));
+
+    CUDA_CALL(cudaEventRecord(stop));
+    CUDA_CALL(cudaEventSynchronize(stop));
+    float milliseconds = 0;
+    CUDA_CALL(cudaEventElapsedTime(&milliseconds, start, stop));
+    std::cout << "LLS using QR decomposition took " << milliseconds << " ms.\n";
+
+    CUDA_CALL(cudaFree(d_info));
+    CUDA_CALL(cudaFree(d_work));
+    CUSOLVER_CALL(cusolverDnDestroy(solver_handle));
+
+    vectX = vectXCuda.getHostCopy();
+
+    return 0;
+}
 
 template int computeGeneral<double, MajorOrder::COL_MAJOR>(const MatrixDCol& matA,
     MatrixDCol& matR, MatrixDCol& matQ, MatrixDCol& matU,
@@ -464,10 +507,11 @@ template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat
             MatrixDCol& matR, MatrixDCol& matQ,  MatrixDCol& matU,
             MatrixDCol& matSigma, MatrixDCol& matV, ComputeDecomp decompType);
 
-// template int computeFigaro<double>(const MatrixDRow& mat1, const MatrixDRow& mat2,
-//     MatrixDCol& matR, MatrixDCol& matQ, ComputeDecomp decompType);
-
 
 template int solveLLSNormalEquationUsingR<double, MajorOrder::COL_MAJOR>(
     const MatrixDCol& matA, const MatrixDCol& matR,
     const MatrixDCol& vectB, MatrixDCol& vectX);
+
+template int solveLLSQRDecomp<double, MajorOrder::COL_MAJOR>(
+    const MatrixDCol& matA, const MatrixDCol& vectB,
+    MatrixDCol& vectX);

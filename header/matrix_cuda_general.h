@@ -21,4 +21,9 @@ int solveLLSNormalEquationUsingR(const Matrix<T, majorOrder>& matA,
     const Matrix<T, majorOrder>& vectB,
     Matrix<T, majorOrder>& vectX);
 
+template <typename T, MajorOrder majorOrder>
+int solveLLSQRDecomp(const Matrix<T, majorOrder>& matA,
+    const Matrix<T, majorOrder>& vectB,
+    Matrix<T, majorOrder>& vectX);
+
 #endif

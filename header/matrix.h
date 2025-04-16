@@ -155,7 +155,7 @@ public:
 
     int64_t getNumElements(void) const
     {
-        return numRows * numCols;
+        return int64_t(numRows) * int64_t(numCols);
     }
 
     int64_t getSize() const

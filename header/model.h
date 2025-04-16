@@ -34,6 +34,7 @@ void computeXVectorsLeastSquares(const MatrixDCol& matJoin, const MatrixDCol& ma
 {
     // vectXCompMKL = matJoin.solveLLSNormalEquationUsingR(matCUDAR, vectBTrain);
     solveLLSNormalEquationUsingR(matJoin, matCUDAR, vectBTrain, vectXCompMKL);
+    // solveLLSQRDecomp(matJoin, vectBTrain, vectXCompMKL);
     solveLLSNormalEquationUsingR(matJoin, matFigR, vectBTrain, vectXCompFig);
     // vectXCompMKL = matJoin.solveLLSNormalEquations(vectBTrain);
     // vectXCompMKL = matJoin.solveLLSQRDecomp(vectBTrain);

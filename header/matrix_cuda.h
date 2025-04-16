@@ -79,17 +79,17 @@ public:
     }
     int getNumCols(void) const
     {
-    return numCols;
+        return numCols;
     }
 
     int64_t getNumElements(void) const
     {
-        return numRows * numCols;
+        return int64_t(numRows) * int64_t(numCols);
     }
 
     int64_t getSize(void) const
     {
-        return numRows * numCols * sizeof(T);
+        return int64_t(numRows) * int64_t(numCols) * sizeof(T);
     }
 
     int getLeadingDimension(void) const
@@ -131,7 +131,7 @@ public:
 
     Matrix<T, majorOrder> getHostCopy(void) const
     {
-        thrust::host_vector<T> hostVector = dVector;;
+        thrust::host_vector<T> hostVector = dVector;
         Matrix<T, majorOrder> matOut(hostVector.data(), getNumRows(), getNumCols());
         return matOut;
     }
